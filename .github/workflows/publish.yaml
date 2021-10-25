@@ -38,4 +38,4 @@ jobs:
         with: 
           config: "./.github/configs/cr.yaml"
         env:
-          CR_TOKEN: "${{ secrets.GH_PAGES_DEPLOY }}"
+          CR_TOKEN: "${{ secrets.GH_TOKEN }}"
