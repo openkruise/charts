@@ -10,10 +10,9 @@ $ helm repo add openkruise https://openkruise.github.io/charts
 ```
 
 If you had already added this repo earlier, run `helm repo update` to retrieve
-the latest versions of the packages.  You can then run `helm search repo
-<alias>` to see the charts.
+the latest versions of the packages.  You can then run `helm search repo <alias>` to see the charts.
 
-To install the <chart-name> chart:
+To install the `chart-name` chart:
 
 ```bash
 $ helm install kruise openkruise/kruise
