@@ -11,37 +11,6 @@ entries:
         - "[Added]: ContainerLaunchPriority provides a way to help users control the sequence of containers start in a Pod"
         - "[Changed]: More details: https://github.com/openkruise/kruise/releases"
     apiVersion: v1
-    created: "2021-10-26T11:54:28.10820144Z"
-    description: Helm chart for kruise components
-    digest: e470a4dd3697ef7b28b660fc623bc19f67f43b701e0a16db4454dd09139d8e37
-    home: https://openkruise.io
-    icon: https://openkruise.io/img/openkruise.ico
-    keywords:
-    - openkruise
-    - kubernetes
-    - kruise
-    - workload
-    - statefulset
-    - sidecar
-    - job
-    - deployment
-    - cloneset
-    name: kruise
-    sources:
-    - https://github.com/openkruise/kruise
-    urls:
-    - https://github.com/openkruise/charts/releases/download/kruise-1.0.0-alpha.1/kruise-1.0.0-alpha.1.tgz
-    version: 1.0.0-alpha.1
-  - annotations:
-      artifacthub.io/changes: |
-        - "[Changed]: Bump CustomResourceDefinition(CRD) from v1beta1 to v1"
-        - "[Changed]: Bump ValidatingWebhookConfiguration/MutatingWebhookConfiguration from v1beta1 to v1"
-        - "[Changed]: Bump dependencies: k8s v1.18 -> v1.20, controller-runtime v0.6.5 -> v0.8.3"
-        - "[Removed]: No longer support Kubernetes < 1.16"
-        - "[Added]: In-place update with env from metadata"
-        - "[Added]: ContainerLaunchPriority provides a way to help users control the sequence of containers start in a Pod"
-        - "[Changed]: More details: https://github.com/openkruise/kruise/releases"
-    apiVersion: v1
     created: "2021-10-26T12:13:03.45673611Z"
     description: Helm chart for kruise components
     digest: 2a270de3af9fef35407044dbeee07e0aff0dd1a8b945ea14e860e7065507f281
