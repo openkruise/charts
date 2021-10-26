@@ -55,6 +55,7 @@ spec:
             - --leader-election-namespace={{ .Values.installation.namespace }}
             - --v={{ .Values.manager.log.level }}
             - --feature-gates={{ .Values.featureGates }}
+            - --sync-period={{ .Values.manager.resyncPeriod }}
           command:
             - /manager
           image: {{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag }}
@@ -85,6 +86,7 @@ spec:
               port: {{ .Values.manager.healthProbe.port }}
           resources:
             {{- toYaml .Values.manager.resources | nindent 12 }}
+      hostNetwork: {{ .Values.manager.hostNetwork }}
       terminationGracePeriodSeconds: 10
       affinity:
         podAntiAffinity:
@@ -152,6 +154,7 @@ spec:
         - --logtostderr=true
         - --v=4
         - --addr=:{{ .Values.daemon.port }}
+        - --feature-gates={{ .Values.featureGates }}
         image: {{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag }}
         imagePullPolicy: Always
         name: daemon

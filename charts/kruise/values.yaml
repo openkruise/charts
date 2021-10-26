@@ -20,13 +20,15 @@ manager:
   replicas: 2
   image:
     repository: openkruise/kruise-manager
-    tag: v0.10.0
+    tag: v1.0.0-alpha.1
   webhook:
     port: 9876
   metrics:
     port: 8080
   healthProbe:
     port: 8000
+
+  resyncPeriod: "0"
 
   # resources of kruise-manager container
   resources:
@@ -36,6 +38,8 @@ manager:
     requests:
       cpu: 100m
       memory: 256Mi
+
+  hostNetwork: false
 
   nodeAffinity: {}
   nodeSelector: {}

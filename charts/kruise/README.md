@@ -1,26 +1,5 @@
 # Kruise
 
-## Install
-
-We strongly recommend you to use Kruise with **Kubernetes version >= 1.16**.
-For these clusters, you can simply install Kruise with helm v3.1.0+:
-
-```bash
-helm install kruise https://github.com/openkruise/kruise/releases/download/v0.10.0/kruise-chart.tgz
-```
-
-> Note that installing this chart directly means it will use the default template values for the kruise-manager.
-You may have to set your specific configurations when it is deployed into a production cluster or you want to configure feature-gates.
-
-For more installation/upgrade details or older Kubernetes versions, please read [this doc](https://openkruise.io/en-us/docs/installation.html).
-
-## Uninstall
-
-```bash
-$ helm delete kruise
-release "kruise" uninstalled
-```
-
 ## Configuration
 
 The following table lists the configurable parameters of the kruise chart and their default values.
@@ -53,6 +32,8 @@ The following table lists the configurable parameters of the kruise chart and th
 | `webhookConfiguration.failurePolicy.pods` | The failurePolicy for pods in mutating webhook configuration | `Ignore`                      |
 | `webhookConfiguration.timeoutSeconds`     | The timeoutSeconds for all webhook configuration             | `30`                          |
 | `crds.managed`                            | Kruise will not install CRDs with chart if this is false     | `true`                        |
+| `manager.resyncPeriod`                    | Resync period of informer kruise-manager, defaults no resync | `0`                           |
+| `manager.hostNetwork`                     | Whether kruise-manager pod should run with hostnetwork       | `false`                       |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
 
@@ -74,6 +55,7 @@ Feature-gate controls some influential features in Kruise:
 | `PodUnavailableBudgetDeleteGate` | Enables PodUnavailableBudget for pod deletion, eviction           | `false` | No protection for pod deletion, eviction |
 | `PodUnavailableBudgetUpdateGate` | Enables PodUnavailableBudget for pod.Spec update                  | `false` | No protection for in-place update |
 | `WorkloadSpread`                 | Enables WorkloadSpread to manage multi-domain and elastic deploy  | `false` | WorkloadSpread disabled |
+| `InPlaceUpdateEnvFromMetadata`   | Enables Kruise to in-place update a container in Pod when its env from labels/annotations changed and pod is in-place updating | `false` | Only container image can be in-place update |
 
 If you want to configure the feature-gate, just set the parameter when install or upgrade. Such as:
 

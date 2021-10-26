@@ -1,52 +1,24 @@
 {{- if .Values.crds.managed }}
 
 ---
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.2.9
+    controller-gen.kubebuilder.io/version: v0.5.0
   name: statefulsets.apps.kruise.io
 spec:
-  additionalPrinterColumns:
-  - JSONPath: .spec.replicas
-    description: The desired number of pods.
-    name: DESIRED
-    type: integer
-  - JSONPath: .status.replicas
-    description: The number of currently all pods.
-    name: CURRENT
-    type: integer
-  - JSONPath: .status.updatedReplicas
-    description: The number of pods updated.
-    name: UPDATED
-    type: integer
-  - JSONPath: .status.readyReplicas
-    description: The number of pods ready.
-    name: READY
-    type: integer
-  - JSONPath: .metadata.creationTimestamp
-    description: CreationTimestamp is a timestamp representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations. Clients may not set this value. It is represented in RFC3339 form and is in UTC.
-    name: AGE
-    type: date
-  - JSONPath: .spec.template.spec.containers[*].name
-    description: The containers of currently advanced statefulset.
-    name: CONTAINERS
-    priority: 1
-    type: string
-  - JSONPath: .spec.template.spec.containers[*].image
-    description: The images of currently advanced statefulset.
-    name: IMAGES
-    priority: 1
-    type: string
   conversion:
     strategy: Webhook
-    webhookClientConfig:
-      caBundle: Cg==
-      service:
-        name: kruise-webhook-service
-        namespace: kruise-system
-        path: /convert
+    webhook:
+      clientConfig:
+        service:
+          name: kruise-webhook-service
+          namespace: kruise-system
+          path: /convert
+      conversionReviewVersions:
+      - v1
+      - v1beta1
   group: apps.kruise.io
   names:
     kind: StatefulSet
@@ -56,17 +28,40 @@ spec:
     - sts
     - asts
     singular: statefulset
-  preserveUnknownFields: false
   scope: Namespaced
-  subresources:
-    scale:
-      labelSelectorPath: .status.labelSelector
-      specReplicasPath: .spec.replicas
-      statusReplicasPath: .status.replicas
-    status: {}
-  version: v1alpha1
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - description: The desired number of pods.
+      jsonPath: .spec.replicas
+      name: DESIRED
+      type: integer
+    - description: The number of currently all pods.
+      jsonPath: .status.replicas
+      name: CURRENT
+      type: integer
+    - description: The number of pods updated.
+      jsonPath: .status.updatedReplicas
+      name: UPDATED
+      type: integer
+    - description: The number of pods ready.
+      jsonPath: .status.readyReplicas
+      name: READY
+      type: integer
+    - description: CreationTimestamp is a timestamp representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations. Clients may not set this value. It is represented in RFC3339 form and is in UTC.
+      jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    - description: The containers of currently advanced statefulset.
+      jsonPath: .spec.template.spec.containers[*].name
+      name: CONTAINERS
+      priority: 1
+      type: string
+    - description: The images of currently advanced statefulset.
+      jsonPath: .spec.template.spec.containers[*].image
+      name: IMAGES
+      priority: 1
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: StatefulSet is the Schema for the statefulsets API
@@ -301,7 +296,44 @@ spec:
         type: object
     served: true
     storage: false
-  - name: v1beta1
+    subresources:
+      scale:
+        labelSelectorPath: .status.labelSelector
+        specReplicasPath: .spec.replicas
+        statusReplicasPath: .status.replicas
+      status: {}
+  - additionalPrinterColumns:
+    - description: The desired number of pods.
+      jsonPath: .spec.replicas
+      name: DESIRED
+      type: integer
+    - description: The number of currently all pods.
+      jsonPath: .status.replicas
+      name: CURRENT
+      type: integer
+    - description: The number of pods updated.
+      jsonPath: .status.updatedReplicas
+      name: UPDATED
+      type: integer
+    - description: The number of pods ready.
+      jsonPath: .status.readyReplicas
+      name: READY
+      type: integer
+    - description: CreationTimestamp is a timestamp representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations. Clients may not set this value. It is represented in RFC3339 form and is in UTC.
+      jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    - description: The containers of currently advanced statefulset.
+      jsonPath: .spec.template.spec.containers[*].name
+      name: CONTAINERS
+      priority: 1
+      type: string
+    - description: The images of currently advanced statefulset.
+      jsonPath: .spec.template.spec.containers[*].image
+      name: IMAGES
+      priority: 1
+      type: string
+    name: v1beta1
     schema:
       openAPIV3Schema:
         description: StatefulSet is the Schema for the statefulsets API
@@ -579,6 +611,12 @@ spec:
         type: object
     served: true
     storage: true
+    subresources:
+      scale:
+        labelSelectorPath: .status.labelSelector
+        specReplicasPath: .spec.replicas
+        statusReplicasPath: .status.replicas
+      status: {}
 status:
   acceptedNames:
     kind: ""

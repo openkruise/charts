@@ -1,7 +1,6 @@
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
-  creationTimestamp: null
   name: kruise-mutating-webhook-configuration
   annotations:
     template: ""
@@ -13,6 +12,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /mutate-apps-kruise-io-v1alpha1-advancedcronjob
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: madvancedcronjob.kb.io
   rules:
@@ -32,6 +35,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /mutate-apps-kruise-io-v1alpha1-broadcastjob
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: mbroadcastjob.kb.io
   rules:
@@ -51,6 +58,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /mutate-apps-kruise-io-v1alpha1-cloneset
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: mcloneset.kb.io
   rules:
@@ -70,6 +81,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /mutate-apps-kruise-io-v1alpha1-containerrecreaterequest
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: mcontainerrecreaterequest.kb.io
   rules:
@@ -89,6 +104,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /mutate-apps-kruise-io-v1alpha1-daemonset
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: mdaemonset.kb.io
   rules:
@@ -108,6 +127,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /mutate-apps-kruise-io-v1alpha1-imagepulljob
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: mimagepulljob.kb.io
   rules:
@@ -127,6 +150,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /mutate-apps-kruise-io-v1alpha1-nodeimage
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: mnodeimage.kb.io
   rules:
@@ -147,6 +174,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /mutate-pod
   failurePolicy: {{ .Values.webhookConfiguration.failurePolicy.pods }}
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: mpod.kb.io
   namespaceSelector:
@@ -170,6 +201,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /mutate-apps-kruise-io-v1alpha1-sidecarset
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: msidecarset.kb.io
   rules:
@@ -189,6 +224,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /mutate-apps-kruise-io-statefulset
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: mstatefulset.kb.io
   rules:
@@ -209,6 +248,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /mutate-apps-kruise-io-v1alpha1-uniteddeployment
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: muniteddeployment.kb.io
   rules:
@@ -223,16 +266,15 @@ webhooks:
     - uniteddeployments
 
 ---
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
-  creationTimestamp: null
   name: kruise-validating-webhook-configuration
   annotations:
     template: ""
 webhooks:
 {{- if contains "PodWebhook=false" .Values.featureGates }}{{ else }}
-{{- if or (contains "PodUnavailableBudgetUpdateGate=true" .Values.featureGates) (contains "PodUnavailableBudgetDeleteGate=true" .Values.featureGates) (contains "WorkloadSpread=true" .Values.featureGates) }}
+{{- if or (contains "AllAlpha=true" .Values.featureGates) (contains "PodUnavailableBudgetUpdateGate=true" .Values.featureGates) (contains "PodUnavailableBudgetDeleteGate=true" .Values.featureGates) (contains "WorkloadSpread=true" .Values.featureGates) }}
 - clientConfig:
     caBundle: Cg==
     service:
@@ -240,6 +282,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /validate-pod
   failurePolicy: {{ .Values.webhookConfiguration.failurePolicy.pods }}
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: vpod.kb.io
   namespaceSelector:
@@ -252,16 +298,16 @@ webhooks:
     apiVersions:
     - v1
     operations:
-{{- if contains "PodUnavailableBudgetUpdateGate=true" .Values.featureGates }}
+{{- if or (contains "AllAlpha=true" .Values.featureGates) (contains "PodUnavailableBudgetUpdateGate=true" .Values.featureGates) }}
     - UPDATE
 {{- else }}{{- end }}
-{{- if or (contains "PodUnavailableBudgetDeleteGate=true" .Values.featureGates) (contains "WorkloadSpread=true" .Values.featureGates) }}
+{{- if or (contains "AllAlpha=true" .Values.featureGates) (contains "PodUnavailableBudgetDeleteGate=true" .Values.featureGates) (contains "WorkloadSpread=true" .Values.featureGates) }}
     - DELETE
 {{- else }}{{- end }}
     resources:
     - pods
 {{- else }}{{- end }}
-{{- if or (contains "PodUnavailableBudgetDeleteGate=true" .Values.featureGates) (contains "WorkloadSpread=true" .Values.featureGates) }}
+{{- if or (contains "AllAlpha=true" .Values.featureGates) (contains "PodUnavailableBudgetDeleteGate=true" .Values.featureGates) (contains "WorkloadSpread=true" .Values.featureGates) }}
 - clientConfig:
     caBundle: Cg==
     service:
@@ -269,6 +315,10 @@ webhooks:
       namespace: kruise-system
       path: /validate-pod
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   name: vpodeviction.kb.io
   namespaceSelector:
     matchExpressions:
@@ -290,8 +340,35 @@ webhooks:
     service:
       name: kruise-webhook-service
       namespace: {{ .Values.installation.namespace }}
+      path: /validate-apps-kruise-io-v1alpha1-resourcedistribution
+  failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
+  timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+  name: vresourcedistribution.kb.io
+  rules:
+  - apiGroups:
+    - apps.kruise.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - resourcedistributions
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kruise-webhook-service
+      namespace: {{ .Values.installation.namespace }}
       path: /validate-apps-kruise-io-v1alpha1-advancedcronjob
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: vadvancedcronjob.kb.io
   rules:
@@ -311,6 +388,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /validate-apps-kruise-io-v1alpha1-broadcastjob
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: vbroadcastjob.kb.io
   rules:
@@ -330,6 +411,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /validate-apps-deployment
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: vbuiltindeployment.kb.io
   objectSelector:
@@ -352,6 +437,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /validate-apps-replicaset
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: vbuiltinreplicaset.kb.io
   objectSelector:
@@ -374,6 +463,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /validate-apps-statefulset
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: vbuiltinstatefulset.kb.io
   objectSelector:
@@ -396,6 +489,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /validate-apps-kruise-io-v1alpha1-cloneset
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: vcloneset.kb.io
   rules:
@@ -416,6 +513,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /validate-customresourcedefinition
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: vcustomresourcedefinition.kb.io
   objectSelector:
@@ -439,6 +540,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /validate-apps-kruise-io-v1alpha1-daemonset
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: vdaemonset.kb.io
   rules:
@@ -458,6 +563,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /validate-apps-kruise-io-v1alpha1-imagepulljob
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: vimagepulljob.kb.io
   rules:
@@ -477,6 +586,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /validate-namespace
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: vnamespace.kb.io
   objectSelector:
@@ -499,6 +612,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /validate-apps-kruise-io-v1alpha1-nodeimage
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: vnodeimage.kb.io
   rules:
@@ -518,6 +635,10 @@ webhooks:
       namespace: kruise-system
       path: /validate-policy-kruise-io-podunavailablebudget
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   name: vpodunavailablebudget.kb.io
   rules:
   - apiGroups:
@@ -536,6 +657,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /validate-apps-kruise-io-v1alpha1-sidecarset
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: vsidecarset.kb.io
   rules:
@@ -555,6 +680,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /validate-apps-kruise-io-statefulset
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: vstatefulset.kb.io
   rules:
@@ -576,6 +705,10 @@ webhooks:
       namespace: {{ .Values.installation.namespace }}
       path: /validate-apps-kruise-io-v1alpha1-uniteddeployment
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
   name: vuniteddeployment.kb.io
   rules:
@@ -596,6 +729,10 @@ webhooks:
       namespace: kruise-system
       path: /validate-apps-kruise-io-v1alpha1-workloadspread
   failurePolicy: Fail
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  sideEffects: None
   name: vworkloadspread.kb.io
   rules:
   - apiGroups:

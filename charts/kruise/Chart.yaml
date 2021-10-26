@@ -1,8 +1,8 @@
 apiVersion: v1
 name: kruise
 description: Helm chart for kruise components
-version: 0.10.0
-icon: https://openkruise.io/img/logo_white.png
+version: 1.0.0-alpha.1
+icon: https://openkruise.io/img/openkruise.ico
 keywords:
   - openkruise
   - kubernetes
@@ -16,3 +16,12 @@ keywords:
 home: https://openkruise.io
 sources:
   - https://github.com/openkruise/kruise
+annotations:
+  artifacthub.io/changes: |
+    - "[Changed]: Bump CustomResourceDefinition(CRD) from v1beta1 to v1"
+    - "[Changed]: Bump ValidatingWebhookConfiguration/MutatingWebhookConfiguration from v1beta1 to v1"
+    - "[Changed]: Bump dependencies: k8s v1.18 -> v1.20, controller-runtime v0.6.5 -> v0.8.3"
+    - "[Removed]: No longer support Kubernetes < 1.16"
+    - "[Added]: In-place update with env from metadata"
+    - "[Added]: ContainerLaunchPriority provides a way to help users control the sequence of containers start in a Pod"
+    - "[Changed]: More details: https://github.com/openkruise/kruise/releases"
