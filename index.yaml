@@ -1,6 +1,37 @@
 apiVersion: v1
 entries:
   kruise:
+  - annotations:
+      artifacthub.io/changes: |
+        - "[Changed]: Bump CustomResourceDefinition(CRD) from v1beta1 to v1"
+        - "[Changed]: Bump ValidatingWebhookConfiguration/MutatingWebhookConfiguration from v1beta1 to v1"
+        - "[Changed]: Bump dependencies: k8s v1.18 -> v1.20, controller-runtime v0.6.5 -> v0.8.3"
+        - "[Removed]: No longer support Kubernetes < 1.16"
+        - "[Added]: In-place update with env from metadata"
+        - "[Added]: ContainerLaunchPriority provides a way to help users control the sequence of containers start in a Pod"
+        - "[Changed]: More details: https://github.com/openkruise/kruise/releases"
+    apiVersion: v1
+    created: "2021-10-26T11:54:28.10820144Z"
+    description: Helm chart for kruise components
+    digest: e470a4dd3697ef7b28b660fc623bc19f67f43b701e0a16db4454dd09139d8e37
+    home: https://openkruise.io
+    icon: https://openkruise.io/img/openkruise.ico
+    keywords:
+    - openkruise
+    - kubernetes
+    - kruise
+    - workload
+    - statefulset
+    - sidecar
+    - job
+    - deployment
+    - cloneset
+    name: kruise
+    sources:
+    - https://github.com/openkruise/kruise
+    urls:
+    - https://github.com/openkruise/charts/releases/download/kruise-1.0.0-alpha.1/kruise-1.0.0-alpha.1.tgz
+    version: 1.0.0-alpha.1
   - apiVersion: v1
     created: "2021-10-25T07:04:43.026027479Z"
     description: Helm chart for kruise components
@@ -23,4 +54,4 @@ entries:
     urls:
     - https://github.com/openkruise/charts/releases/download/kruise-0.10.0/kruise-0.10.0.tgz
     version: 0.10.0
-generated: "2021-10-25T07:04:43.026037179Z"
+generated: "2021-10-26T11:54:28.10821364Z"
