@@ -3,6 +3,31 @@ entries:
   kruise:
   - annotations:
       artifacthub.io/changes: |
+        - "[Changed]: https://github.com/openkruise/kruise/blob/master/CHANGELOG.md"
+    apiVersion: v1
+    created: "2021-11-12T06:47:11.570056939Z"
+    description: Helm chart for kruise components
+    digest: 6a2de16a1c7c54dc561fc3fb9e6cd6044bd264048f2ee7bf0867d3b64fdcaf0c
+    home: https://openkruise.io
+    icon: https://openkruise.io/img/openkruise-logo-bg.jpg
+    keywords:
+    - openkruise
+    - kubernetes
+    - kruise
+    - workload
+    - statefulset
+    - sidecar
+    - job
+    - deployment
+    - cloneset
+    name: kruise
+    sources:
+    - https://github.com/openkruise/kruise
+    urls:
+    - https://github.com/openkruise/charts/releases/download/kruise-1.0.0-alpha.2/kruise-1.0.0-alpha.2.tgz
+    version: 1.0.0-alpha.2
+  - annotations:
+      artifacthub.io/changes: |
         - "[Changed]: Bump CustomResourceDefinition(CRD) from v1beta1 to v1"
         - "[Changed]: Bump ValidatingWebhookConfiguration/MutatingWebhookConfiguration from v1beta1 to v1"
         - "[Changed]: Bump dependencies: k8s v1.18 -> v1.20, controller-runtime v0.6.5 -> v0.8.3"
@@ -79,4 +104,4 @@ entries:
     urls:
     - https://github.com/openkruise/charts/releases/download/kruise-0.10.0/kruise-0.10.0.tgz
     version: 0.10.0
-generated: "2021-11-12T06:24:28.550265434Z"
+generated: "2021-11-12T06:47:11.57009254Z"
