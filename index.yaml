@@ -111,6 +111,31 @@ entries:
       artifacthub.io/changes: |
         - "[Changed]: https://github.com/openkruise/kruise/blob/master/CHANGELOG.md"
     apiVersion: v1
+    created: "2021-12-16T07:28:01.207286436Z"
+    description: Helm chart for kruise components
+    digest: ca8f73476e2387b6f91eeb547585a395904182b90c1e6bd2a3327471a0b5c41d
+    home: https://openkruise.io
+    icon: https://openkruise.io/img/openkruise-logo-bg.jpg
+    keywords:
+    - openkruise
+    - kubernetes
+    - kruise
+    - workload
+    - statefulset
+    - sidecar
+    - job
+    - deployment
+    - cloneset
+    name: kruise
+    sources:
+    - https://github.com/openkruise/kruise
+    urls:
+    - https://github.com/openkruise/charts/releases/download/kruise-0.10.2/kruise-0.10.2.tgz
+    version: 0.10.2
+  - annotations:
+      artifacthub.io/changes: |
+        - "[Changed]: https://github.com/openkruise/kruise/blob/master/CHANGELOG.md"
+    apiVersion: v1
     created: "2021-11-12T06:24:28.550248334Z"
     description: Helm chart for kruise components
     digest: 60d4fbd42e4eafc098ab78d57f708e6f540505836e4f430b02040408df33764e
@@ -154,4 +179,4 @@ entries:
     urls:
     - https://github.com/openkruise/charts/releases/download/kruise-0.10.0/kruise-0.10.0.tgz
     version: 0.10.0
-generated: "2021-12-13T03:24:11.256578144Z"
+generated: "2021-12-16T07:28:01.207333238Z"
