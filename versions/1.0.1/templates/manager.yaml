@@ -43,6 +43,10 @@ spec:
       labels:
         control-plane: controller-manager
     spec:
+{{- with (.Values.manager.imagePullSecrets | default .Values.imagePullSecrets) }}
+      imagePullSecrets:
+{{- toYaml . | nindent 8 }}
+{{- end }}
       containers:
         - args:
             - --enable-leader-election
@@ -157,6 +161,10 @@ spec:
       labels:
         control-plane: daemon
     spec:
+{{- with (.Values.manager.imagePullSecrets | default .Values.imagePullSecrets) }}
+      imagePullSecrets:
+{{- toYaml . | nindent 8 }}
+{{- end }}
 {{- if .Values.daemon.affinity }}
       affinity:
 {{ toYaml .Values.daemon.affinity | indent 8 }}
