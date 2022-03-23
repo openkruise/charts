@@ -43,7 +43,7 @@ spec:
       labels:
         control-plane: controller-manager
     spec:
-{{- with (.Values.manager.imagePullSecrets | default .Values.imagePullSecrets) }}
+{{- with .Values.imagePullSecrets }}
       imagePullSecrets:
 {{- toYaml . | nindent 8 }}
 {{- end }}
@@ -161,7 +161,7 @@ spec:
       labels:
         control-plane: daemon
     spec:
-{{- with (.Values.manager.imagePullSecrets | default .Values.imagePullSecrets) }}
+{{- with .Values.imagePullSecrets }}
       imagePullSecrets:
 {{- toYaml . | nindent 8 }}
 {{- end }}
