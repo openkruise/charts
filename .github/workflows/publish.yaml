@@ -26,16 +26,17 @@ jobs:
       - name: Configure Git
         run: |
           git config user.name "gh-actions"
-          git config user.email "actions@github.com"  
+          git config user.email "actions@github.com"
 
       # This is required to consider the old Circle-CI Index and to stay compatible with all the old releases.
-      - name: Fetch current Chart Index 
+      - name: Fetch current Chart Index
         run: |
           git checkout origin/gh-pages index.yaml
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.2.1
-        with: 
+        with:
           charts_dir: charts
           config: "./.github/configs/cr.yaml"
         env:
           CR_TOKEN: "${{ secrets.GH_TOKEN }}"
+          CR_SKIP_EXISTING: "true"
