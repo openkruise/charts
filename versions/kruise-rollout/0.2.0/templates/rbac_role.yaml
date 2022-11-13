@@ -2,13 +2,13 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: kruise-rollout-controller-manager
-  namespace: kruise-rollout
+  namespace: {{ .Values.installation.namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: kruise-rollout-leader-election-role
-  namespace: kruise-rollout
+  namespace: {{ .Values.installation.namespace }}
 rules:
   - apiGroups:
       - ""
@@ -335,7 +335,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: kruise-rollout-leader-election-rolebinding
-  namespace: kruise-rollout
+  namespace: {{ .Values.installation.namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -343,7 +343,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: kruise-rollout-controller-manager
-    namespace: kruise-rollout
+    namespace: {{ .Values.installation.namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -356,4 +356,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: kruise-rollout-controller-manager
-    namespace: kruise-rollout
+    namespace: {{ .Values.installation.namespace }}

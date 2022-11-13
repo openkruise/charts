@@ -9,7 +9,7 @@ webhooks:
     clientConfig:
       service:
         name: kruise-rollout-webhook-service
-        namespace: kruise-rollout
+        namespace: {{ .Values.installation.namespace }}
         path: /mutate-unified-workload
     failurePolicy: Fail
     name: munifiedworload.kb.io
@@ -34,7 +34,7 @@ webhooks:
     clientConfig:
       service:
         name: kruise-rollout-webhook-service
-        namespace: kruise-rollout
+        namespace: {{ .Values.installation.namespace }}
         path: /mutate-apps-kruise-io-v1alpha1-cloneset
     failurePolicy: Fail
     name: mcloneset.kb.io
@@ -54,7 +54,7 @@ webhooks:
     clientConfig:
       service:
         name: kruise-rollout-webhook-service
-        namespace: kruise-rollout
+        namespace: {{ .Values.installation.namespace }}
         path: /mutate-apps-v1-deployment
     failurePolicy: Fail
     name: mdeployment.kb.io
@@ -74,7 +74,7 @@ webhooks:
     clientConfig:
       service:
         name: kruise-rollout-webhook-service
-        namespace: kruise-rollout
+        namespace: {{ .Values.installation.namespace }}
         path: /mutate-apps-v1-statefulset
     failurePolicy: Fail
     name: mstatefulset.kb.io
@@ -94,7 +94,7 @@ webhooks:
     clientConfig:
       service:
         name: kruise-rollout-webhook-service
-        namespace: kruise-rollout
+        namespace: {{ .Values.installation.namespace }}
         path: /mutate-apps-kruise-io-statefulset
     failurePolicy: Fail
     name: madvancedstatefulset.kb.io
@@ -123,7 +123,7 @@ webhooks:
     clientConfig:
       service:
         name: kruise-rollout-webhook-service
-        namespace: kruise-rollout
+        namespace: {{ .Values.installation.namespace }}
         path: /validate-rollouts-kruise-io-rollout
     failurePolicy: Fail
     name: vrollout.kb.io

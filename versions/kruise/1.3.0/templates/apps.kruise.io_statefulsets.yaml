@@ -14,7 +14,7 @@ spec:
       clientConfig:
         service:
           name: kruise-webhook-service
-          namespace: kruise-system
+          namespace: {{ .Values.installation.namespace }}
           path: /convert
       conversionReviewVersions:
       - v1
