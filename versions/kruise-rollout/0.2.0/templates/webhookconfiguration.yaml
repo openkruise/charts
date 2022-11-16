@@ -58,6 +58,12 @@ webhooks:
         path: /mutate-apps-v1-deployment
     failurePolicy: Fail
     name: mdeployment.kb.io
+    objectSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - {{ .Values.rollout.fullname }}
     rules:
       - apiGroups:
           - apps
