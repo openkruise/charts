@@ -287,6 +287,19 @@ entries:
     urls:
     - https://github.com/openkruise/charts/releases/download/kruise-0.10.0/kruise-0.10.0.tgz
     version: 0.10.0
+  kruise-game:
+  - apiVersion: v1
+    appVersion: 0.1.0
+    created: "2022-11-29T09:25:14.19476022Z"
+    description: Helm chart for kruise-game components
+    digest: d6acaeda2fcf6d27336ea934c8d0b938bfff977f9cab9834e104131b6914b5cf
+    kubeVersion: '>= 1.19.0-0'
+    name: kruise-game
+    sources:
+    - https://github.com/openkruise/kruise-game
+    urls:
+    - https://github.com/openkruise/charts/releases/download/kruise-game-0.1.0/kruise-game-0.1.0.tgz
+    version: 0.1.0
   kruise-rollout:
   - apiVersion: v1
     appVersion: 0.2.0
@@ -336,4 +349,4 @@ entries:
     urls:
     - https://github.com/openkruise/charts/releases/download/kruise-rollout-0.1.0/kruise-rollout-0.1.0.tgz
     version: 0.1.0
-generated: "2022-10-09T05:58:28.301025807Z"
+generated: "2022-11-29T09:25:14.194912821Z"
