@@ -312,7 +312,7 @@ webhooks:
     caBundle: Cg==
     service:
       name: kruise-webhook-service
-      namespace: kruise-system
+      namespace: {{ .Values.installation.namespace }}
       path: /validate-pod
   failurePolicy: Fail
   admissionReviewVersions:
@@ -634,7 +634,7 @@ webhooks:
   clientConfig:
     service:
       name: kruise-webhook-service
-      namespace: kruise-system
+      namespace: {{ .Values.installation.namespace }}
       path: /validate-apps-kruise-io-persistentpodstate
   failurePolicy: Fail
   name: vpersistentpodstate.kb.io
@@ -656,7 +656,7 @@ webhooks:
   clientConfig:
     service:
       name: webhook-service
-      namespace: system
+      namespace: {{ .Values.installation.namespace }}
       path: /validate-apps-kruise-io-podprobemarker
   failurePolicy: Fail
   name: vpodprobemarker.kb.io
@@ -675,7 +675,7 @@ webhooks:
     caBundle: Cg==
     service:
       name: kruise-webhook-service
-      namespace: kruise-system
+      namespace: {{ .Values.installation.namespace }}
       path: /validate-policy-kruise-io-podunavailablebudget
   failurePolicy: Fail
   admissionReviewVersions:
