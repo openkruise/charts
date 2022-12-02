@@ -197,6 +197,9 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: spec.nodeName
+        {{- if .Values.daemon.extraEnvs }}
+        {{- toYaml .Values.daemon.extraEnvs | nindent 8 }}
+        {{- end }}
         livenessProbe:
           failureThreshold: 3
           httpGet:

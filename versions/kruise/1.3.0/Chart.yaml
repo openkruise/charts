@@ -21,3 +21,4 @@ sources:
 annotations:
   artifacthub.io/changes: |
     - "[Changed]: https://github.com/openkruise/kruise/blob/master/CHANGELOG.md"
+    - "[Changed]: Support extra environment variables in the manager DaemonSet"

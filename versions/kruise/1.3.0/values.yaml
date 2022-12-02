@@ -72,5 +72,17 @@ daemon:
       cpu: "0"
       memory: "0"
 
+  # Extra environment variables that will be pass onto pods.
+  # For example, when the daemon is used behind a http proxy, you can set the proxy environment variables here. 
+  # This will be appended to the current 'env:' key. You can use any of the kubernetes env
+  # syntax here.
+  extraEnvs: []
+  # - name: HTTP_PROXY
+  #   value: http://my-proxy:8080/
+  # - name: HTTPS_PROXY
+  #   value: http://my-proxy:8080/
+  # - name: NO_PROXY
+  #   value: localhost,0.0.0.0,127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,.svc,.cluster.local
+
 serviceAccount:
   annotations: {}
