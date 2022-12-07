@@ -14,10 +14,10 @@ metadata:
     control-plane: {{ .Values.kruiseGame.fullname }}
 spec:
   ports:
-  - name: https
-    port: {{ .Values.service.port }}
-    protocol: TCP
-    targetPort: https
+    - name: https
+      port: {{ .Values.service.port }}
+      protocol: TCP
+      targetPort: https
   selector:
     control-plane: {{ .Values.kruiseGame.fullname }}
 ---
@@ -53,7 +53,8 @@ spec:
         - command:
             - /manager
           args:
-            - --leader-elect=false
+            - '-leader-elect=false'
+            - '-provider-config=/etc/kruise-game/config.toml'
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           name: manager
@@ -78,5 +79,16 @@ spec:
           # More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /etc/kruise-game
+              name: provider-config
       serviceAccountName: {{ .Values.kruiseGame.fullname }}
       terminationGracePeriodSeconds: 10
+      volumes:
+        - configMap:
+            defaultMode: 420
+            items:
+              - key: config.toml
+                path: config.toml
+            name: kruise-game-manager-config
+          name: provider-config
