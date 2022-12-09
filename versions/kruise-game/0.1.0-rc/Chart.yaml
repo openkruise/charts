@@ -1,0 +1,8 @@
+apiVersion: v1
+name: kruise-game
+description: Helm chart for kruise-game components
+version: 0.1.0-rc
+appVersion: 0.1.0-rc
+kubeVersion: ">= 1.16.0-0"
+sources:
+  - https://github.com/openkruise/kruise-game
