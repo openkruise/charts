@@ -7,8 +7,7 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: leader-election-role
-  namespace: {{ .Values.installation.namespace }}
+  name: kruise-game-leader-election-role
 rules:
   - apiGroups:
       - ""
@@ -46,7 +45,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   creationTimestamp: null
-  name: manager-role
+  name: kruise-game-manager-role
 rules:
   - apiGroups:
       - ""
@@ -241,14 +240,41 @@ rules:
       - update
 ---
 apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kruise-game-metrics-reader
+rules:
+  - nonResourceURLs:
+      - "/metrics"
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kruise-game-proxy-role
+rules:
+  - apiGroups:
+      - authentication.k8s.io
+    resources:
+      - tokenreviews
+    verbs:
+      - create
+  - apiGroups:
+      - authorization.k8s.io
+    resources:
+      - subjectaccessreviews
+    verbs:
+      - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: leader-election-rolebinding
-  namespace: {{ .Values.installation.namespace }}
+  name: kruise-game-leader-election-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: leader-election-role
+  name: kruise-game-leader-election-role
 subjects:
   - kind: ServiceAccount
     name: {{ .Values.kruiseGame.fullname }}
@@ -257,12 +283,25 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: manager-rolebinding
+  name: kruise-game-manager-rolebinding
   namespace: {{ .Values.installation.namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: manager-role
+  name: kruise-game-manager-role
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.kruiseGame.fullname }}
+    namespace: {{ .Values.installation.namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kruise-game-proxy-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: proxy-role
 subjects:
   - kind: ServiceAccount
     name: {{ .Values.kruiseGame.fullname }}
