@@ -3,6 +3,6 @@ name: kruise-game
 description: Helm chart for kruise-game components
 version: 0.1.0
 appVersion: 0.1.0
-kubeVersion: ">= 1.19.0-0"
+kubeVersion: ">= 1.16.0-0"
 sources:
   - https://github.com/openkruise/kruise-game
