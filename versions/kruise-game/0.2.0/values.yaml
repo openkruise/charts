@@ -16,8 +16,8 @@ kruiseGame:
 replicaCount: 1
 
 image:
-  repository: registry.cn-hangzhou.aliyuncs.com/acs/kruise-game-controller-manager
-  tag: v0.0.9
+  repository: openkruise/kruise-game-manager
+  tag: v0.2.0
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
 
