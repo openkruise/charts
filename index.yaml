@@ -316,6 +316,22 @@ entries:
     version: 0.1.0
   kruise-rollout:
   - apiVersion: v1
+    appVersion: 0.3.0-rc.1
+    created: "2023-01-03T10:22:44.150345499Z"
+    description: Helm chart for kruise-rollout components
+    digest: b72d356defc58ef19c3df9b879c7e22b504c95983a87740902b6545a0da9d84c
+    home: https://openkruise.io
+    icon: https://openkruise.io/img/openkruise-logo-bg.jpg
+    keywords:
+    - rollout
+    kubeVersion: '>= 1.19.0-0'
+    name: kruise-rollout
+    sources:
+    - https://github.com/openkruise/rollouts
+    urls:
+    - https://github.com/openkruise/charts/releases/download/kruise-rollout-0.3.0-rc.1/kruise-rollout-0.3.0-rc.1.tgz
+    version: 0.3.0-rc.1
+  - apiVersion: v1
     appVersion: 0.3.0-rc.0
     created: "2022-12-20T08:20:33.991271262Z"
     description: Helm chart for kruise-rollout components
@@ -379,4 +395,4 @@ entries:
     urls:
     - https://github.com/openkruise/charts/releases/download/kruise-rollout-0.1.0/kruise-rollout-0.1.0.tgz
     version: 0.1.0
-generated: "2022-12-20T08:20:33.991571383Z"
+generated: "2023-01-03T10:22:44.150616106Z"
