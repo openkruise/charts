@@ -1,9 +1,11 @@
+{{- if .Values.installation.createNamespace }}
 apiVersion: v1
 kind: Namespace
 metadata:
   labels:
     control-plane: {{ .Values.rollout.fullname }}
   name: {{ .Values.installation.namespace }}
+{{- end }}
 ---
 apiVersion: v1
 kind: Service
@@ -40,6 +42,10 @@ spec:
       labels:
         control-plane: {{ .Values.rollout.fullname }}
     spec:
+{{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{- toYaml . | nindent 8 }}
+{{- end }}
       serviceAccountName: {{ .Values.rollout.fullname }}
       containers:
         - name: {{ .Chart.Name }}
