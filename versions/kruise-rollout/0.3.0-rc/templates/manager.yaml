@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Namespace
 metadata:
   labels:
-    control-plane: controller-manager
+    control-plane: {{ .Values.rollout.fullname }}
   name: {{ .Values.installation.namespace }}
 {{- end }}
 ---
