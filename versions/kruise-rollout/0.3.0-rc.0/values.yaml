@@ -5,6 +5,7 @@
 # values for rollout installation
 installation:
   namespace: kruise-rollout
+  createNamespace: true
 
 rollout:
   fullname: kruise-rollout-controller-manager
@@ -23,7 +24,8 @@ image:
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: v0.3.0-rc.0
-
+imagePullSecrets:
+  # - name: for-your-secret-name
 serviceAccount:
   # Annotations to add to the service account
   annotations: {}
