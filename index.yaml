@@ -395,4 +395,26 @@ entries:
     urls:
     - https://github.com/openkruise/charts/releases/download/kruise-rollout-0.1.0/kruise-rollout-0.1.0.tgz
     version: 0.1.0
-generated: "2023-01-03T10:22:44.150616106Z"
+  kruise-state-metrics:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-01-31T08:38:11.220062121Z"
+    description: Install kruise-state-metrics to generate and expose kruise metrics
+    digest: fe73a20b747b9cf2e94a3338af70c5c1016c2d3148ba2e0845adace04d9ac8f0
+    home: https://openkruise.io
+    icon: https://openkruise.io/img/logo_white.png
+    keywords:
+    - metric
+    - monitoring
+    - prometheus
+    - kubernetes
+    - openkruise
+    - workload
+    name: kruise-state-metrics
+    sources:
+    - https://github.com/openkruise/kruise-state-metrics
+    type: application
+    urls:
+    - https://github.com/openkruise/charts/releases/download/kruise-state-metrics-0.1.0/kruise-state-metrics-0.1.0.tgz
+    version: 0.1.0
+generated: "2023-01-31T08:38:11.22020432Z"
