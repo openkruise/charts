@@ -3,14 +3,14 @@
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
-  name: {{ .Values.installation.namespace }}-mutating-webhook-configuration
+  name: {{ template "rollout.name" . }}-mutating-webhook-configuration
 webhooks:
   - admissionReviewVersions:
       - v1
       - v1beta1
     clientConfig:
       service:
-        name: {{ .Values.installation.namespace }}-webhook-service
+        name: {{ template "rollout.name" . }}-webhook-service
         namespace: {{ .Values.installation.namespace }}
         path: /mutate-unified-workload
     failurePolicy: Fail
@@ -35,7 +35,7 @@ webhooks:
       - v1beta1
     clientConfig:
       service:
-        name: {{ .Values.installation.namespace }}-webhook-service
+        name: {{ template "rollout.name" . }}-webhook-service
         namespace: {{ .Values.installation.namespace }}
         path: /mutate-apps-v1-deployment
     failurePolicy: Fail
@@ -61,7 +61,7 @@ webhooks:
       - v1beta1
     clientConfig:
       service:
-        name: {{ .Values.installation.namespace }}-webhook-service
+        name: {{ template "rollout.name" . }}-webhook-service
         namespace: {{ .Values.installation.namespace }}
         path: /mutate-apps-kruise-io-v1alpha1-cloneset
     failurePolicy: Fail
@@ -123,7 +123,7 @@ apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   creationTimestamp: null
-  name: {{ .Values.installation.namespace }}-validating-webhook-configuration
+  name: {{ template "rollout.name" . }}-validating-webhook-configuration
 webhooks:
   - admissionReviewVersions:
       - v1

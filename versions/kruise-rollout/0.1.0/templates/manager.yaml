@@ -40,7 +40,7 @@ spec:
       labels:
         control-plane: {{ .Values.rollout.fullname }}
     spec:
-      serviceAccountName: {{ .Values.rollout.fullname }}
+      serviceAccountName: {{ template "rollout.name" . }}-controller-manager
       containers:
         - name: {{ .Chart.Name }}
           args:
