@@ -23,7 +23,7 @@ rollout:
 
 
   log:
-    level: 3
+    level: 4
   featureGates: AdvancedDeployment=true
 
 replicaCount: 2
