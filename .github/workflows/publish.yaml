@@ -45,3 +45,4 @@ jobs:
         env:
           CR_TOKEN: "${{ secrets.GH_TOKEN }}"
           CR_SKIP_EXISTING: "true"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
