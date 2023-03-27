@@ -4,6 +4,34 @@ entries:
   - annotations:
       artifacthub.io/changes: |
         - "[Changed]: https://github.com/openkruise/kruise/blob/master/CHANGELOG.md"
+        - "[Changed]: Support extra environment variables in the manager DaemonSet"
+    apiVersion: v1
+    appVersion: 1.4.0
+    created: "2023-03-27T02:06:00.244297997Z"
+    description: Helm chart for kruise components
+    digest: 76087c43533c259d06b837fa378ac4d9704c1b7493355de7c2f5e20f98e43d43
+    home: https://openkruise.io
+    icon: https://openkruise.io/img/openkruise-logo-bg.jpg
+    keywords:
+    - openkruise
+    - kubernetes
+    - kruise
+    - workload
+    - statefulset
+    - sidecar
+    - job
+    - deployment
+    - cloneset
+    kubeVersion: '>= 1.16.0-0'
+    name: kruise
+    sources:
+    - https://github.com/openkruise/kruise
+    urls:
+    - https://github.com/openkruise/charts/releases/download/kruise-1.4.0/kruise-1.4.0.tgz
+    version: 1.4.0
+  - annotations:
+      artifacthub.io/changes: |
+        - "[Changed]: https://github.com/openkruise/kruise/blob/master/CHANGELOG.md"
     apiVersion: v1
     appVersion: 1.3.0
     created: "2022-10-09T05:58:28.300841914Z"
@@ -433,4 +461,4 @@ entries:
     urls:
     - https://github.com/openkruise/charts/releases/download/kruise-state-metrics-0.1.0/kruise-state-metrics-0.1.0.tgz
     version: 0.1.0
-generated: "2023-02-15T02:37:21.098540686Z"
+generated: "2023-03-27T02:06:00.244417097Z"
