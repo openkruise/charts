@@ -5,6 +5,7 @@
 # values for rollout installation
 installation:
   namespace: kruise-game-system
+  createNamespace: true
 
 kruiseGame:
   fullname: kruise-game-controller-manager

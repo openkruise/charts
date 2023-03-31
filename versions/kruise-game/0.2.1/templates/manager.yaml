@@ -1,9 +1,11 @@
+{{- if .Values.installation.createNamespace }}
 apiVersion: v1
 kind: Namespace
 metadata:
   labels:
     control-plane: {{ .Values.kruiseGame.fullname }}
   name: {{ .Values.installation.namespace }}
+  {{- end }}
 ---
 apiVersion: v1
 kind: Service
