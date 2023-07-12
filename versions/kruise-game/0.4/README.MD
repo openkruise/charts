@@ -1,4 +1,4 @@
-# Kruise Game v0.4.0
+# Kruise Game v0.4.1
 
 ## Configuration
 
@@ -6,7 +6,6 @@ The following table lists the configurable parameters of the kruise-game chart a
 
 | Parameter                        | Description                                                                  | Default                          |
 |----------------------------------|------------------------------------------------------------------------------|----------------------------------|
-| `installation.kruise`            | Whether to install the latest version and configure the default kruise chart | `true`                           |
 | `installation.namespace`         | Namespace for kruise-game operation installation                             | `kruise-game-system`             |
 | `installation.createNamespace`   | Whether to create the installation.namespace                                 | `true`                           |
 | `kruiseGame.fullname`            | Nick name for kruise-game deployment and other configurations                | `kruise-game-controller-manager` |
@@ -15,7 +14,7 @@ The following table lists the configurable parameters of the kruise-game chart a
 | `kruiseGame.webhook.targetPort`  | ObjectSelector for workloads in MutatingWebhookConfigurations                | `9876`                           |
 | `replicaCount`                   | Replicas of kruise-game deployment                                           | `1`                              |
 | `image.repository`               | Repository for kruise-game image                                             | `openkruise/kruise-game-manager` |
-| `image.tag`                      | Tag for kruise-game image                                                    | `v0.4.0`                         |
+| `image.tag`                      | Tag for kruise-game image                                                    | `v0.4.1`                         |
 | `image.pullPolicy`               | ImagePullPolicy for kruise-game container                                    | `Always`                         |
 | `serviceAccount.annotations`     | The annotations for serviceAccount of kruise-game                            | ` `                              |
 | `service.port`                   | Port of kruise-game service                                                  | `8443`                           |
