@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# values for rollout installation
+# values for kruise-game installation
 installation:
   namespace: kruise-game-system
   createNamespace: true
