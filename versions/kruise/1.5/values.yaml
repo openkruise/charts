@@ -10,7 +10,7 @@ installation:
   roleListGroups:
     - '*'
 
-featureGates: ""
+featureGates: "ImagePullJobGate=true"
 
 # KUBE_CACHE_MUTATION_DETECTOR
 enableKubeCacheMutationDetector: false
