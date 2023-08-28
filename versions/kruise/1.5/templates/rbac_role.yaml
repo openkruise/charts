@@ -152,7 +152,7 @@ rules:
   - update
   - watch
 - apiGroups:
-{{ toYaml .Values.installation.roleListGroups }}
+{{ toYaml .Values.installation.roleListGroups | nindent 2}}
   resources:
   - '*'
   verbs:
