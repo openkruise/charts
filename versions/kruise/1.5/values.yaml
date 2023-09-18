@@ -85,7 +85,7 @@ daemon:
   # - name: HTTPS_PROXY
   #   value: http://my-proxy:8080/
   # - name: NO_PROXY
-  #   value: localhost,0.0.0.0,127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,.svc,.cluster.local
+  #   value: localhost,0.0.0.0,127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,.svc,.cluster.local 
 
 serviceAccount:
   annotations: {}
