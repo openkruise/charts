@@ -59,3 +59,13 @@ resources:
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
+
+tolerations:
+# Toleration represents the toleration object that can be attached to a pod.
+# The pod this Toleration is attached to tolerates any taint that matches
+# the triple <key,value,effect> using the matching operator <operator>.
+# you could find more info at https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+# - effect: NoSchedule
+#   key: test
+#   operator: Equal
+#   value: hello
