@@ -1,0 +1,13 @@
+{{- if .Values.prometheus.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: kruise-game-external-scaler
+  namespace: {{ .Values.installation.namespace }}
+spec:
+  ports:
+    - port: {{ .Values.scale.service.port }}
+      targetPort: {{ .Values.scale.service.targetPort }}
+  selector:
+    control-plane: {{ .Values.kruiseGame.fullname }}
+{{- end }}
