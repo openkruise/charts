@@ -96,3 +96,7 @@ spec:
                         - {{ .Values.rollout.fullname }}
                 topologyKey: kubernetes.io/hostname
               weight: 100
+      {{- with .Values.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
