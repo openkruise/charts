@@ -188,6 +188,12 @@ spec:
         - --addr=:{{ .Values.daemon.port }}
         - --feature-gates={{ .Values.featureGates }}
         - --socket-file={{ .Values.daemon.socketFile }}
+{{- if not .Values.daemon.enablePprof }}
+        - --enable-pprof=false
+{{- else }}
+        - --enable-pprof=true
+        - --pprof-addr={{ .Values.daemon.pprofAddr }}
+{{- end }}
         image: {{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag }}
         imagePullPolicy: Always
         name: daemon

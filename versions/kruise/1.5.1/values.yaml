@@ -24,7 +24,7 @@ manager:
   replicas: 2
   image:
     repository: openkruise/kruise-manager
-    tag: v1.5.0
+    tag: v1.5.1
   webhook:
     port: 9876
   metrics:
@@ -61,6 +61,7 @@ daemon:
     level: "4"
 
   port: 10221
+  enablePprof: true
   pprofAddr: "localhost:10222"
 
   socketLocation: "/var/run"
