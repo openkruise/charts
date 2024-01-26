@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "kruise-state-metrics.fullname" . }}
+  namespace: {{ .Values.installation.namespace }}
+  labels:
+    {{- include "kruise-state-metrics.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - name: http-metrics
+      port: 8080
+      targetPort: http-metrics
+    - name: telemetry
+      port: 8081
+      targetPort: telemetry
+  selector:
+    {{- include "kruise-state-metrics.selectorLabels" . | nindent 4 }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "kruise-state-metrics.fullname" . }}
+  namespace: {{ .Values.installation.namespace }}
+  labels:
+    {{- include "kruise-state-metrics.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "kruise-state-metrics.labels" . | nindent 6 }}
+  endpoints:
+    - port: http-metrics
