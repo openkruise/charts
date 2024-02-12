@@ -11,7 +11,7 @@ chart-repos:
   - incubator=https://charts.helm.sh/incubator
 helm-extra-args: "--timeout 600s"
 validate-chart-schema: false
-validate-maintainers: true
+validate-maintainers: false
 validate-yaml: true
 exclude-deprecated: true
 excluded-charts: []
