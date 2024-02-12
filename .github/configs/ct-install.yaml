@@ -6,10 +6,10 @@ chart-dirs:
   - charts
 chart-repos:
   - openkruise=https://openkruise.github.io/charts
-  - minio=https://helm.min.io/
+  - minio=https://operator.min.io
   - stable=https://charts.helm.sh/stable
   - incubator=https://charts.helm.sh/incubator
-helm-extra-args: "--timeout 600s"  
+helm-extra-args: "--timeout 600s"
 validate-chart-schema: false
 validate-maintainers: true
 validate-yaml: true
