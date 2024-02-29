@@ -1,0 +1,807 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: kruise-mutating-webhook-configuration
+webhooks:
+
+{{ if not (contains "PodWebhook=false" .Values.featureGates) }}
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /mutate-pod
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: {{ .Values.webhookConfiguration.failurePolicy.pods }}
+    name: mpod.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - openkruise
+    rules:
+      - apiGroups:
+          - ""
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+        resources:
+          - pods
+    sideEffects: None
+{{ end }}
+
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /mutate-apps-kruise-io-v1alpha1-advancedcronjob
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: madvancedcronjob.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - advancedcronjobs
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /mutate-apps-kruise-io-v1alpha1-broadcastjob
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: mbroadcastjob.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - broadcastjobs
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /mutate-apps-kruise-io-v1alpha1-cloneset
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: mcloneset.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - clonesets
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /mutate-apps-kruise-io-v1alpha1-containerrecreaterequest
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: mcontainerrecreaterequest.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - containerrecreaterequests
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /mutate-apps-kruise-io-v1alpha1-daemonset
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: mdaemonset.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - daemonsets
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /mutate-apps-kruise-io-v1alpha1-imagelistpulljob
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: mimagelistpulljob.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - imagelistpulljobs
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /mutate-apps-kruise-io-v1alpha1-imagepulljob
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: mimagepulljob.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - imagepulljobs
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /mutate-apps-kruise-io-v1alpha1-nodeimage
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: mnodeimage.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - nodeimages
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /mutate-apps-kruise-io-v1alpha1-sidecarset
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: msidecarset.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - sidecarsets
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /mutate-apps-kruise-io-statefulset
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: mstatefulset.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+          - v1beta1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - statefulsets
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /mutate-apps-kruise-io-v1alpha1-uniteddeployment
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: muniteddeployment.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - uniteddeployments
+    sideEffects: None
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: kruise-validating-webhook-configuration
+webhooks:
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /validate-apps-deployment
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: vbuiltindeployment.kb.io
+    objectSelector:
+      matchExpressions:
+        - key: policy.kruise.io/delete-protection
+          operator: Exists
+    rules:
+      - apiGroups:
+          - apps
+        apiVersions:
+          - v1
+        operations:
+          - DELETE
+        resources:
+          - deployments
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /validate-apps-replicaset
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: vbuiltinreplicaset.kb.io
+    objectSelector:
+      matchExpressions:
+        - key: policy.kruise.io/delete-protection
+          operator: Exists
+    rules:
+      - apiGroups:
+          - apps
+        apiVersions:
+          - v1
+        operations:
+          - DELETE
+        resources:
+          - replicasets
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /validate-apps-statefulset
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: vbuiltinstatefulset.kb.io
+    objectSelector:
+      matchExpressions:
+        - key: policy.kruise.io/delete-protection
+          operator: Exists
+    rules:
+      - apiGroups:
+          - apps
+        apiVersions:
+          - v1
+        operations:
+          - DELETE
+        resources:
+          - statefulsets
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /validate-customresourcedefinition
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: vcustomresourcedefinition.kb.io
+    objectSelector:
+      matchExpressions:
+        - key: policy.kruise.io/delete-protection
+          operator: Exists
+    rules:
+      - apiGroups:
+          - apiextensions.k8s.io
+        apiVersions:
+          - v1
+          - v1beta1
+        operations:
+          - DELETE
+        resources:
+          - customresourcedefinitions
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /validate-namespace
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: vnamespace.kb.io
+    objectSelector:
+      matchExpressions:
+        - key: policy.kruise.io/delete-protection
+          operator: Exists
+    rules:
+      - apiGroups:
+          - ""
+        apiVersions:
+          - v1
+        operations:
+          - DELETE
+        resources:
+          - namespaces
+    sideEffects: None
+
+{{ if not (contains "PodWebhook=false" .Values.featureGates) }}
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /validate-pod
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: {{ .Values.webhookConfiguration.failurePolicy.pods }}
+    name: vpod.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - openkruise
+    rules:
+      - apiGroups:
+          - ""
+        apiVersions:
+          - v1
+        operations:
+          - UPDATE
+          - DELETE
+        resources:
+          - pods
+    sideEffects: None
+{{ end }}
+
+{{ if not (contains "PodWebhook=false" .Values.featureGates) }}
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /validate-pod
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: {{ .Values.webhookConfiguration.failurePolicy.pods }}
+    name: vpodeviction.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - openkruise
+    rules:
+      - apiGroups:
+          - ""
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+        resources:
+          - pods/eviction
+    sideEffects: None
+{{ end }}
+
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /validate-apps-kruise-io-v1alpha1-resourcedistribution
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: vresourcedistribution.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - resourcedistributions
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /validate-apps-kruise-io-v1alpha1-workloadspread
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: vworkloadspread.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - workloadspreads
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /validate-apps-kruise-io-v1alpha1-advancedcronjob
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: vadvancedcronjob.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - advancedcronjobs
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /validate-apps-kruise-io-v1alpha1-broadcastjob
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: vbroadcastjob.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - broadcastjobs
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /validate-apps-kruise-io-v1alpha1-cloneset
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: vcloneset.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+          - DELETE
+        resources:
+          - clonesets
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /validate-apps-kruise-io-v1alpha1-daemonset
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: vdaemonset.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - daemonsets
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /validate-apps-kruise-io-v1alpha1-imagelistpulljob
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: vimagelistpulljob.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - imagelistpulljobs
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /validate-apps-kruise-io-v1alpha1-imagepulljob
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: vimagepulljob.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - imagepulljobs
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /validate-apps-kruise-io-v1alpha1-nodeimage
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: vnodeimage.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - nodeimages
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /validate-apps-kruise-io-persistentpodstate
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: vpersistentpodstate.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - persistentpodstates
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /validate-apps-kruise-io-podprobemarker
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: vpodprobemarker.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - podprobemarkers
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /validate-policy-kruise-io-podunavailablebudget
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: vpodunavailablebudget.kb.io
+    rules:
+      - apiGroups:
+          - policy.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - podunavailablebudgets
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /validate-apps-kruise-io-v1alpha1-sidecarset
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: vsidecarset.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - sidecarsets
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /validate-apps-kruise-io-statefulset
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: vstatefulset.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+          - v1beta1
+        operations:
+          - CREATE
+          - UPDATE
+          - DELETE
+        resources:
+          - statefulsets
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /validate-apps-kruise-io-v1alpha1-uniteddeployment
+    timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
+    failurePolicy: Fail
+    name: vuniteddeployment.kb.io
+    rules:
+      - apiGroups:
+          - apps.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+          - DELETE
+        resources:
+          - uniteddeployments
+    sideEffects: None
