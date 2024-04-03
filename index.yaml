@@ -65,6 +65,35 @@ entries:
         - "[Changed]: Support extra environment variables in the manager DaemonSet"
         - "[Changed]: Support exclude specified namespaces from webhook"
     apiVersion: v1
+    appVersion: 1.5.4
+    created: "2024-04-03T06:03:55.615000932Z"
+    description: Helm chart for kruise components
+    digest: 3c07692b8ced4c324ef9fc87c4497bcbc7a321ad9e117a397c9aeceb2c3ebbdf
+    home: https://openkruise.io
+    icon: https://openkruise.io/img/openkruise-logo-bg.jpg
+    keywords:
+    - openkruise
+    - kubernetes
+    - kruise
+    - workload
+    - statefulset
+    - sidecar
+    - job
+    - deployment
+    - cloneset
+    kubeVersion: '>= 1.16.0-0'
+    name: kruise
+    sources:
+    - https://github.com/openkruise/kruise
+    urls:
+    - https://github.com/openkruise/charts/releases/download/kruise-1.5.4/kruise-1.5.4.tgz
+    version: 1.5.4
+  - annotations:
+      artifacthub.io/changes: |
+        - "[Changed]: https://github.com/openkruise/kruise/blob/master/CHANGELOG.md"
+        - "[Changed]: Support extra environment variables in the manager DaemonSet"
+        - "[Changed]: Support exclude specified namespaces from webhook"
+    apiVersion: v1
     appVersion: 1.5.3
     created: "2024-03-21T09:50:41.942319959Z"
     description: Helm chart for kruise components
@@ -898,4 +927,4 @@ entries:
     urls:
     - https://github.com/openkruise/charts/releases/download/kruise-state-metrics-0.1.0/kruise-state-metrics-0.1.0.tgz
     version: 0.1.0
-generated: "2024-04-03T03:24:55.334888353Z"
+generated: "2024-04-03T06:03:55.61527344Z"
