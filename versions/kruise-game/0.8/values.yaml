@@ -20,7 +20,7 @@ replicaCount: 1
 
 image:
   repository: openkruise/kruise-game-manager
-  tag: v0.7.0
+  tag: v0.8.0
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
 
