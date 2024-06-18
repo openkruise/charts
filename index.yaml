@@ -6,6 +6,34 @@ entries:
         - "[Changed]: https://github.com/openkruise/kruise/blob/master/CHANGELOG.md"
         - "[Security]: Fix potential security issues of dependent packages"
     apiVersion: v1
+    appVersion: 1.7.0-alpha.1
+    created: "2024-06-18T07:25:04.946168865Z"
+    description: Helm chart for kruise components
+    digest: 6647c0ea4b4f3383dc55d89481b5e688ba77bc3eb3d0191ca16cc69ccda7e007
+    home: https://openkruise.io
+    icon: https://openkruise.io/img/openkruise-logo-bg.jpg
+    keywords:
+    - openkruise
+    - kubernetes
+    - kruise
+    - workload
+    - statefulset
+    - sidecar
+    - job
+    - deployment
+    - cloneset
+    kubeVersion: '>= 1.18.0-0'
+    name: kruise
+    sources:
+    - https://github.com/openkruise/kruise
+    urls:
+    - https://github.com/openkruise/charts/releases/download/kruise-1.7.0-alpha.1/kruise-1.7.0-alpha.1.tgz
+    version: 1.7.0-alpha.1
+  - annotations:
+      artifacthub.io/changes: |
+        - "[Changed]: https://github.com/openkruise/kruise/blob/master/CHANGELOG.md"
+        - "[Security]: Fix potential security issues of dependent packages"
+    apiVersion: v1
     appVersion: 1.6.3
     created: "2024-04-28T08:15:16.208602916Z"
     description: Helm chart for kruise components
@@ -998,4 +1026,4 @@ entries:
     urls:
     - https://github.com/openkruise/charts/releases/download/kruise-state-metrics-0.1.0/kruise-state-metrics-0.1.0.tgz
     version: 0.1.0
-generated: "2024-04-28T13:33:21.932270946Z"
+generated: "2024-06-18T07:25:04.946372046Z"
