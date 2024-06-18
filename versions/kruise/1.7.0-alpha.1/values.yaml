@@ -24,7 +24,7 @@ manager:
   replicas: 2
   image:
     repository: openkruise/kruise-manager
-    tag: v1.7.0-alphal.1
+    tag: v1.7.0-alpha1.1
   webhook:
     port: 9876
   metrics:
