@@ -258,6 +258,7 @@ spec:
       tolerations:
       - operator: Exists
       hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       terminationGracePeriodSeconds: 10
       serviceAccountName: kruise-daemon
       volumes:
