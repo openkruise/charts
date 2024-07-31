@@ -22,3 +22,4 @@ annotations:
   artifacthub.io/changes: |
     - "[Changed]: https://github.com/openkruise/kruise/blob/master/CHANGELOG.md"
     - "[Security]: Fix potential security issues of dependent packages"
+    - "[Changed]: Kruise-daemon add nodeAffinity for skip virtual-kubelet node"
