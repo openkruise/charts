@@ -66,6 +66,15 @@ daemon:
   socketFile: ""
 
   nodeSelector: {}
+  affinity: 
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: type
+              operator: NotIn
+              values:
+              - virtual-kubelet
   resources:
     limits:
       cpu: 50m
