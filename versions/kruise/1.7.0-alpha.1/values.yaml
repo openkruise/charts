@@ -12,8 +12,16 @@ installation:
 
 featureGates: "ImagePullJobGate=true"
 
+externalCerts:
+  # annotations to patch for webhook configuration and crd
+  # e.g. cert-manager.io/inject-ca-from: kruise-system/kruise-webhook
+  annotations: {}
+
 # KUBE_CACHE_MUTATION_DETECTOR
 enableKubeCacheMutationDetector: false
+
+# imagePullSecrets to pull kruise images
+imagePullSecrets: []
 
 manager:
   # settings for log print

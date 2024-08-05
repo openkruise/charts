@@ -6,6 +6,11 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.14.0
+    {{- if contains "EnableExternalCerts=true" .Values.featureGates }}
+    {{- range $key, $value := .Values.externalCerts.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+    {{- end }}
   name: statefulsets.apps.kruise.io
 spec:
   conversion:
