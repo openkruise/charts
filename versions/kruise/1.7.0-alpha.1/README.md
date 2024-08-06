@@ -4,12 +4,20 @@
 
 The following table lists the configurable parameters of the kruise chart and their default values.
 
+## setup parameters
+| Parameter                                 | Description                                                  | Default                       |
+| ----------------------------------------- | ------------------------------------------------------------ | ----------------------------- |
+| `featureGates`                            | Feature gates for Kruise, empty string means all enabled     | `""`                           |
+| `installation.namespace`                  | Namespace for kruise installation                            | `kruise-system`               |
+| `installation.createNamespace`            | Whether to create the installation.namespace                 | `true`                        |
+| `installation.roleListGroups` | ApiGroups which kruise is permit to list, default set to be all | `*` |
+| `crds.managed`                            | Kruise will not install CRDs with chart if this is false     | `true`                        |
+| `imagePullSecrets`                        | The list of image pull secrets for kruise image              | `[]`                       |
+
+
 ### manager parameters
 | Parameter                                 | Description                                                  | Default                       |
 | ----------------------------------------- | ------------------------------------------------------------ | ----------------------------- |
-| `featureGates`                            | Feature gates for Kruise, empty string means all enabled     | ` `                           |
-| `installation.namespace`                  | namespace for kruise installation                            | `kruise-system`               |
-| `installation.createNamespace`            | Whether to create the installation.namespace                 | `true`                        |
 | `manager.log.level`                       | Log level that kruise-manager printed                        | `4`                           |
 | `manager.replicas`                        | Replicas of kruise-controller-manager deployment             | `2`                           |
 | `manager.image.repository`                | Repository for kruise-manager image                          | `openkruise/kruise-manager`   |
@@ -24,12 +32,8 @@ The following table lists the configurable parameters of the kruise chart and th
 | `manager.nodeAffinity`                    | Node affinity policy for kruise-manager pod                  | `{}`                          |
 | `manager.nodeSelector`                    | Node labels for kruise-manager pod                           | `{}`                          |
 | `manager.tolerations`                     | Tolerations for kruise-manager pod                           | `[]`                          |
-| `webhookConfiguration.timeoutSeconds`     | The timeoutSeconds for all webhook configuration             | `30`                          |
-| `crds.managed`                            | Kruise will not install CRDs with chart if this is false     | `true`                        |
 | `manager.resyncPeriod`                    | Resync period of informer kruise-manager, defaults no resync | `0`                           |
 | `manager.hostNetwork`                     | Whether kruise-manager pod should run with hostnetwork       | `false`                       |
-| `imagePullSecrets`                        | The list of image pull secrets for kruise image              | `false`                       |
-| `enableKubeCacheMutationDetector`         | Whether to enable KUBE_CACHE_MUTATION_DETECTOR               | `false`                       |
 
 ### daemon parameters
 | Parameter                                 | Description                                                  | Default                       |
@@ -49,7 +53,15 @@ The following table lists the configurable parameters of the kruise chart and th
 | `daemon.credentialProvider.hostPath`      | credential provider plugin node dir, will volume mount into kruise-daemon | `credential-provider-plugin` |
 | `daemon.credentialProvider.configmap`     | credential provider yaml configmap name in kruise-system ns  | `credential-provider-config`  |
 
-Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
+### other parameters
+| Parameter                                 | Description                                                  | Default                       |
+| ----------------------------------------- | ------------------------------------------------------------ | ----------------------------- |
+| `externalCerts.annotations`       | Annotations to patch for webhook configuration and crd when featuregate `EnableExternalCerts` is enabled. For example, `cert-manager.io/inject-ca-from: kruise-system/kruise-webhook-certs`. | `{}` |
+| `enableKubeCacheMutationDetector`         | Whether to enable KUBE_CACHE_MUTATION_DETECTOR               | `false`                       |
+| `webhookConfiguration.timeoutSeconds`     | The timeoutSeconds for all webhook configuration             | `30`                          |
+| `serviceAccount.annotations`      | Annotations to patch for serviceAccounts | `{}` |
+
+Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example, `helm install kruise https://... --set featureGates="AllAlpha=true"`.
 
 ### Optional: feature-gate
 
@@ -80,6 +92,7 @@ Feature-gate controls some influential features in Kruise:
 | `ImagePullJobGate`                          | ImagePullJobGate enable imagepulljob-controller execute ImagePullJob | `false` | ImagePullJob and PreDownloadImageForInPlaceUpdate are disabled                                                    |
 | `ResourceDistributionGate`                  | ResourceDistributionGate enable resourcedistribution-controller execute ResourceDistribution. | `false` | ResourceDistribution disabled                                                                                     |
 | `DeletionProtectionForCRDCascadingGate`     | DeletionProtectionForCRDCascadingGate enable deletionProtection for crd Cascading | `false` | CustomResourceDefinition deletion protection disabled                                                             |
+| `EnableExternalCerts`                       | Using certs generated externally, cert-manager e.g., for webhook server | `false` | kruise-manager will generate self-signed certs for webhook server |
 
 If you want to configure the feature-gate, just set the parameter when install or upgrade. Such as:
 
@@ -98,3 +111,45 @@ If you are in China and have problem to pull image from official DockerHub, you 
 $ helm install kruise https://... --set  manager.image.repository=openkruise-registry.cn-hangzhou.cr.aliyuncs.com/openkruise/kruise-manager
 ...
 ```
+
+### Optional: use certificates with certificate provisioner like cert-manager
+
+Kruise needs certificates to enable mutating, validating and conversion webhooks. By default, kruise will generate self-signed certificates for webhook server. If you want to use certificates provisioned externally, taking cert-manager as an example, you can follow these steps when install or upgrade:
+
+1. Enable kruise reading certs generated externally by setting `featureGates=EnableExternalCerts=true` when install or upgrade.
+2. Create issuer and certificate resources if you have not done this before.
+```yaml
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: kruise-webhook
+  # consistent with installation.namespace
+  namespace: kruise-system
+spec:
+  # where to store the certificates
+  # cert-manager would generate a secret kruise-system/kruise-webhook-certs with the certificates
+  # DO NOT CHANGE THE SECRET NAME SINCE KRUISE READ CERTS FROM THIS SECRET
+  secretName: kruise-webhook-certs
+  dnsNames:
+  - kruise-webhook-service.kruise-system.svc
+  - localhost
+  issuerRef:
+    name: selfsigned-kruise
+    kind: Issuer
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned-kruise
+  namespace: kruise-system
+spec:
+  selfSigned: {}
+```
+3. Set the parameter `externalCerts.annotations` to set annotations for crd and webhook configurations for cert-manager to recognize and patch. For example:
+```yaml
+externalCerts:
+  annotations:
+    # inject certificates from Certificate resource kruise-system/kruise-webhook-certs
+    cert-manager.io/inject-ca-from: kruise-system/kruise-webhook-certs
+```
+Visit [CA Injector - cert manager](https://cert-manager.io/docs/concepts/ca-injector/) for more details.

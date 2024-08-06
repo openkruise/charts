@@ -3,9 +3,14 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: kruise-mutating-webhook-configuration
   annotations:
+    {{- if contains "EnableExternalCerts=true" .Values.featureGates }}
+    {{- range $key, $value := .Values.externalCerts.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+    {{- end }}
     template: ""
 webhooks:
-{{ if not (contains "PodWebhook=false" .Values.featureGates) }}
+{{- if not (contains "PodWebhook=false" .Values.featureGates) }}
   - admissionReviewVersions:
       - v1
       - v1beta1
@@ -37,7 +42,7 @@ webhooks:
         resources:
           - pods
     sideEffects: None
-{{ end }}
+{{- end }}
   - admissionReviewVersions:
       - v1
       - v1beta1
@@ -287,6 +292,11 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: kruise-validating-webhook-configuration
   annotations:
+    {{- if contains "EnableExternalCerts=true" .Values.featureGates }}
+    {{- range $key, $value := .Values.externalCerts.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+    {{- end }}
     template: ""
 webhooks:
   - admissionReviewVersions:
@@ -508,7 +518,7 @@ webhooks:
         resources:
           - services
     sideEffects: None
-{{ if not (contains "PodWebhook=false" .Values.featureGates) }}
+{{- if not (contains "PodWebhook=false" .Values.featureGates) }}
   - admissionReviewVersions:
       - v1
       - v1beta1
@@ -572,7 +582,7 @@ webhooks:
         resources:
           - pods/eviction
     sideEffects: None
-{{ end }}
+{{- end }}
   - admissionReviewVersions:
       - v1
       - v1beta1
