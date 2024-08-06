@@ -24,7 +24,7 @@ enableKubeCacheMutationDetector: false
 imagePullSecrets: []
 
 manager:
-  #settings for log print
+  # settings for log print
   log:
     # log level for kruise-manager
     level: "4"
@@ -32,7 +32,7 @@ manager:
   replicas: 2
   image:
     repository: openkruise/kruise-manager
-    tag: v1.7.0-alpha1.1
+    tag: v1.7.0
   webhook:
     port: 9876
   metrics:
@@ -42,6 +42,8 @@ manager:
   pprofAddr: "localhost:8090"
 
   resyncPeriod: "0"
+
+  loggingFormat: ""
 
   # resources of kruise-manager container
   resources:
@@ -75,14 +77,14 @@ daemon:
 
   nodeSelector: {}
   affinity:
-      nodeAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
-          nodeSelectorTerms:
-          - matchExpressions:
-            - key: type
-              operator: NotIn
-              values:
-              - virtual-kubelet
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: type
+            operator: NotIn
+            values:
+            - virtual-kubelet
   resources:
     limits:
       cpu: 50m
@@ -107,6 +109,7 @@ daemon:
     enable: false
     configmap: credential-provider-config
     hostPath: credential-provider-plugin
+    awsCredentialsDir: ""
 
 serviceAccount:
   annotations: {}
