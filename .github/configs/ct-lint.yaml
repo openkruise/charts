@@ -5,7 +5,7 @@ remote: origin
 chart-dirs:
   - charts
 chart-repos:
-  - openkruise=https://openkruise.github.io/charts
+  - openkruise=https://shouqianba-ft.github.io/openkruise-charts
   - minio=https://helm.min.io/
   - stable=https://charts.helm.sh/stable
   - incubator=https://charts.helm.sh/incubator

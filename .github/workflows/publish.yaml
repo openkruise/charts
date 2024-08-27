@@ -25,7 +25,7 @@ jobs:
 
       - name: Add dependency chart repos
         run: |
-          helm repo add openkruise https://openkruise.github.io/charts
+          helm repo add openkruise https://shouqianba-ft.github.io/openkruise-charts
           helm repo add minio https://operator.min.io
           helm repo add stable https://charts.helm.sh/stable
           helm repo add incubator https://charts.helm.sh/incubator
@@ -44,6 +44,6 @@ jobs:
           charts_dir: charts
           config: "./.github/configs/cr.yaml"
         env:
-          CR_TOKEN: "${{ secrets.GH_TOKEN }}"
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           CR_SKIP_EXISTING: "true"
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
