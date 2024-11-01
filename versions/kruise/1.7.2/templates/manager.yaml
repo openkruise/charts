@@ -124,6 +124,15 @@ spec:
                   - controller-manager
               topologyKey: kubernetes.io/hostname
             weight: 100
+      topologySpreadConstraints:
+      - labelSelector:
+          matchLabels:
+            control-plane: controller-manager
+        matchLabelKeys:
+        - pod-template-hash
+        maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable:  ScheduleAnyway
 {{- with .Values.manager.nodeAffinity }}
         nodeAffinity:
 {{ toYaml . | indent 10 }}
