@@ -57,6 +57,15 @@ spec:
               port: 8081
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      topologySpreadConstraints:
+      - labelSelector:
+          matchLabels:
+          {{- include "kruise-state-metrics.selectorLabels" . | nindent 12 }}
+        matchLabelKeys:
+        - pod-template-hash
+        maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable:  ScheduleAnyway
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
