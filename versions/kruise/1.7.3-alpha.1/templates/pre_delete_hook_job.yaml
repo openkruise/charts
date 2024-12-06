@@ -77,7 +77,7 @@ spec:
       serviceAccountName: kruise-helm-hook
       containers:
         - name: pre-delete-job
-          image: "openkruise/kruise-helm-hook"
+          image: "openkruise/kruise-helm-hook:v0.1.0"
           imagePullPolicy: IfNotPresent
 ---
 # write a service account named kruise-helm-hook:
