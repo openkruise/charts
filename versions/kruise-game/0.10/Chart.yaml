@@ -1,0 +1,11 @@
+apiVersion: v1
+name: kruise-game
+description: Helm chart for kruise-game components
+version: 0.10.0
+appVersion: 0.10.0
+kubeVersion: ">= 1.16.0-0"
+sources:
+  - https://github.com/openkruise/kruise-game
+annotations:
+  artifacthub.io/changes: |
+    - "[Changed]: https://github.com/openkruise/kruise-game/blob/master/CHANGELOG.md"
