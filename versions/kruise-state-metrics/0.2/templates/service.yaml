@@ -17,6 +17,7 @@ spec:
   selector:
     {{- include "kruise-state-metrics.selectorLabels" . | nindent 4 }}
 ---
+{{- if .Values.installation.installServiceMonitor }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -30,3 +31,4 @@ spec:
       {{- include "kruise-state-metrics.labels" . | nindent 6 }}
   endpoints:
     - port: http-metrics
+{{- end}}

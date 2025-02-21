@@ -100,8 +100,10 @@ spec:
       - labelSelector:
           matchLabels:
             control-plane: {{ .Values.rollout.fullname }}
+{{- if and ( eq (int .Capabilities.KubeVersion.Major) 1) ( gt (int .Capabilities.KubeVersion.Minor) 26 ) }}
         matchLabelKeys:
         - pod-template-hash
+{{- end }}
         maxSkew: 1
         topologyKey: topology.kubernetes.io/zone
         whenUnsatisfiable:  ScheduleAnyway
