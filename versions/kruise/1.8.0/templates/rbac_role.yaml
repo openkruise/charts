@@ -951,3 +951,46 @@ subjects:
 - kind: ServiceAccount
   name: kruise-daemon
   namespace: {{ .Values.installation.namespace }}
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: aggregate-kruise-view
+  labels:
+    # Add these permissions to the "view" default role.
+    rbac.authorization.k8s.io/aggregate-to-view: "true"
+rules:
+- apiGroups: ["apps.kruise.io"]
+  resources:
+  - clonesets
+  - clonesets/scale
+  - clonesets/status
+  - statefulsets
+  - statefulsets/scale
+  - statefulsets/status
+  verbs:
+    - get
+    - list
+    - watch
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: aggregate-kruise-edit
+  labels:
+    # Add these permissions to the "admin" and "edit" default roles.
+    rbac.authorization.k8s.io/aggregate-to-edit: "true"
+rules:
+- apiGroups: ["apps.kruise.io"]
+  resources:
+  - clonesets
+  - clonesets/scale
+  - clonesets/rollback
+  - statefulsets
+  - statefulsets/scale
+  verbs:
+    - create
+    - delete
+    - deletecollection
+    - patch
+    - update
