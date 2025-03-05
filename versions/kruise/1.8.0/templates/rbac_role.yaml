@@ -985,8 +985,6 @@ rules:
     - persistentpodstates/status
     - podprobemarkers
     - podprobemarkers/status
-    - resourcedistributions
-    - resourcedistributions/status
     - sidecarsets
     - sidecarsets/status
     - statefulsets
@@ -1024,7 +1022,6 @@ rules:
     - nodepodprobes
     - persistentpodstates
     - podprobemarkers
-    - resourcedistributions
     - sidecarsets
     - statefulsets
     - statefulsets/scale
@@ -1032,6 +1029,34 @@ rules:
     - uniteddeployments/scale
     - workloadspreads
   verbs:
+    - create
+    - delete
+    - deletecollection
+    - patch
+    - update
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: aggregate-kruise-admin
+  labels:
+    # Add these permissions to the "admin" default roles.
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+rules:
+- apiGroups: ["apps.kruise.io"]
+  resources:
+    - resourcedistributions/status
+  verbs:
+    - get
+    - list
+    - watch
+- apiGroups: ["apps.kruise.io"]
+  resources:
+    - resourcedistributions
+  verbs:
+    - get
+    - list
+    - watch
     - create
     - delete
     - deletecollection
