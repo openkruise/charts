@@ -962,12 +962,41 @@ metadata:
 rules:
 - apiGroups: ["apps.kruise.io"]
   resources:
-  - clonesets
-  - clonesets/scale
-  - clonesets/status
-  - statefulsets
-  - statefulsets/scale
-  - statefulsets/status
+    - advancedcronjobs
+    - advancedcronjobs/status
+    - broadcastjobs
+    - broadcastjobs/status
+    - clonesets
+    - clonesets/scale
+    - clonesets/status
+    - containerrecreaterequests
+    - containerrecreaterequests/status
+    - daemonsets
+    - daemonsets/status
+    - imagelistpulljobs
+    - imagelistpulljobs/status
+    - imagepulljobs
+    - imagepulljobs/status
+    - nodeimages
+    - nodeimages/status
+    - nodepodprobes
+    - nodepodprobes/status
+    - persistentpodstates
+    - persistentpodstates/status
+    - podprobemarkers
+    - podprobemarkers/status
+    - resourcedistributions
+    - resourcedistributions/status
+    - sidecarsets
+    - sidecarsets/status
+    - statefulsets
+    - statefulsets/scale
+    - statefulsets/status
+    - uniteddeployments
+    - uniteddeployments/scale
+    - uniteddeployments/status
+    - workloadspreads
+    - workloadspreads/status
   verbs:
     - get
     - list
@@ -983,11 +1012,25 @@ metadata:
 rules:
 - apiGroups: ["apps.kruise.io"]
   resources:
-  - clonesets
-  - clonesets/scale
-  - clonesets/rollback
-  - statefulsets
-  - statefulsets/scale
+    - advancedcronjobs
+    - broadcastjobs
+    - clonesets
+    - clonesets/scale
+    - containerrecreaterequests
+    - daemonsets
+    - imagelistpulljobs
+    - imagepulljobs
+    - nodeimages
+    - nodepodprobes
+    - persistentpodstates
+    - podprobemarkers
+    - resourcedistributions
+    - sidecarsets
+    - statefulsets
+    - statefulsets/scale
+    - uniteddeployments
+    - uniteddeployments/scale
+    - workloadspreads
   verbs:
     - create
     - delete
