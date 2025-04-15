@@ -11,7 +11,7 @@ spec:
       clientConfig:
         service:
           name: kruise-rollout-webhook-service
-          namespace: kruise-rollout
+          namespace: {{ .Values.installation.namespace }}
           path: /convert
       conversionReviewVersions:
       - v1beta1
