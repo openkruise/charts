@@ -21,10 +21,10 @@ env:
 jobs:
   # 1.27-
   install-for-lower:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
-        kind-version: [ v1.18.20, v1.20.15, v1.24.6, v1.26.3 ]
+        kind-version: [ v1.20.15, v1.24.6, v1.26.3 ]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -45,14 +45,14 @@ jobs:
       - name: install Kruise rollout
         if: ${{ ! startsWith(matrix.kind-version, 'v1.18') }}
         run: |
-            make install-kruise-rollout-from-local
+          make install-kruise-rollout-from-local
       - name: install Kruise game
         run: |
           make install-kruise-game-from-local
 
   # 1.27+
   install-for-higher:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         kind-version: [ v1.28.7, v1.30.8 ]
