@@ -16,7 +16,7 @@ The following table lists the configurable parameters of the kruise chart and th
 | `rollout.webhook.port`           | Port of webhook served by kruise-rollout container                | `9876`                              |
 | `rollout.webhook.objectSelector` | ObjectSelector for workloads in MutatingWebhookConfigurations     | ` `                                 |
 | `image.repository`               | Repository for kruise-rollout image                               | `openkruise/kruise-rollout`         |
-| `image.tag`                      | Tag for kruise-rollout image                                      | `v0.6.2`                            |
+| `image.tag`                      | Tag for kruise-rollout image                                      | `v0.6.1`                            |
 | `image.pullPolicy`               | ImagePullPolicy for kruise-rollout container                      | `Always`                            |
 | `imagePullSecrets`               | The list of image pull secrets for kruise-rollout image           | ` `                                 |
 | `resources.limits.cpu`           | CPU resource limit of kruise-rollout container                    | `500m`                              |
