@@ -1,0 +1,17 @@
+apiVersion: v2
+name: kruise-state-metrics
+description: Install kruise-state-metrics to generate and expose kruise metrics
+type: application
+version: 0.2.0
+appVersion: "1.16.0"
+icon: https://openkruise.io/img/logo_white.png
+keywords:
+  - metric
+  - monitoring
+  - prometheus
+  - kubernetes
+  - openkruise
+  - workload
+home: https://openkruise.io
+sources:
+  - https://github.com/openkruise/kruise-state-metrics
