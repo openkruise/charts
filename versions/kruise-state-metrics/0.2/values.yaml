@@ -5,6 +5,7 @@
 installation:
   namespace: kruise-system
   createNamespace: false
+  installServiceMonitor: true
 
 replicaCount: 1
 
