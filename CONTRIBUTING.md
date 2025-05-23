@@ -16,6 +16,19 @@ Any breaking changes to a chart (backwards incompatible) require:
   * Bump of the current Major version of the chart
   * State possible manual changes for this chart version in the `Upgrading` section of the chart's `README.md.gotmpl` ([See Upgrade](#upgrades))
 
+A pseudo version called `next` is used to prepare changes for the next major release, any fix and optimization of the chart can be made in the next version. Before creating the actual new major version, one should copy the content of `next` version and make changes accordingly. As an example, when preparing for the new major release of kruise 1.8.0, the operations is as follows:
+```
+  cd <repo-root>/versions/kruise/
+  cp -r next 1.8.0
+```
+
+Before creating a new minor version, one should copy the latest version of corresponding major version. As an example. when preparing for the next minor release of kruise 1.7.x, and the latest version of 1.7.x is 1.7.3, then the operation is as follows:
+```
+  cd <repo-root>/versions/kruise/
+  cp -r 1.7.3 1.7.4
+```
+
+
 ### Immutability
 
 Each release for each chart must be immutable. Any change to a chart (even just documentation) requires a version bump. Trying to release the same version twice will result in an error.
@@ -87,5 +100,12 @@ The linting can be invoked manually with the following command:
 ```
 
 ## Publishing Changes
+
+Before actually publish new releases, one should link the chart directory to the corresponding version directory. As an example, if one is about to release kruise 1.7.4, the operation is as follows: 
+
+```
+cd <repo-root>/charts
+ln -sf ../versions/kruise/1.7.4 kruise
+```
 
 Changes are automatically publish whenever a commit is merged to master. The CI job (see `./.github/workflows/publish.yml`).
