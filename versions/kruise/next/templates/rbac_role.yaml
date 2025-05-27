@@ -927,7 +927,7 @@ kind: Role
 metadata:
   creationTimestamp: null
   name: kruise-daemon-secret-role
-  namespace: kruise-daemon-config
+  namespace: {{ .Values.installation.daemonSet.namespace }}
 rules:
 - apiGroups:
   - ""
@@ -942,7 +942,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: kruise-daemon-secret-rolebinding
-  namespace: kruise-daemon-config
+  namespace: {{ .Values.installation.daemonSet.namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
