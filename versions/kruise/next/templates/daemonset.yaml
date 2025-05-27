@@ -14,14 +14,14 @@ metadata:
   annotations:
 {{ toYaml .Values.serviceAccount.annotations | indent 4 }}
 {{- end }}
-  namespace: {{ .Values.installation.daemonSet.namespace }}
+  namespace: {{ .Values.installation.namespace }}
 {{ ( include "serviceAccountDaemon" . ) }}
 ---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: kruise-daemon
-  namespace: {{ .Values.installation.daemonSet.namespace }}
+  namespace: {{ .Values.installation.namespace }}
   labels:
     control-plane: daemon
 spec:
