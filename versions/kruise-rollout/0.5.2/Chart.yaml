@@ -1,0 +1,12 @@
+apiVersion: v1
+name: kruise-rollout
+description: Helm chart for kruise-rollout components
+version: 0.5.2
+appVersion: 0.5.2
+kubeVersion: ">= 1.19.0-0"
+icon: https://openkruise.io/img/openkruise-logo-bg.jpg
+keywords:
+  - rollout
+home: https://openkruise.io
+sources:
+  - https://github.com/openkruise/rollouts
