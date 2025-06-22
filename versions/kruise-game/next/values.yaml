@@ -14,6 +14,7 @@ kruiseGame:
     serviceName: kruise-game-webhook-service
     port: 443
     targetPort: 9876
+    failurePolicy: Fail
   apiServerQps: 5
   apiServerQpsBurst: 10
 
@@ -80,12 +81,6 @@ certificates:
     renewBefore: 5840h0m0s # 8 months
     generateCA: true
     caSecretName: "kruise-game-ca"
-    secretTemplate: {}
-      # annotations:
-      #   my-secret-annotation-1: "foo"
-      #   my-secret-annotation-2: "bar"
-      # labels:
-      #   my-secret-label: foo
     # -- Reference to custom Issuer. If issuer.generate is false, then issuer.group, issuer.kind and issuer.name are required
     issuer:
       generate: true

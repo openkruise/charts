@@ -9,12 +9,13 @@ spec:
   commonName: {{ .Values.kruiseGame.fullname }}
   secretName: {{ .Values.certificates.certManager.caSecretName }}
   privateKey:
+    rotationPolicy: Always
     algorithm: RSA
     size: 2048
   duration: 8760h0m0s # 1 year
   renewBefore: 720h0m0s # 1 month
   issuerRef:
-    name: {{ .Values.operator.name }}-selfsigned-issuer
+    name: {{ .Values.kruiseGame.fullname }}-selfsigned-issuer
     kind: Issuer
     group: cert-manager.io
 {{- end }}
