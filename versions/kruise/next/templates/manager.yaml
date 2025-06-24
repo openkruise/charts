@@ -51,6 +51,7 @@ spec:
     metadata:
       labels:
         control-plane: controller-manager
+        component: kruise-manager
     spec:
 {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -131,7 +132,7 @@ spec:
       topologySpreadConstraints:
       - labelSelector:
           matchLabels:
-            control-plane: controller-manager
+            component: kruise-manager
 {{- if and ( eq (int .Capabilities.KubeVersion.Major) 1) ( gt (int .Capabilities.KubeVersion.Minor) 26 ) }}
         matchLabelKeys:
         - pod-template-hash
