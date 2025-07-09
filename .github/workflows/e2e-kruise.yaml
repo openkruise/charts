@@ -17,6 +17,7 @@ env:
   KIND_VERSION: 'v0.18.0'
   KIND_VERSION_FOR_HIGHER: 'v0.22.0'
   KIND_CLUSTER_NAME: 'ci-testing'
+  CERT_MANAGER_VERSION: 'v1.18.2'
 # todo: add kruise e2e here
 jobs:
   # 1.27-
@@ -36,6 +37,10 @@ jobs:
           cluster_name: ${{ env.KIND_CLUSTER_NAME }}
           config: ./test/kind-conf.yaml
           version: ${{ env.KIND_VERSION }}
+      - name: Install Cert-Manager
+        run: |
+          kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/${{ env.CERT_MANAGER_VERSION }}/cert-manager.yaml
+          kubectl -n cert-manager rollout status deploy/cert-manager-webhook --timeout=180s
       - name: Install Kruise
         run: |
           make install-kruise-from-local
@@ -67,6 +72,10 @@ jobs:
           cluster_name: ${{ env.KIND_CLUSTER_NAME }}
           config: ./test/kind-conf-with-vpa.yaml
           version: ${{ env.KIND_VERSION_FOR_HIGHER }}
+      - name: Install Cert-Manager
+        run: |
+          kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/${{ env.CERT_MANAGER_VERSION }}/cert-manager.yaml
+          kubectl -n cert-manager rollout status deploy/cert-manager-webhook --timeout=180s
       - name: Install Kruise
         run: |
           make install-kruise-from-local
