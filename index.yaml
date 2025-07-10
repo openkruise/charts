@@ -889,6 +889,20 @@ entries:
   - annotations:
       artifacthub.io/changes: '- "[Changed]: https://github.com/openkruise/kruise-game/blob/master/CHANGELOG.md"'
     apiVersion: v1
+    appVersion: 1.0.0-rc
+    created: "2025-07-10T11:39:59.611520599Z"
+    description: Helm chart for kruise-game components
+    digest: c9c9ca6e0278b6a90ce79450df1f5b9cd8eeceb5d89e70e2e6a7a4cc4b31fd3e
+    kubeVersion: '>= 1.18.0-0'
+    name: kruise-game
+    sources:
+    - https://github.com/openkruise/kruise-game
+    urls:
+    - https://github.com/openkruise/charts/releases/download/kruise-game-1.0.0-rc/kruise-game-1.0.0-rc.tgz
+    version: 1.0.0-rc
+  - annotations:
+      artifacthub.io/changes: '- "[Changed]: https://github.com/openkruise/kruise-game/blob/master/CHANGELOG.md"'
+    apiVersion: v1
     appVersion: 0.10.0
     created: "2025-01-10T03:55:20.293718902Z"
     description: Helm chart for kruise-game components
@@ -1287,4 +1301,4 @@ entries:
     urls:
     - https://github.com/openkruise/charts/releases/download/kruise-state-metrics-0.1.0/kruise-state-metrics-0.1.0.tgz
     version: 0.1.0
-generated: "2025-05-09T08:23:58.843358484Z"
+generated: "2025-07-10T11:39:59.61212976Z"
