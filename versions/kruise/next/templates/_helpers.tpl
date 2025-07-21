@@ -62,7 +62,7 @@ ports:
 - port: 443
   targetPort: {{ .Values.manager.webhook.port }}
 selector:
-  control-plane: controller-manager
+  control-plane: kruise-controller-manager
 {{- end -}}
 
 {{- define "webhookSecretData" -}}
