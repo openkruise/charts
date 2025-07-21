@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.kruiseGame.webhook.serviceName }}
+  namespace: {{ .Values.installation.namespace }}
+spec:
+  ports:
+    - port: {{ .Values.kruiseGame.webhook.port }}
+      targetPort: {{ .Values.kruiseGame.webhook.targetPort }}
+  selector:
+    control-plane: {{ .Values.kruiseGame.fullname }}
