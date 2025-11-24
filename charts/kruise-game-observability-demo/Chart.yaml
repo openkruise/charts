@@ -1,0 +1,44 @@
+apiVersion: v2
+name: kruise-game-observability-demo
+description: An out-of-the-box observability demo stack for OpenKruiseGame, including OTel Collector, Prometheus, Loki, Tempo, and Grafana.
+type: application
+version: 0.1.0
+appVersion: 1.0.0
+dependencies:
+  # Core OKG components
+  - name: kruise
+    version: "1.8.0"
+    repository: "https://openkruise.github.io/charts/"
+    condition: kruise.enabled
+
+  - name: kruise-game
+    version: "1.1.0"
+    # 使用本地子 chart（包含自定义 CRD/修改）
+    repository: "file://../kruise-game"
+
+  # Telemetry pipeline
+  - name: opentelemetry-collector
+    version: "0.140.0"
+    repository: "https://open-telemetry.github.io/opentelemetry-helm-charts"
+    condition: opentelemetry-collector.enabled
+
+  # LGTM "local sinks"
+  - name: loki
+    version: "6.46.0"
+    repository: "https://grafana.github.io/helm-charts"
+    condition: loki.enabled
+
+  - name: tempo
+    version: "1.24.1"
+    repository: "https://grafana.github.io/helm-charts"
+    condition: tempo.enabled
+
+  - name: prometheus
+    version: "27.46.0"
+    repository: "https://prometheus-community.github.io/helm-charts"
+    condition: prometheus.enabled
+
+  - name: grafana
+    version: "10.2.0"
+    repository: "https://grafana.github.io/helm-charts"
+    condition: grafana.enabled

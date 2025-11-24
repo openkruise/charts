@@ -1,0 +1,59 @@
+{{- if .Values.demoGameServer.enabled }}
+apiVersion: game.kruise.io/v1alpha1
+kind: GameServerSet
+metadata:
+  name: {{ .Values.demoGameServer.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.demoGameServer.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.demoGameServer.replicas }}
+  updateStrategy:
+    rollingUpdate:
+      podUpdatePolicy: InPlaceIfPossible
+  {{- if .Values.demoGameServer.network }}
+  network:
+    networkType: {{ .Values.demoGameServer.network.type }}
+    {{- if .Values.demoGameServer.network.networkConf }}
+    networkConf:
+    {{- range .Values.demoGameServer.network.networkConf }}
+      - name: {{ .name }}
+        value: {{ .value | quote }}
+    {{- end }}
+    {{- else }}
+    networkConf:
+      - name: ContainerPorts
+        value: {{ .Values.demoGameServer.network.containerPorts | quote }}
+    {{- end }}
+  {{- end }}
+  gameServerTemplate:
+    spec:
+      containers:
+        - name: {{ .Values.demoGameServer.containerName }}
+          image: {{ .Values.demoGameServer.image }}
+          env:
+          - name: GS_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          {{- if .Values.demoGameServer.resources }}
+          resources:
+            {{- toYaml .Values.demoGameServer.resources | nindent 12 }}
+          {{- end }}
+---
+{{- if .Values.demoGameServer.headlessService.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.demoGameServer.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.demoGameServer.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  clusterIP: None
+  selector:
+    game.kruise.io/owner-gss: {{ .Values.demoGameServer.name }}
+{{- end }}
+{{- end }}
