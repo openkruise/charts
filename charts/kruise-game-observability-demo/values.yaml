@@ -299,6 +299,14 @@ tempo:
   enabled: true
   persistence:
     enabled: false # Ephemeral for demo
+  tempo:
+    metricsGenerator:
+      enabled: true
+      remoteWriteUrl: "http://okg-demo-prometheus-server/api/v1/write"
+    overrides:
+      defaults:
+        metrics_generator:
+          processors: [local-blocks]
 
 # 5. Prometheus Configuration
 prometheus:
@@ -352,37 +360,38 @@ grafana:
       datasources:
       - name: Prometheus
         type: prometheus
+        uid: prometheus
         url: http://okg-demo-prometheus-server
         access: proxy
         isDefault: true
       - name: Loki
         type: loki
+        uid: loki
         url: http://okg-demo-loki:3100
         access: proxy
         jsonData:
           derivedFields:
-            - datasourceUid: Tempo
-              matcherRegex: "trace_id=(\\w+)"
-              name: TraceID
-              url: "$${__value.raw}"
+          - name: trace_id
+            datasourceUid: tempo
+            matcherRegex: trace_id
+            matcherType: label
+            url: '$${__value.raw}'
+            urlDisplayLabel: 'View trace'
       - name: Tempo
         type: tempo
+        uid: tempo
         url: http://okg-demo-tempo:3200
         access: proxy
         jsonData:
           nodeGraph:
             enabled: true
           tracesToLogs:
-            datasourceUid: 'Loki'
-            tags: ['job', 'instance', 'pod', 'namespace']
-            mappedTags: [{ key: 'service.name', value: 'service' }]
-            mapTagNamesEnabled: false
-            spanStartTimeShift: '1h'
-            spanEndTimeShift: '-1h'
+            datasourceUid: loki
             filterByTraceID: true
-            filterBySpanID: true
+            filterBySpanID: false
           lokiSearch:
-            datasourceUid: 'Loki'
+            datasourceUid: loki
+
   # Dashboards will be loaded from ConfigMap via sidecar
   sidecar:
     dashboards:
@@ -416,8 +425,9 @@ demoGameServer:
     enabled: true
   resources:
     limits:
-      cpu: 100m
-      memory: 256Mi
+      cpu: 500m
+      memory: 2Gi
     requests:
-      cpu: 50m
-      memory: 128Mi
+      cpu: 200m
+      memory: 1Gi
+

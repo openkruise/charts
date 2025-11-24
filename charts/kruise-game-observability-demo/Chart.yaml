@@ -13,7 +13,6 @@ dependencies:
 
   - name: kruise-game
     version: "1.1.0"
-    # 使用本地子 chart（包含自定义 CRD/修改）
     repository: "file://../kruise-game"
 
   # Telemetry pipeline
