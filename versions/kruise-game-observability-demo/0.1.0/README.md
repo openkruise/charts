@@ -84,6 +84,7 @@ This chart is a wrapper around several upstream charts. Key configurations are e
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
+| `kruise-game.manager.logFormat` | Log output format for KruiseGame manager (`console` or `json`) | `console` |
 | `kruise-game.manager.otel.enabled` | Enable OTel in KruiseGame | `true` |
 | `opentelemetry-collector.mode` | Deployment mode for collector | `deployment` |
 | `loki.enabled` | Enable Loki | `true` |

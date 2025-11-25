@@ -57,6 +57,7 @@ spec:
           args:
             - --leader-elect=false
             - --provider-config=/etc/kruise-game/config.toml
+            - --log-format={{ .Values.manager.logFormat }}
             - --api-server-qps={{ .Values.kruiseGame.apiServerQps }}
             - --api-server-qps-burst={{ .Values.kruiseGame.apiServerQpsBurst }}
             - --gameserver-workers={{ .Values.kruiseGame.gameserverWorkers }}

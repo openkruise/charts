@@ -95,6 +95,8 @@ certificates:
       group: cert-manager.io
 
 manager:
+  # -- Log output format for manager. Allowed: console, json
+  logFormat: console
   otel:
     enabled: false
     endpoint: "otel-collector:4317"

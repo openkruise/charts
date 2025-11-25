@@ -13,7 +13,7 @@ dependencies:
 
   - name: kruise-game
     version: "1.1.0"
-    repository: "file://../kruise-game"
+    repository: "file://../../kruise-game/1.1.0"
 
   # Telemetry pipeline
   - name: opentelemetry-collector

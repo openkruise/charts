@@ -29,6 +29,7 @@ The following table lists the configurable parameters of the kruise-game chart a
 | `resources.requests.memory`                | Memory resource request of kruise-game container                            | `64Mi`                           |
 | `prometheus.enabled`                       | Whether to bind metric endpoint                                             | `true`                           |
 | `prometheus.monitorService.port`           | Port of the monitorservice bind to                                          | `8080`                           |
+| `manager.logFormat`                        | Log output format for manager (`console` or `json`)                         | `console`                        |
 | `scale.service.port`                       | Port of the external scaler server binds to                                 | `6000`                           |
 | `scale.service.targetPort`                 | TargetPort of the external scaler server binds to                           | `6000`                           |
 | `network.totalWaitTime`                    | Maximum time to wait for network ready, the unit is seconds                 | `60`                             |

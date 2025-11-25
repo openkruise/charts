@@ -19,6 +19,8 @@ kruise-game:
     digest: ""
     pullPolicy: Always
   manager:
+    # Log output format for manager. Allowed: console, json
+    logFormat: console
     otel:
       enabled: true
       # Leave empty to use the default derived endpoint (ReleaseName-collector.ReleaseNamespace.svc:4317)
@@ -430,4 +432,3 @@ demoGameServer:
     requests:
       cpu: 200m
       memory: 1Gi
-
