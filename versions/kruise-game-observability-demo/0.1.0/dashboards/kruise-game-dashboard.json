@@ -2315,7 +2315,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "(\r\n  sum(\r\n    rate(okg_network_calls_total{\r\n      span_name=~\"$span\",\r\n      game_kruise_io_network_status=\"error\"\r\n    }[$__rate_interval])\r\n  ) by (game_kruise_io_network_plugin_name, cloud_provider)\r\n)\r\n/\r\nclamp_min(\r\n  sum(\r\n    rate(okg_network_calls_total{\r\n      span_name=~\"$span\"\r\n    }[$__rate_interval])\r\n  ) by (game_kruise_io_network_plugin_name, cloud_provider),\r\n  1e-6\r\n) * 100\r\n",
+          "expr": "(\r\n  sum by (game_kruise_io_network_plugin_name, cloud_provider) (\r\n    rate(okg_network_calls_total{\r\n      span_name=~\"$span\",\r\n      status_code=~\"STATUS_CODE_ERROR|ERROR\"\r\n    }[$__rate_interval])\r\n  )\r\nor\r\n  sum by (game_kruise_io_network_plugin_name, cloud_provider) (\r\n    rate(okg_network_calls_total{\r\n      span_name=~\"$span\",\r\n      game_kruise_io_network_status=\"error\"\r\n    }[$__rate_interval])\r\n  )\r\n)\r\n/ clamp_min(\r\n  sum by (game_kruise_io_network_plugin_name, cloud_provider) (\r\n    rate(okg_network_calls_total{span_name=~\"$span\"}[$__rate_interval])\r\n  ),\r\n  1e-6\r\n) * 100\r\n",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"

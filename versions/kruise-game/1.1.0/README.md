@@ -29,7 +29,6 @@ The following table lists the configurable parameters of the kruise-game chart a
 | `resources.requests.memory`                | Memory resource request of kruise-game container                            | `64Mi`                           |
 | `prometheus.enabled`                       | Whether to bind metric endpoint                                             | `true`                           |
 | `prometheus.monitorService.port`           | Port of the monitorservice bind to                                          | `8080`                           |
-| `manager.logFormat`                        | Log output format for manager (`console` or `json`)                         | `console`                        |
 | `scale.service.port`                       | Port of the external scaler server binds to                                 | `6000`                           |
 | `scale.service.targetPort`                 | TargetPort of the external scaler server binds to                           | `6000`                           |
 | `network.totalWaitTime`                    | Maximum time to wait for network ready, the unit is seconds                 | `60`                             |
@@ -48,6 +47,7 @@ The following table lists the configurable parameters of the kruise-game chart a
 | `certificates.certManager.issuer.name`     | Name of the certificate issuer                                              | `kruise-ca`                      |
 | `certificates.certManager.issuer.kind`     | Type of the certificate issuer                                              | `ClusterIssuer`                  |
 | `certificates.certManager.issuer.group`    | API group of the certificate issuer                                         | `cert-manager.io`                |
+| `manager.logFormat`                        | Log output format for manager (`console` or `json`); only affects stdout, OTLP remains structured. Use `--set manager.logFormat=json` if you want JSON in stdout. | `console`                        |
 | `manager.otel.enabled`                     | Whether to enable OpenTelemetry tracing                                     | `false`                          |
 | `manager.otel.endpoint`                    | The OTLP gRPC endpoint of the collector (e.g., otel-collector:4317)         | `otel-collector:4317`            |
 | `manager.otel.sampleRate`                  | Trace sampling probability (0.0 to 1.0)                                     | `0.1`                            |

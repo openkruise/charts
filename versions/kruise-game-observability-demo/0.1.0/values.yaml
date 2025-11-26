@@ -389,6 +389,9 @@ grafana:
             enabled: true
           tracesToLogs:
             datasourceUid: loki
+            # widen the log query window relative to span start/end to avoid missing nearby errors
+            spanStartTimeShift: "-5m"
+            spanEndTimeShift: "5m"
             filterByTraceID: true
             filterBySpanID: false
           lokiSearch:
