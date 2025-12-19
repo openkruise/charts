@@ -26,10 +26,15 @@ webhooks:
           operator: NotIn
           values:
             - openkruise
+            - 'true'
         - key: kubernetes.io/metadata.name
           operator: NotIn
           values:
             - kube-system
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - ""
@@ -52,6 +57,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: madvancedcronjob.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
@@ -74,6 +89,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: mbroadcastjob.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
@@ -96,6 +121,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: mcloneset.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
@@ -118,6 +153,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: mcontainerrecreaterequest.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
@@ -140,6 +185,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: mdaemonset.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
@@ -162,6 +217,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: mimagelistpulljob.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
@@ -184,6 +249,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: mimagepulljob.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
@@ -206,6 +281,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: mnodeimage.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
@@ -228,6 +313,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: msidecarset.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
@@ -250,6 +345,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: mstatefulset.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
@@ -273,6 +378,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: muniteddeployment.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
@@ -312,10 +427,18 @@ webhooks:
           operator: Exists
     namespaceSelector:
       matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
         - key: kubernetes.io/metadata.name
           operator: NotIn
           values:
             - kube-system
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps
@@ -343,10 +466,18 @@ webhooks:
           operator: Exists
     namespaceSelector:
       matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
         - key: kubernetes.io/metadata.name
           operator: NotIn
           values:
             - kube-system
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps
@@ -374,10 +505,18 @@ webhooks:
           operator: Exists
     namespaceSelector:
       matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
         - key: kubernetes.io/metadata.name
           operator: NotIn
           values:
             - kube-system
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps
@@ -405,10 +544,18 @@ webhooks:
           operator: Exists
     namespaceSelector:
       matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
         - key: kubernetes.io/metadata.name
           operator: NotIn
           values:
             - kube-system
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apiextensions.k8s.io
@@ -437,10 +584,18 @@ webhooks:
           operator: Exists
     namespaceSelector:
       matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
         - key: kubernetes.io/metadata.name
           operator: NotIn
           values:
             - kube-system
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - ""
@@ -468,10 +623,18 @@ webhooks:
           operator: Exists
     namespaceSelector:
       matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
         - key: kubernetes.io/metadata.name
           operator: NotIn
           values:
             - kube-system
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - networking.k8s.io
@@ -500,10 +663,18 @@ webhooks:
           operator: Exists
     namespaceSelector:
       matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
         - key: kubernetes.io/metadata.name
           operator: NotIn
           values:
             - kube-system
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - ""
@@ -532,10 +703,15 @@ webhooks:
           operator: NotIn
           values:
             - openkruise
+            - 'true'
         - key: kubernetes.io/metadata.name
           operator: NotIn
           values:
             - kube-system
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - ""
@@ -564,10 +740,15 @@ webhooks:
           operator: NotIn
           values:
             - openkruise
+            - 'true'
         - key: kubernetes.io/metadata.name
           operator: NotIn
           values:
             - kube-system
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - ""
@@ -590,6 +771,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: vresourcedistribution.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
@@ -612,6 +803,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: vworkloadspread.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
@@ -634,6 +835,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: vadvancedcronjob.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
@@ -656,6 +867,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: vbroadcastjob.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
@@ -678,6 +899,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: vcloneset.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
@@ -701,6 +932,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: vdaemonset.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
@@ -723,6 +964,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: vimagelistpulljob.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
@@ -745,6 +996,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: vimagepulljob.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
@@ -767,6 +1028,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: vnodeimage.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
@@ -789,6 +1060,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: vpersistentpodstate.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
@@ -811,6 +1092,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: vpodprobemarker.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
@@ -833,6 +1124,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: vpodunavailablebudget.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - policy.kruise.io
@@ -855,6 +1156,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: vsidecarset.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
@@ -877,6 +1188,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: vstatefulset.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
@@ -901,6 +1222,16 @@ webhooks:
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: vuniteddeployment.kb.io
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
     rules:
       - apiGroups:
           - apps.kruise.io
