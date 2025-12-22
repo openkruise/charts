@@ -7,6 +7,9 @@ crds:
 installation:
   namespace: kruise-system
   createNamespace: true
+  daemonSet:
+    namespace: kruise-daemon-config
+    createNamespace: true
   roleListGroups:
     - '*'
 
