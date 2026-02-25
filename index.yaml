@@ -119,6 +119,35 @@ entries:
         - "[Security]: Fix potential security issues of dependent packages"
         - "[Changed]: Change kruise daemon dns policy to ClusterFirstWithHostNet"
     apiVersion: v1
+    appVersion: 1.7.5
+    created: "2026-02-25T08:02:27.176030988Z"
+    description: Helm chart for kruise components
+    digest: 32cbcfba432595d1a32cdd41182a99b081f34aad62114f3231c4eb752a0926a1
+    home: https://openkruise.io
+    icon: https://openkruise.io/img/openkruise-logo-bg.jpg
+    keywords:
+    - openkruise
+    - kubernetes
+    - kruise
+    - workload
+    - statefulset
+    - sidecar
+    - job
+    - deployment
+    - cloneset
+    kubeVersion: '>= 1.18.0-0'
+    name: kruise
+    sources:
+    - https://github.com/openkruise/kruise
+    urls:
+    - https://github.com/openkruise/charts/releases/download/kruise-1.7.5/kruise-1.7.5.tgz
+    version: 1.7.5
+  - annotations:
+      artifacthub.io/changes: |
+        - "[Changed]: https://github.com/openkruise/kruise/blob/master/CHANGELOG.md"
+        - "[Security]: Fix potential security issues of dependent packages"
+        - "[Changed]: Change kruise daemon dns policy to ClusterFirstWithHostNet"
+    apiVersion: v1
     appVersion: 1.7.3
     created: "2024-12-13T02:44:35.458498058Z"
     description: Helm chart for kruise components
@@ -1415,4 +1444,4 @@ entries:
     urls:
     - https://github.com/openkruise/charts/releases/download/kruise-state-metrics-0.1.0/kruise-state-metrics-0.1.0.tgz
     version: 0.1.0
-generated: "2026-01-25T01:40:43.416643946Z"
+generated: "2026-02-25T08:02:27.17657364Z"
