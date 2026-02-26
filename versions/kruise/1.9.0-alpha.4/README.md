@@ -22,8 +22,7 @@ The following table lists the configurable parameters of the kruise chart and th
 | `manager.log.level`                 | Log level that kruise-manager printed                          | `4`                         |
 | `manager.replicas`                  | Replicas of kruise-controller-manager deployment               | `2`                         |
 | `manager.image.repository`          | Repository for kruise-manager image                            | `openkruise/kruise-manager` |
-| `manager.image.tag`                 | Tag for kruise-manager image                                   | `v1.9.0-alpha2`             |
-| `manager.image.pullPolicy`          | Image pull policy for kruise-manager                           | `Always`                    |
+| `manager.image.tag`                 | Tag for kruise-manager image                                   | `v1.8.0`                    |
 | `manager.resources.limits.cpu`      | CPU resource limit of kruise-manager container                 | `200m`                      |
 | `manager.resources.limits.memory`   | Memory resource limit of kruise-manager container              | `512Mi`                     |
 | `manager.resources.requests.cpu`    | CPU resource request of kruise-manager container               | `100m`                      |
@@ -35,8 +34,6 @@ The following table lists the configurable parameters of the kruise chart and th
 | `manager.nodeSelector`              | Node labels for kruise-manager pod                             | `{}`                        |
 | `manager.tolerations`               | Tolerations for kruise-manager pod                             | `[]`                        |
 | `manager.resyncPeriod`              | Resync period of informer kruise-manager, defaults no resync   | `0`                         |
-| `manager.restConfigQPS`             | QPS for the REST client config of kruise-manager               | `30`                        |
-| `manager.restConfigBurst`           | Burst for the REST client config of kruise-manager             | `50`                        |
 | `manager.hostNetwork`               | Whether kruise-manager pod should run with hostnetwork         | `false`                     |
 | `manager.loggingFormat`             | Logging format, valid formats includes ` `(plain text), `json` | ` `                         |
 

@@ -32,7 +32,7 @@ manager:
   replicas: 2
   image:
     repository: openkruise/kruise-manager
-    tag: v1.9.0-alpha2
+    tag: v1.9.0-alpha3
     pullPolicy: Always
   webhook:
     port: 9876
