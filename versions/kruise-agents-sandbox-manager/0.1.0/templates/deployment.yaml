@@ -1,0 +1,171 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sandbox-manager.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sandbox-manager.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.sandboxManager.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "sandbox-manager.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "sandbox-manager.labels" . | nindent 8 }}
+        {{- include "sandbox-manager.peerLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "sandbox-manager.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      hostNetwork: {{ .Values.sandboxManager.controller.hostNetwork | default false }}
+      containers:
+        - name: controller
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.sandboxManager.controller.repository }}:{{ .Values.sandboxManager.controller.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.sandboxManager.controller.pullPolicy }}
+          command:
+            - /sandbox-manager
+          args:
+            - -v={{ .Values.sandboxManager.controller.logLevel }}
+            - --zap-log-level={{ .Values.sandboxManager.controller.logLevel }}
+            - --peer-selector=agents.kruise.io/sandbox-manager-peer-finder={{ .Release.Name }}-{{ .Release.Revision }}
+          ports:
+            - containerPort: 8080
+              name: http-manager
+            - containerPort: 9002
+              name: grpc-ext-proc
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 120
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: 7789
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          startupProbe:
+            tcpSocket:
+              port: 7789
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 30
+            timeoutSeconds: 5
+          env:
+            - name: SYSTEM_NAMESPACE
+              value: {{ .Release.Namespace }}
+            - name: PEER_SELECTOR
+              value: agents.kruise.io/sandbox-manager-peer-finder={{ .Release.Name }}-{{ .Release.Revision }}
+            - name: KUBE_CLIENT_QPS
+              value: "10000"
+            - name: KUBE_CLIENT_BURST
+              value: "30000"
+            - name: E2B_DOMAIN
+              value: {{ .Values.sandboxManager.e2b.domain }}
+            - name: E2B_ADMIN_KEY
+              value: {{ .Values.sandboxManager.e2b.adminApiKey }}
+            - name: E2B_ENABLE_AUTH
+              value: {{ .Values.sandboxManager.e2b.enableAuth | quote }}
+            - name: E2B_MAX_TIMEOUT
+              value: {{ printf "%d" (int .Values.sandboxManager.e2b.maxTimeout) | quote }}
+            - name: INFRA
+              value: {{ .Values.sandboxManager.controller.infra }}
+            - name: MAX_CLAIM_WORKERS
+              value: {{ printf "%d" (int .Values.sandboxManager.controller.maxClaimWorkers) | quote }}
+            - name: MAX_CREATE_QPS
+              value: {{ printf "%d" (int .Values.sandboxManager.controller.maxCreateQPS) | quote }}
+            - name: EXT_PROC_MAX_CONCURRENCY
+              value: {{ printf "%d" (int .Values.sandboxManager.controller.extProcMaxConcurrency) | quote }}
+          {{- with .Values.sandboxManager.controller.resources }}
+          resources:
+            limits:
+              {{- toYaml . | nindent 14 }}
+            requests:
+              {{- toYaml . | nindent 14 }}
+          {{- end }}
+        - name: envoy-proxy
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.sandboxManager.proxy.repository }}:{{ .Values.sandboxManager.proxy.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.sandboxManager.proxy.pullPolicy }}
+          args:
+            - "--config-path /etc/envoy/envoy.yaml"
+          livenessProbe:
+            tcpSocket:
+              port: 7788
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: 7788
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          startupProbe:
+            tcpSocket:
+              port: 7788
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 30
+            timeoutSeconds: 5
+          ports:
+            - containerPort: 7788
+          volumeMounts:
+            - name: envoy-config
+              mountPath: /etc/envoy/envoy.yaml
+              subPath: envoy.yaml
+          {{- with .Values.sandboxManager.proxy.resources }}
+          resources:
+            limits:
+              {{- toYaml . | nindent 14 }}
+            requests:
+              {{- toYaml . | nindent 14 }}
+          {{- end }}
+      volumes:
+        - name: envoy-config
+          configMap:
+            name: {{ include "sandbox-manager.fullname" . }}-envoy-config
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    {{- include "sandbox-manager.selectorLabels" . | nindent 20 }}
+                topologyKey: kubernetes.io/hostname
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

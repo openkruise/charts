@@ -1,0 +1,202 @@
+{{- if .Values.rbac.create }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "sandbox-controller.fullname" . }}-controller-role
+  namespace: {{ include "sandbox-controller.namespace" . }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "sandbox-controller.fullname" . }}-leader-election-role
+  namespace: {{ include "sandbox-controller.namespace" . }}
+  labels:
+    {{- include "sandbox-controller.labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "sandbox-controller.fullname" . }}-controller-role
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - persistentvolumeclaims
+      - pods
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - persistentvolumes
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - pods/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - admissionregistration.k8s.io
+    resources:
+      - mutatingwebhookconfigurations
+      - validatingwebhookconfigurations
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - agents.kruise.io
+    resources:
+      - sandboxclaims
+    verbs:
+      - delete
+      - get
+      - list
+      - patch
+      - watch
+  - apiGroups:
+      - agents.kruise.io
+    resources:
+      - sandboxclaims/status
+      - sandboxes/status
+      - sandboxsets/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - agents.kruise.io
+    resources:
+      - sandboxes
+      - sandboxsets
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - agents.kruise.io
+    resources:
+      - sandboxes/finalizers
+      - sandboxsets/finalizers
+    verbs:
+      - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "sandbox-controller.fullname" . }}-controller-rolebinding
+  namespace: {{ include "sandbox-controller.namespace" . }}
+  labels:
+    {{- include "sandbox-controller.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "sandbox-controller.fullname" . }}-controller-role
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "sandbox-controller.serviceAccountName" . }}
+    namespace: {{ include "sandbox-controller.namespace" . }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "sandbox-controller.fullname" . }}-leader-election-rolebinding
+  namespace: {{ include "sandbox-controller.namespace" . }}
+  labels:
+    {{- include "sandbox-controller.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "sandbox-controller.fullname" . }}-leader-election-role
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "sandbox-controller.serviceAccountName" . }}
+    namespace: {{ include "sandbox-controller.namespace" . }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "sandbox-controller.fullname" . }}-controller-rolebinding
+  labels:
+      {{- include "sandbox-controller.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "sandbox-controller.fullname" . }}-controller-role
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "sandbox-controller.serviceAccountName" . }}
+    namespace: {{ include "sandbox-controller.namespace" . }}
+{{- end }}

@@ -1,0 +1,93 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: sandbox-controller-mutating-webhook-configuration
+webhooks:
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: {{ include "sandbox-controller.fullname" . }}-webhook-service
+        namespace: {{ include "sandbox-controller.namespace" . }}
+        path: /default-sandboxset
+    failurePolicy: Fail
+    name: md-sbs.kb.io
+    rules:
+      - apiGroups:
+          - agents.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - sandboxsets
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: {{ include "sandbox-controller.fullname" . }}-webhook-service
+        namespace: {{ include "sandbox-controller.namespace" . }}
+        path: /default-sandboxtemplate
+    failurePolicy: Fail
+    name: md-sbt.kb.io
+    rules:
+      - apiGroups:
+          - agents.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+        resources:
+          - sandboxtemplates
+    sideEffects: None
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: sandbox-controller-validating-webhook-configuration
+webhooks:
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: {{ include "sandbox-controller.fullname" . }}-webhook-service
+        namespace: {{ include "sandbox-controller.namespace" . }}
+        path: /validate-sandboxset
+    failurePolicy: Fail
+    name: v-sbs.kb.io
+    rules:
+      - apiGroups:
+          - agents.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - sandboxsets
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: {{ include "sandbox-controller.fullname" . }}-webhook-service
+        namespace: {{ include "sandbox-controller.namespace" . }}
+        path: /validate-sandboxtemplate
+    failurePolicy: Ignore
+    name: v-sbt.kb.io
+    rules:
+      - apiGroups:
+          - agents.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+        resources:
+          - sandboxtemplates
+    sideEffects: None

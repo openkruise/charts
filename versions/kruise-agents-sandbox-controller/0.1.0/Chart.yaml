@@ -1,0 +1,17 @@
+apiVersion: v2
+name: agents-sandbox-controller
+description: The Helm chart for Agents Sandbox Controller
+
+type: application
+
+version: v0.1.0
+
+appVersion: "v0.1.0"
+
+keywords:
+  - agent
+  - sandbox
+  - controller
+  - kruise
+  - kubernetes
+  - openkruise

@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "sandbox-manager.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sandbox-manager.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.sandboxManager.service.type }}
+  ports:
+    - name: http-envoy
+      port: {{ .Values.sandboxManager.service.port }}
+      protocol: TCP
+      targetPort: 7788
+    - name: manager
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    {{- include "sandbox-manager.selectorLabels" . | nindent 4 }}
