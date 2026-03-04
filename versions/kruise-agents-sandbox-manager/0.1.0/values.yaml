@@ -2,7 +2,7 @@
 # Declare variables to be passed into your templates.
 
 sandboxManager:
-  replicaCount: 3
+  replicaCount: 2
 
   e2b:
     domain: "your.domain.com"
@@ -63,6 +63,8 @@ securityContext:
   capabilities:
     drop:
       - ALL
+    add:
+      - NET_BIND_SERVICE
   readOnlyRootFilesystem: true
   allowPrivilegeEscalation: false
   runAsNonRoot: true

@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 
 sandboxController:
-  replicaCount: 3
+  replicaCount: 2
 
   image:
     repository: openkruise/agent-sandbox-controller
@@ -33,10 +33,6 @@ sandboxController:
 namespace:
   name: sandbox-system
 
-# CRD configuration
-crds:
-  enabled: true
-
 # ServiceAccount configuration
 serviceAccount:
   create: true
@@ -65,7 +61,9 @@ securityContext:
   capabilities:
     drop:
       - ALL
-  readOnlyRootFilesystem: false
+    add:
+      - NET_BIND_SERVICE
+  readOnlyRootFilesystem: true
 
 nodeSelector: {}
 

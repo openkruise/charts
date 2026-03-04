@@ -56,6 +56,9 @@ spec:
               port: {{ .Values.sandboxController.healthProbe.port }}
             initialDelaySeconds: 5
             periodSeconds: 10
+          volumeMounts:
+            - name: webhook-certs
+              mountPath: /home/nonroot/sandbox-controller-webhook-certs
         {{- with .Values.sandboxController.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
@@ -65,6 +68,9 @@ spec:
             {{- toYaml . | nindent 12 }}
         {{- end }}
       terminationGracePeriodSeconds: 10
+      volumes:
+        - name: webhook-certs
+          emptyDir: {}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
