@@ -3,7 +3,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.11.0
-  creationTimestamp: null
   name: trafficroutings.rollouts.kruise.io
 spec:
   group: rollouts.kruise.io
