@@ -49,6 +49,14 @@ jobs:
       - name: install Kruise game
         run: |
           make install-kruise-game-from-local
+      - name: install Agents Sandbox Controller
+        if: ${{ ! startsWith(matrix.kind-version, 'v1.20') }}
+        run: |
+          make install-agents-sandbox-controller-from-local
+      - name: install Agents Sandbox Manager
+        if: ${{ ! startsWith(matrix.kind-version, 'v1.20') }}
+        run: |
+          make install-agents-sandbox-manager-from-local
 
   # 1.27+
   install-for-higher:
@@ -79,3 +87,9 @@ jobs:
       - name: install Kruise game
         run: |
           make install-kruise-game-from-local
+      - name: install Agents Sandbox Controller
+        run: |
+          make install-agents-sandbox-controller-from-local
+      - name: install Agents Sandbox Manager
+        run: |
+          make install-agents-sandbox-manager-from-local

@@ -32,6 +32,9 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if and (eq (int .Capabilities.KubeVersion.Major) 1) (ge (int .Capabilities.KubeVersion.Minor) 26) }}
+        allowPrivilegeEscalation: {{ .Values.podSecurityContextAllowPrivilegeEscalation }}
+      {{- end }}
       hostNetwork: {{ .Values.sandboxManager.controller.hostNetwork | default false }}
       containers:
         - name: controller

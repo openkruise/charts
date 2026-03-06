@@ -55,9 +55,10 @@ podLabels: { }
 
 podSecurityContext:
   fsGroup: 2000
-  allowPrivilegeEscalation: false
   seccompProfile:
     type: RuntimeDefault
+
+podSecurityContextAllowPrivilegeEscalation: false
 
 securityContext:
   capabilities:
