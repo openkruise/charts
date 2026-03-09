@@ -30,4 +30,22 @@ install-kruise-game-from-local:
 	sleep 1
 	kubectl -n kruise-game-system wait --for=condition=Ready pods -l control-plane=kruise-game-controller-manager --timeout=60s || exit 1
 
+.PHONY: install-agents-sandbox-controller-from-local
+install-agents-sandbox-controller-from-local:
+	kubectl get namespace sandbox-system > /dev/null 2>&1 || kubectl create namespace sandbox-system
+	helm install agents-sandbox-controller charts/kruise-agents-sandbox-controller -n sandbox-system \
+		--set replicaCount=1 \
+        --set-json 'resources={"limits":{"cpu":"500m","memory":"512Mi"},"requests":{"cpu":"500m","memory":"512Mi"}}'
+	sleep 1
+	kubectl -n sandbox-system wait --for=condition=Ready pods -l control-plane=agents-sandbox-controller --timeout=60s || exit 1
+
+.PHONY: install-agents-sandbox-manager-from-local
+install-agents-sandbox-manager-from-local:
+	helm install agents-sandbox-manager charts/kruise-agents-sandbox-manager -n sandbox-system \
+		--set replicaCount=1 \
+        --set-json 'controller.resources={"cpu":"500m","memory":"512Mi"}' \
+        --set-json 'proxy.resources={"cpu":"500m","memory":"512Mi"}'
+	sleep 1
+	kubectl -n sandbox-system wait --for=condition=Ready pods -l component=agents-sandbox-manager --timeout=60s || exit 1
+
 install-from-local: install-kruise-from-local install-kruise-state-metrics-from-local
