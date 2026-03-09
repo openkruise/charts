@@ -1,5 +1,42 @@
 apiVersion: v1
 entries:
+  agents-sandbox-controller:
+  - apiVersion: v2
+    appVersion: v0.1.0
+    created: "2026-03-09T06:48:40.680834109Z"
+    description: The Helm chart for Agents Sandbox Controller
+    digest: 15bcde4a4b051c7ccd4f197cb9295fde82a164e8396be1f2688cc1808e8bb441
+    keywords:
+    - agent
+    - sandbox
+    - controller
+    - kruise
+    - kubernetes
+    - openkruise
+    name: agents-sandbox-controller
+    type: application
+    urls:
+    - https://github.com/openkruise/charts/releases/download/agents-sandbox-controller-v0.1.0/agents-sandbox-controller-v0.1.0.tgz
+    version: v0.1.0
+  agents-sandbox-manager:
+  - apiVersion: v2
+    appVersion: v0.1.0
+    created: "2026-03-09T06:48:40.886151967Z"
+    description: The Helm chart for Agent Sandbox Manager
+    digest: d52bd4a0f26ece8ae62a0d6a43ff4e21ead78c983c29eeed4e44ad1f71b2892f
+    keywords:
+    - agent
+    - sandbox
+    - apiserver
+    - proxy
+    - rl
+    - e2b
+    - console-visibility:false
+    name: agents-sandbox-manager
+    type: application
+    urls:
+    - https://github.com/openkruise/charts/releases/download/agents-sandbox-manager-v0.1.0/agents-sandbox-manager-v0.1.0.tgz
+    version: v0.1.0
   kruise:
   - annotations:
       artifacthub.io/changes: |
@@ -1472,4 +1509,4 @@ entries:
     urls:
     - https://github.com/openkruise/charts/releases/download/kruise-state-metrics-0.1.0/kruise-state-metrics-0.1.0.tgz
     version: 0.1.0
-generated: "2026-02-25T08:19:30.987782176Z"
+generated: "2026-03-09T06:48:40.886597197Z"
