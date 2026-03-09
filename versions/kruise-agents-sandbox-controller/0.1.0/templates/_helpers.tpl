@@ -48,7 +48,7 @@ Selector labels
 {{- define "sandbox-controller.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "sandbox-controller.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-control-plane: sandbox-controller
+control-plane: {{ include "sandbox-controller.name" . }}
 {{- end }}
 
 {{/*

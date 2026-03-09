@@ -4,21 +4,21 @@ metadata:
   name: {{ include "sandbox-manager.fullname" . }}
   labels:
     {{- include "sandbox-manager.labels" . | nindent 4 }}
-  {{- with .Values.sandboxManager.ingress.annotations }}
+  {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- with .Values.sandboxManager.ingress.className }}
+  {{- with .Values.ingress.className }}
   ingressClassName: {{ . }}
   {{- end }}
   tls:
     - hosts:
-        - "*.{{ .Values.sandboxManager.e2b.domain }}"
-        - "{{ .Values.sandboxManager.e2b.domain }}"
-      secretName: "{{ .Values.sandboxManager.ingress.certSecretName }}"
+        - "*.{{ .Values.e2b.domain }}"
+        - "{{ .Values.e2b.domain }}"
+      secretName: "{{ .Values.ingress.certSecretName }}"
   rules:
-    - host: '*.{{ .Values.sandboxManager.e2b.domain }}'
+    - host: '*.{{ .Values.e2b.domain }}'
       http:
         paths:
           - backend:
@@ -42,7 +42,7 @@ spec:
                   number: 7788
             path: /
             pathType: Prefix
-    - host: {{ .Values.sandboxManager.e2b.domain }}
+    - host: {{ .Values.e2b.domain }}
       http:
         paths:
           - backend:

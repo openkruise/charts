@@ -1,33 +1,32 @@
 # Default values for agents-sandbox-controller.
 # This is a YAML-formatted file.
 
-sandboxController:
-  replicaCount: 2
+replicaCount: 2
 
-  image:
-    repository: openkruise/agent-sandbox-controller
-    pullPolicy: IfNotPresent
-    tag: v0.1.0
+image:
+  repository: openkruise/agent-sandbox-controller
+  pullPolicy: IfNotPresent
+  tag: v0.1.0
 
-  # Webhook configuration
-  webhook:
-    port: 9443
+# Webhook configuration
+webhook:
+  port: 9443
 
-  # Metrics configuration
-  metrics:
-    port: 8443
+# Metrics configuration
+metrics:
+  port: 8443
 
-  # Health probe configuration
-  healthProbe:
-    port: 8081
+# Health probe configuration
+healthProbe:
+  port: 8081
 
-  resources:
-    limits:
-      cpu: "2"
-      memory: 4Gi
-    requests:
-      cpu: "2"
-      memory: 4Gi
+resources:
+  limits:
+    cpu: "2"
+    memory: 4Gi
+  requests:
+    cpu: "2"
+    memory: 4Gi
 
 # Namespace configuration
 namespace:
@@ -37,19 +36,19 @@ namespace:
 serviceAccount:
   create: true
   automount: true
-  annotations: {}
+  annotations: { }
   name: ""
 
 # RBAC configuration
 rbac:
   create: true
 
-imagePullSecrets: []
+imagePullSecrets: [ ]
 nameOverride: ""
 fullnameOverride: ""
 
-podAnnotations: {}
-podLabels: {}
+podAnnotations: { }
+podLabels: { }
 
 podSecurityContext:
   runAsNonRoot: true
@@ -65,8 +64,8 @@ securityContext:
       - NET_BIND_SERVICE
   readOnlyRootFilesystem: true
 
-nodeSelector: {}
+nodeSelector: { }
 
-tolerations: []
+tolerations: [ ]
 
-affinity: {}
+affinity: { }

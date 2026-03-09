@@ -6,10 +6,10 @@ metadata:
   labels:
     {{- include "sandbox-manager.labels" . | nindent 4 }}
 spec:
-  type: {{ .Values.sandboxManager.service.type }}
+  type: {{ .Values.service.type }}
   ports:
     - name: http-envoy
-      port: {{ .Values.sandboxManager.service.port }}
+      port: {{ .Values.service.port }}
       protocol: TCP
       targetPort: 7788
     - name: manager

@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "sandbox-controller.fullname" . }}-webhook-service
+  name: sandbox-controller-manager-webhook-service
   namespace: {{ include "sandbox-controller.namespace" . }}
   labels:
     {{- include "sandbox-controller.labels" . | nindent 4 }}
@@ -9,6 +9,6 @@ spec:
   ports:
     - port: 443
       protocol: TCP
-      targetPort: {{ .Values.sandboxController.webhook.port }}
+      targetPort: {{ .Values.webhook.port }}
   selector:
     {{- include "sandbox-controller.selectorLabels" . | nindent 4 }}

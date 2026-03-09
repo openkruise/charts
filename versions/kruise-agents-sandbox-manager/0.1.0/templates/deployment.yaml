@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "sandbox-manager.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.sandboxManager.replicaCount }}
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       {{- include "sandbox-manager.selectorLabels" . | nindent 6 }}
@@ -35,20 +35,20 @@ spec:
       {{- if and (eq (int .Capabilities.KubeVersion.Major) 1) (ge (int .Capabilities.KubeVersion.Minor) 26) }}
         allowPrivilegeEscalation: {{ .Values.podSecurityContextAllowPrivilegeEscalation }}
       {{- end }}
-      hostNetwork: {{ .Values.sandboxManager.controller.hostNetwork | default false }}
+      hostNetwork: {{ .Values.controller.hostNetwork | default false }}
       containers:
         - name: controller
           {{- with .Values.securityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          image: "{{ .Values.sandboxManager.controller.repository }}:{{ .Values.sandboxManager.controller.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.sandboxManager.controller.pullPolicy }}
+          image: "{{ .Values.controller.repository }}:{{ .Values.controller.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.controller.pullPolicy }}
           command:
             - /sandbox-manager
           args:
-            - -v={{ .Values.sandboxManager.controller.logLevel }}
-            - --zap-log-level={{ .Values.sandboxManager.controller.logLevel }}
+            - -v={{ .Values.controller.logLevel }}
+            - --zap-log-level={{ .Values.controller.logLevel }}
             - --peer-selector=agents.kruise.io/sandbox-manager-peer-finder={{ .Release.Name }}-{{ .Release.Revision }}
           ports:
             - containerPort: 8080
@@ -86,22 +86,22 @@ spec:
             - name: KUBE_CLIENT_BURST
               value: "30000"
             - name: E2B_DOMAIN
-              value: {{ .Values.sandboxManager.e2b.domain }}
+              value: {{ .Values.e2b.domain }}
             - name: E2B_ADMIN_KEY
-              value: {{ .Values.sandboxManager.e2b.adminApiKey }}
+              value: {{ .Values.e2b.adminApiKey }}
             - name: E2B_ENABLE_AUTH
-              value: {{ .Values.sandboxManager.e2b.enableAuth | quote }}
+              value: {{ .Values.e2b.enableAuth | quote }}
             - name: E2B_MAX_TIMEOUT
-              value: {{ printf "%d" (int .Values.sandboxManager.e2b.maxTimeout) | quote }}
+              value: {{ printf "%d" (int .Values.e2b.maxTimeout) | quote }}
             - name: INFRA
-              value: {{ .Values.sandboxManager.controller.infra }}
+              value: {{ .Values.controller.infra }}
             - name: MAX_CLAIM_WORKERS
-              value: {{ printf "%d" (int .Values.sandboxManager.controller.maxClaimWorkers) | quote }}
+              value: {{ printf "%d" (int .Values.controller.maxClaimWorkers) | quote }}
             - name: MAX_CREATE_QPS
-              value: {{ printf "%d" (int .Values.sandboxManager.controller.maxCreateQPS) | quote }}
+              value: {{ printf "%d" (int .Values.controller.maxCreateQPS) | quote }}
             - name: EXT_PROC_MAX_CONCURRENCY
-              value: {{ printf "%d" (int .Values.sandboxManager.controller.extProcMaxConcurrency) | quote }}
-          {{- with .Values.sandboxManager.controller.resources }}
+              value: {{ printf "%d" (int .Values.controller.extProcMaxConcurrency) | quote }}
+          {{- with .Values.controller.resources }}
           resources:
             limits:
               {{- toYaml . | nindent 14 }}
@@ -113,8 +113,8 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          image: "{{ .Values.sandboxManager.proxy.repository }}:{{ .Values.sandboxManager.proxy.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.sandboxManager.proxy.pullPolicy }}
+          image: "{{ .Values.proxy.repository }}:{{ .Values.proxy.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.proxy.pullPolicy }}
           args:
             - "--config-path /etc/envoy/envoy.yaml"
           livenessProbe:
@@ -144,7 +144,7 @@ spec:
             - name: envoy-config
               mountPath: /etc/envoy/envoy.yaml
               subPath: envoy.yaml
-          {{- with .Values.sandboxManager.proxy.resources }}
+          {{- with .Values.proxy.resources }}
           resources:
             limits:
               {{- toYaml . | nindent 14 }}
@@ -168,6 +168,17 @@ spec:
                   matchLabels:
                     {{- include "sandbox-manager.selectorLabels" . | nindent 20 }}
                 topologyKey: kubernetes.io/hostname
+      topologySpreadConstraints:
+        - labelSelector:
+            matchLabels:
+              control-plane: {{ include "sandbox-manager.name" . }}
+{{- if and ( eq (int .Capabilities.KubeVersion.Major) 1) ( gt (int .Capabilities.KubeVersion.Minor) 26 ) }}
+          matchLabelKeys:
+            - pod-template-hash
+{{- end }}
+          maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
       {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}

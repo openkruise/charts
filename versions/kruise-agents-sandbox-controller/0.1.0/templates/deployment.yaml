@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "sandbox-controller.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.sandboxController.replicaCount }}
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       {{- include "sandbox-controller.selectorLabels" . | nindent 6 }}
@@ -34,32 +34,32 @@ spec:
       {{- end }}
       containers:
         - args:
-            - --metrics-bind-address=:{{ .Values.sandboxController.metrics.port }}
+            - --metrics-bind-address=:{{ .Values.metrics.port }}
             - --leader-elect
-            - --health-probe-bind-address=:{{ .Values.sandboxController.healthProbe.port }}
+            - --health-probe-bind-address=:{{ .Values.healthProbe.port }}
             - --webhook-cert-path=/home/nonroot/sandbox-controller-webhook-certs
           command:
             - /manager
-          image: "{{ .Values.sandboxController.image.repository }}:{{ .Values.sandboxController.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.sandboxController.image.pullPolicy }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           livenessProbe:
             httpGet:
               path: /healthz
-              port: {{ .Values.sandboxController.healthProbe.port }}
+              port: {{ .Values.healthProbe.port }}
             initialDelaySeconds: 15
             periodSeconds: 20
           name: manager
-          ports: []
+          ports: [ ]
           readinessProbe:
             httpGet:
               path: /readyz
-              port: {{ .Values.sandboxController.healthProbe.port }}
+              port: {{ .Values.healthProbe.port }}
             initialDelaySeconds: 5
             periodSeconds: 10
           volumeMounts:
             - name: webhook-certs
               mountPath: /home/nonroot/sandbox-controller-webhook-certs
-        {{- with .Values.sandboxController.resources }}
+        {{- with .Values.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
         {{- end }}
@@ -70,7 +70,7 @@ spec:
       terminationGracePeriodSeconds: 10
       volumes:
         - name: webhook-certs
-          emptyDir: {}
+          emptyDir: { }
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -79,6 +79,17 @@ spec:
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      topologySpreadConstraints:
+        - labelSelector:
+            matchLabels:
+              control-plane: {{ include "sandbox-controller.name" . }}
+{{- if and ( eq (int .Capabilities.KubeVersion.Major) 1) ( gt (int .Capabilities.KubeVersion.Minor) 26 ) }}
+          matchLabelKeys:
+            - pod-template-hash
+{{- end }}
+          maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
       {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}

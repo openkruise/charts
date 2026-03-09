@@ -63,7 +63,7 @@ data:
           type: STATIC
           connect_timeout: 5s
           http2_protocol_options:
-            max_concurrent_streams: {{ .Values.sandboxManager.controller.extProcMaxConcurrency }}
+            max_concurrent_streams: {{ .Values.controller.extProcMaxConcurrency }}
           load_assignment:
             cluster_name: ext_proc_cluster
             endpoints:

@@ -8,7 +8,7 @@ webhooks:
       - v1beta1
     clientConfig:
       service:
-        name: {{ include "sandbox-controller.fullname" . }}-webhook-service
+        name: sandbox-controller-manager-webhook-service
         namespace: {{ include "sandbox-controller.namespace" . }}
         path: /default-sandboxset
     failurePolicy: Fail
@@ -29,7 +29,7 @@ webhooks:
       - v1beta1
     clientConfig:
       service:
-        name: {{ include "sandbox-controller.fullname" . }}-webhook-service
+        name: sandbox-controller-manager-webhook-service
         namespace: {{ include "sandbox-controller.namespace" . }}
         path: /default-sandboxtemplate
     failurePolicy: Fail
@@ -55,7 +55,7 @@ webhooks:
       - v1beta1
     clientConfig:
       service:
-        name: {{ include "sandbox-controller.fullname" . }}-webhook-service
+        name: sandbox-controller-manager-webhook-service
         namespace: {{ include "sandbox-controller.namespace" . }}
         path: /validate-sandboxset
     failurePolicy: Fail
@@ -76,7 +76,7 @@ webhooks:
       - v1beta1
     clientConfig:
       service:
-        name: {{ include "sandbox-controller.fullname" . }}-webhook-service
+        name: sandbox-controller-manager-webhook-service
         namespace: {{ include "sandbox-controller.namespace" . }}
         path: /validate-sandboxtemplate
     failurePolicy: Ignore
