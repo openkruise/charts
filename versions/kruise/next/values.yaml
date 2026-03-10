@@ -62,6 +62,9 @@ manager:
 
 webhookConfiguration:
   timeoutSeconds: 30
+  # Enable AKS-specific namespace selectors on webhooks to exclude AKS control-plane
+  # and managed namespaces. Set to true when deploying on Azure Kubernetes Service.
+  aksIntegration: false
 
 daemon:
   log:
