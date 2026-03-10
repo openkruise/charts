@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-dashboards
+  labels:
+    grafana_dashboard: "1"
+data:
+  kruise-game-dashboard.json: |-
+{{ .Files.Get "dashboards/kruise-game-dashboard.json" | indent 4 }}

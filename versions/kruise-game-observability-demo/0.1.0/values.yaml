@@ -1,0 +1,437 @@
+# Default values for kruise-game-observability-demo.
+# This is a wrapper chart, so most configuration is for sub-charts.
+
+# 0. OpenKruise (installs CRDs required by KruiseGame)
+kruise:
+  enabled: true
+  installCRDs: true
+  installation:
+    namespace: kruise-system
+  manager:
+    replicaCount: 1
+
+# 1. KruiseGame Configuration
+kruise-game:
+  # Default dev tag always points to the latest build; override tag or set digest for pinning
+  image:
+    repository: ghcr.io/ballista01/kruise-game-manager
+    tag: dev
+    digest: ""
+    pullPolicy: Always
+  manager:
+    # Log output format for manager. Allowed: console, json
+    logFormat: console
+    otel:
+      enabled: true
+      # Leave empty to use the default derived endpoint (ReleaseName-collector.ReleaseNamespace.svc:4317)
+      endpoint: ""
+      sampleRate: 1.0
+  prometheus:
+    enabled: true
+
+# 2. OpenTelemetry Collector Configuration
+opentelemetry-collector:
+  enabled: true
+  mode: deployment
+  image:
+    repository: "otel/opentelemetry-collector-contrib"
+    tag: "0.140.0"
+  extraEnvs:
+    - name: KUBE_NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+  # We will inject the full config in later steps based on E2E
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+      prometheus/native:
+        config:
+          global:
+            scrape_interval: 15s
+          scrape_configs:
+            - job_name: okg-controller
+              scheme: http
+              scrape_interval: 30s
+              kubernetes_sd_configs:
+                - role: endpoints
+                  namespaces:
+                    names: ["kruise-game-system"]
+              relabel_configs:
+                - source_labels: [__meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+                  regex: .*controller-manager-metrics-service;.*
+                  action: keep
+
+    processors:
+      batch:
+        timeout: 5s
+        send_batch_size: 512
+      filter/network_only:
+        error_mode: ignore
+        spans:
+          include:
+            match_type: strict
+            attributes:
+              - key: game.kruise.io.network.plugin.name
+      
+      # Memory limiter to prevent OOM
+      memory_limiter:
+        check_interval: 1s
+        limit_mib: 400
+        spike_limit_mib: 100
+      
+      # K8s attributes processor for E2E tests
+      # Only enrich fields that workload cannot inject by itself（Pod UID/IP）
+      k8sattributes:
+        auth_type: serviceAccount
+        passthrough: false
+        filter:
+          node_from_env_var: KUBE_NODE_NAME
+        extract:
+          metadata:
+            - k8s.pod.uid
+        pod_association:
+          - sources:
+              - from: resource_attribute
+                name: game.kruise.io.k8s.pod_ip
+          - sources:
+              - from: resource_attribute
+                name: k8s.pod.uid
+          - sources:
+              - from: connection
+
+      transform/log_trace_labels:
+        log_statements:
+          - context: log
+            statements:
+            - set(attributes["trace_id"], trace_id.string)
+            - set(attributes["span_id"], span_id.string)
+      
+      # Tail sampling for intelligent trace sampling
+      tail_sampling:
+        decision_wait: 10s
+        num_traces: 100000
+        expected_new_traces_per_sec: 100
+        policies:
+          - name: errors
+            type: status_code
+            status_code:
+              status_codes: [ERROR]
+          - name: slow
+            type: latency
+            latency:
+              threshold_ms: 1000
+          - name: sample_all
+            type: probabilistic
+            probabilistic:
+              sampling_percentage: 100
+
+    connectors:
+      spanmetrics/network:
+        namespace: okg_network
+        histogram:
+          unit: s
+          explicit:
+            buckets: ["0.01s", "0.1s", "0.25s", "0.5s", "1s", "2s", "5s", "10s"]
+        dimensions:
+          - name: game.kruise.io.network.plugin.name
+          - name: cloud.provider
+          - name: game.kruise.io.network.status
+        exemplars:
+          enabled: true
+        aggregation_temporality: cumulative
+      
+    exporters:
+      otlp/tempo:
+        endpoint: "okg-demo-tempo:4317"
+        tls:
+          insecure: true
+      
+      otlphttp/loki:
+        endpoint: "http://okg-demo-loki:3100/otlp"
+        tls:
+          insecure: true
+      
+      prometheus/local:
+        endpoint: 0.0.0.0:8889
+        enable_open_metrics: true
+      
+      debug:
+        verbosity: detailed
+        sampling_initial: 5
+        sampling_thereafter: 200
+
+    extensions:
+      health_check:
+        endpoint: 0.0.0.0:13133
+
+    service:
+      extensions: [health_check]
+      pipelines:
+        traces/network:
+          receivers: [otlp]
+          processors: [memory_limiter, k8sattributes, filter/network_only, batch]
+          exporters: [spanmetrics/network]
+        metrics/network:
+          receivers: [spanmetrics/network]
+          processors: [memory_limiter, batch]
+          exporters: [prometheus/local]
+        metrics/native:
+          receivers: [prometheus/native]
+          processors: [memory_limiter, batch]
+          exporters: [prometheus/local]
+        traces/storage:
+          receivers: [otlp]
+          processors: [memory_limiter, k8sattributes, batch, tail_sampling]
+          exporters: [otlp/tempo, debug]
+        logs:
+          receivers: [otlp]
+          processors: [memory_limiter, k8sattributes, transform/log_trace_labels, batch]
+          exporters: [otlphttp/loki]
+      
+      telemetry:
+        logs:
+          level: debug
+        metrics:
+          level: detailed
+          readers:
+            - pull:
+                exporter:
+                  prometheus:
+                    host: 0.0.0.0
+                    port: 8888
+                    without_units: true
+                    without_type_suffix: true
+                    without_scope_info: true
+  ports:
+    otlp:
+      enabled: true
+      containerPort: 4317
+      servicePort: 4317
+      hostPort: 4317
+      protocol: TCP
+    otlp-http:
+      enabled: true
+      containerPort: 4318
+      servicePort: 4318
+      hostPort: 4318
+      protocol: TCP
+    metrics:
+      enabled: true
+      containerPort: 8888
+      servicePort: 8888
+      hostPort: 8888
+      protocol: TCP
+    prom-exporter:
+      enabled: true
+      containerPort: 8889
+      servicePort: 8889
+      hostPort: 8889
+      protocol: TCP
+    health:
+      enabled: true
+      containerPort: 13133
+      servicePort: 13133
+      hostPort: 13133
+      protocol: TCP
+  # Grant permissions for k8sattributes processor
+  clusterRole:
+    create: true
+    name: ""
+    rules:
+    - apiGroups: [""]
+      resources: ["pods", "namespaces", "nodes"]
+      verbs: ["get", "watch", "list"]
+    - apiGroups: [""]
+      resources: ["services", "endpoints"]
+      verbs: ["get", "list", "watch"]
+
+# 3. Loki Configuration
+loki:
+  enabled: true
+  deploymentMode: SingleBinary
+  loki:
+    auth_enabled: false
+    commonConfig:
+      replication_factor: 1
+    storage:
+      type: filesystem
+    schemaConfig:
+      configs:
+      - from: "2024-04-01"
+        store: tsdb
+        object_store: filesystem
+        schema: v13
+        index:
+          prefix: index_
+          period: 24h
+  singleBinary:
+    replicas: 1
+    persistence:
+      enabled: false
+    extraVolumeMounts:
+      - name: storage
+        mountPath: /var/loki
+    extraVolumes:
+      - name: storage
+        emptyDir: {}
+  # Explicitly disable scalable components to avoid validation errors
+  read:
+    replicas: 0
+  write:
+    replicas: 0
+  backend:
+    replicas: 0
+  
+  # Fix for nil pointer error in chart template (helpers sometimes need these even in SingleBinary)
+  storage:
+    type: filesystem
+    bucketNames:
+      chunks: chunks
+      ruler: ruler
+      admin: admin
+
+# 4. Tempo Configuration
+tempo:
+  enabled: true
+  persistence:
+    enabled: false # Ephemeral for demo
+  tempo:
+    metricsGenerator:
+      enabled: true
+      remoteWriteUrl: "http://okg-demo-prometheus-server/api/v1/write"
+    overrides:
+      defaults:
+        metrics_generator:
+          processors: [local-blocks]
+
+# 5. Prometheus Configuration
+prometheus:
+  enabled: true
+  server:
+    persistentVolume:
+      enabled: false # Ephemeral for demo
+    extraFlags:
+      - enable-feature=exemplar-storage
+      - web.enable-remote-write-receiver
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+      external_labels:
+        cluster: okg-demo
+  alertmanager:
+    enabled: false
+  pushgateway:
+    enabled: false
+  nodeExporter:
+    enabled: false
+  serverFiles:
+    prometheus.yml:
+      scrape_configs:
+        - job_name: otel-collector
+          static_configs:
+            - targets: ['okg-demo-opentelemetry-collector:8888']
+
+        - job_name: okg-metrics
+          static_configs:
+            - targets: ['okg-demo-opentelemetry-collector:8889']
+
+        - job_name: tempo
+          static_configs:
+            - targets: ['okg-demo-tempo:3200']
+
+        - job_name: prometheus
+          static_configs:
+            - targets: ['localhost:9090']
+
+# 6. Grafana Configuration
+grafana:
+  enabled: true
+  persistence:
+    enabled: false # Ephemeral for demo
+  adminPassword: "admin" # Simple password for demo
+  # Datasources will be auto-configured via sidecar or values
+  datasources: 
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+      - name: Prometheus
+        type: prometheus
+        uid: prometheus
+        url: http://okg-demo-prometheus-server
+        access: proxy
+        isDefault: true
+      - name: Loki
+        type: loki
+        uid: loki
+        url: http://okg-demo-loki:3100
+        access: proxy
+        jsonData:
+          derivedFields:
+          - name: trace_id
+            datasourceUid: tempo
+            matcherRegex: trace_id
+            matcherType: label
+            url: '$${__value.raw}'
+            urlDisplayLabel: 'View trace'
+      - name: Tempo
+        type: tempo
+        uid: tempo
+        url: http://okg-demo-tempo:3200
+        access: proxy
+        jsonData:
+          nodeGraph:
+            enabled: true
+          tracesToLogs:
+            datasourceUid: loki
+            # widen the log query window relative to span start/end to avoid missing nearby errors
+            spanStartTimeShift: "-5m"
+            spanEndTimeShift: "5m"
+            filterByTraceID: true
+            filterBySpanID: false
+          lokiSearch:
+            datasourceUid: loki
+
+  # Dashboards will be loaded from ConfigMap via sidecar
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      searchNamespace: ALL
+  dashboardProviders: 
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/default
+
+# 7. Demo GameServer (Minecraft via HostPort) to generate telemetry
+demoGameServer:
+  enabled: true
+  name: minecraft
+  replicas: 1
+  image: registry.cn-hangzhou.aliyuncs.com/acs/minecraft-demo:1.12.2
+  containerName: minecraft
+  network:
+    type: Kubernetes-HostPort
+    containerPorts: "minecraft:25565/TCP" # containerName:port/protocol
+  headlessService:
+    enabled: true
+  resources:
+    limits:
+      cpu: 500m
+      memory: 2Gi
+    requests:
+      cpu: 200m
+      memory: 1Gi
