@@ -55,7 +55,7 @@ webhooks:
       service:
         name: kruise-webhook-service
         namespace: {{ .Values.installation.namespace }}
-        path: /mutate-apps-kruise-io-v1alpha1-advancedcronjob
+        path: /mutate-apps-kruise-io-advancedcronjob
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: madvancedcronjob.kb.io
@@ -76,6 +76,7 @@ webhooks:
           - apps.kruise.io
         apiVersions:
           - v1alpha1
+          - v1beta1
         operations:
           - CREATE
           - UPDATE
@@ -89,7 +90,7 @@ webhooks:
       service:
         name: kruise-webhook-service
         namespace: {{ .Values.installation.namespace }}
-        path: /mutate-apps-kruise-io-v1alpha1-broadcastjob
+        path: /mutate-apps-kruise-io-broadcastjob
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: mbroadcastjob.kb.io
@@ -110,6 +111,7 @@ webhooks:
           - apps.kruise.io
         apiVersions:
           - v1alpha1
+          - v1beta1
         operations:
           - CREATE
           - UPDATE
@@ -191,7 +193,7 @@ webhooks:
       service:
         name: kruise-webhook-service
         namespace: {{ .Values.installation.namespace }}
-        path: /mutate-apps-kruise-io-v1alpha1-daemonset
+        path: /mutate-apps-kruise-io-daemonset
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: mdaemonset.kb.io
@@ -212,6 +214,7 @@ webhooks:
           - apps.kruise.io
         apiVersions:
           - v1alpha1
+          - v1beta1
         operations:
           - CREATE
           - UPDATE
@@ -225,10 +228,10 @@ webhooks:
       service:
         name: kruise-webhook-service
         namespace: {{ .Values.installation.namespace }}
-        path: /mutate-apps-kruise-io-v1alpha1-imagelistpulljob
+        path: /mutate-apps-kruise-io-imagelistpulljob
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
-    name: mimagelistpulljob.kb.io
+    name: mimagelistpulljob-v1beta1.kb.io
 {{- if .Values.webhookConfiguration.aksIntegration }}
     namespaceSelector:
       matchExpressions:
@@ -246,6 +249,7 @@ webhooks:
           - apps.kruise.io
         apiVersions:
           - v1alpha1
+          - v1beta1
         operations:
           - CREATE
           - UPDATE
@@ -259,10 +263,10 @@ webhooks:
       service:
         name: kruise-webhook-service
         namespace: {{ .Values.installation.namespace }}
-        path: /mutate-apps-kruise-io-v1alpha1-imagepulljob
+        path: /mutate-apps-kruise-io-imagepulljob
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
-    name: mimagepulljob.kb.io
+    name: mimagepulljob-v1beta1.kb.io
 {{- if .Values.webhookConfiguration.aksIntegration }}
     namespaceSelector:
       matchExpressions:
@@ -280,6 +284,7 @@ webhooks:
           - apps.kruise.io
         apiVersions:
           - v1alpha1
+          - v1beta1
         operations:
           - CREATE
           - UPDATE
@@ -293,7 +298,7 @@ webhooks:
       service:
         name: kruise-webhook-service
         namespace: {{ .Values.installation.namespace }}
-        path: /mutate-apps-kruise-io-v1alpha1-nodeimage
+        path: /mutate-apps-kruise-io-nodeimage
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: mnodeimage.kb.io
@@ -314,6 +319,7 @@ webhooks:
           - apps.kruise.io
         apiVersions:
           - v1alpha1
+          - v1beta1
         operations:
           - CREATE
           - UPDATE
@@ -327,7 +333,7 @@ webhooks:
       service:
         name: kruise-webhook-service
         namespace: {{ .Values.installation.namespace }}
-        path: /mutate-apps-kruise-io-v1alpha1-sidecarset
+        path: /mutate-apps-kruise-io-sidecarset
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: msidecarset.kb.io
@@ -348,6 +354,7 @@ webhooks:
           - apps.kruise.io
         apiVersions:
           - v1alpha1
+          - v1beta1
         operations:
           - CREATE
           - UPDATE
@@ -877,7 +884,7 @@ webhooks:
       service:
         name: kruise-webhook-service
         namespace: {{ .Values.installation.namespace }}
-        path: /validate-apps-kruise-io-v1alpha1-advancedcronjob
+        path: /validate-apps-kruise-io-advancedcronjob
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: vadvancedcronjob.kb.io
@@ -898,6 +905,7 @@ webhooks:
           - apps.kruise.io
         apiVersions:
           - v1alpha1
+          - v1beta1
         operations:
           - CREATE
           - UPDATE
@@ -911,7 +919,7 @@ webhooks:
       service:
         name: kruise-webhook-service
         namespace: {{ .Values.installation.namespace }}
-        path: /validate-apps-kruise-io-v1alpha1-broadcastjob
+        path: /validate-apps-kruise-io-broadcastjob
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: vbroadcastjob.kb.io
@@ -932,6 +940,7 @@ webhooks:
           - apps.kruise.io
         apiVersions:
           - v1alpha1
+          - v1beta1
         operations:
           - CREATE
           - UPDATE
@@ -980,7 +989,7 @@ webhooks:
       service:
         name: kruise-webhook-service
         namespace: {{ .Values.installation.namespace }}
-        path: /validate-apps-kruise-io-v1alpha1-daemonset
+        path: /validate-apps-kruise-io-daemonset
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: vdaemonset.kb.io
@@ -1001,6 +1010,7 @@ webhooks:
           - apps.kruise.io
         apiVersions:
           - v1alpha1
+          - v1beta1
         operations:
           - CREATE
           - UPDATE
@@ -1014,10 +1024,10 @@ webhooks:
       service:
         name: kruise-webhook-service
         namespace: {{ .Values.installation.namespace }}
-        path: /validate-apps-kruise-io-v1alpha1-imagelistpulljob
+        path: /validate-apps-kruise-io-imagelistpulljob
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
-    name: vimagelistpulljob.kb.io
+    name: vimagelistpulljob-v1beta1.kb.io
 {{- if .Values.webhookConfiguration.aksIntegration }}
     namespaceSelector:
       matchExpressions:
@@ -1035,6 +1045,7 @@ webhooks:
           - apps.kruise.io
         apiVersions:
           - v1alpha1
+          - v1beta1
         operations:
           - CREATE
           - UPDATE
@@ -1048,10 +1059,10 @@ webhooks:
       service:
         name: kruise-webhook-service
         namespace: {{ .Values.installation.namespace }}
-        path: /validate-apps-kruise-io-v1alpha1-imagepulljob
+        path: /validate-apps-kruise-io-imagepulljob
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
-    name: vimagepulljob.kb.io
+    name: vimagepulljob-v1beta1.kb.io
 {{- if .Values.webhookConfiguration.aksIntegration }}
     namespaceSelector:
       matchExpressions:
@@ -1069,6 +1080,7 @@ webhooks:
           - apps.kruise.io
         apiVersions:
           - v1alpha1
+          - v1beta1
         operations:
           - CREATE
           - UPDATE
@@ -1082,7 +1094,7 @@ webhooks:
       service:
         name: kruise-webhook-service
         namespace: {{ .Values.installation.namespace }}
-        path: /validate-apps-kruise-io-v1alpha1-nodeimage
+        path: /validate-apps-kruise-io-nodeimage
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: vnodeimage.kb.io
@@ -1103,6 +1115,7 @@ webhooks:
           - apps.kruise.io
         apiVersions:
           - v1alpha1
+          - v1beta1
         operations:
           - CREATE
           - UPDATE
@@ -1218,7 +1231,7 @@ webhooks:
       service:
         name: kruise-webhook-service
         namespace: {{ .Values.installation.namespace }}
-        path: /validate-apps-kruise-io-v1alpha1-sidecarset
+        path: /validate-apps-kruise-io-sidecarset
     failurePolicy: Fail
     timeoutSeconds: {{ .Values.webhookConfiguration.timeoutSeconds }}
     name: vsidecarset.kb.io
@@ -1239,6 +1252,7 @@ webhooks:
           - apps.kruise.io
         apiVersions:
           - v1alpha1
+          - v1beta1
         operations:
           - CREATE
           - UPDATE
@@ -1280,6 +1294,39 @@ webhooks:
           - DELETE
         resources:
           - statefulsets
+    sideEffects: None
+  - admissionReviewVersions:
+    - v1
+    - v1beta1
+    clientConfig:
+      service:
+        name: kruise-webhook-service
+        namespace: {{ .Values.installation.namespace }}
+        path: /validate-apps-kruise-io-v1alpha1-ephemeraljob
+    failurePolicy: Fail
+    name: vephemeraljobs.kb.io
+{{- if .Values.webhookConfiguration.aksIntegration }}
+    namespaceSelector:
+      matchExpressions:
+        - key: control-plane
+          operator: NotIn
+          values:
+            - 'true'
+        - key: kubernetes.azure.com/managedby
+          operator: NotIn
+          values:
+            - aks
+{{- end }}
+    rules:
+    - apiGroups:
+      - apps.kruise.io
+      apiVersions:
+      - v1alpha1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - ephemeraljobs
     sideEffects: None
   - admissionReviewVersions:
       - v1
