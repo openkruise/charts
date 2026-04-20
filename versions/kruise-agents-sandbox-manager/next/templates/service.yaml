@@ -16,5 +16,33 @@ spec:
       port: 8080
       protocol: TCP
       targetPort: 8080
+    - name: grpc-extproc
+      protocol: TCP
+      port: 9002
+      targetPort: 9002
   selector:
     {{- include "sandbox-manager.selectorLabels" . | nindent 4 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sandbox-gateway
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sandbox-gateway.labels" . | nindent 4 }}
+    {{- with .Values.gateway.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.gateway.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.gateway.service.type }}
+  ports:
+    - port: {{ .Values.gateway.service.port }}
+      targetPort: {{ .Values.gateway.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "sandbox-gateway.selectorLabels" . | nindent 4 }}

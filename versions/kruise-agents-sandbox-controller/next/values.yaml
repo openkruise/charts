@@ -6,7 +6,7 @@ replicaCount: 2
 image:
   repository: openkruise/agent-sandbox-controller
   pullPolicy: IfNotPresent
-  tag: v0.1.0
+  tag: v0.2.0
 
 # Webhook configuration
 webhook:

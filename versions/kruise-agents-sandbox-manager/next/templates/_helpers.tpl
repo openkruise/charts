@@ -52,7 +52,7 @@ component: {{ include "sandbox-manager.name" . }}
 {{- end }}
 
 {{- define "sandbox-manager.peerLabels" -}}
-agents.kruise.io/sandbox-manager-peer-finder: {{ .Release.Name }}-{{ .Release.Revision }}
+agents.kruise.io/sandbox-manager-peer-finder: {{ .Release.Name }}
 {{- end }}
 
 {{/*
@@ -60,4 +60,24 @@ Create the name of the service account to use
 */}}
 {{- define "sandbox-manager.serviceAccountName" -}}
 {{- default (include "sandbox-manager.fullname" .) .Values.serviceAccount.name }}
+{{- end }}
+
+{{/*
+Common labels
+*/}}
+{{- define "sandbox-gateway.labels" -}}
+helm.sh/chart: {{ include "sandbox-manager.chart" . }}
+{{ include "sandbox-gateway.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
+Selector labels
+*/}}
+{{- define "sandbox-gateway.selectorLabels" -}}
+app.kubernetes.io/name: sandbox-gateway
+app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}

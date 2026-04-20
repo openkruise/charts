@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ include "sandbox-manager.serviceAccountName" . }}
+  name: {{ include "sandbox-manager.serviceAccountName" . }}-manager
   labels:
     {{- include "sandbox-manager.labels" . | nindent 4 }}
 rules:
@@ -15,19 +15,19 @@ rules:
     resources: [ "events" ]
     verbs: [ "create", "patch" ]
   - apiGroups: [ "agents.kruise.io" ]
-    resources: [ "sandboxes", "sandboxsets" ]
+    resources: [ "sandboxes", "sandboxsets", "checkpoints", "sandboxtemplates" ]
     verbs: [ "get", "list", "watch", "update", "patch", "delete", "create" ]
   - apiGroups: [ "agents.kruise.io" ]
     resources: [ "sandboxes/status", "sandboxsets/status" ]
     verbs: [ "get", "update", "patch" ]
   - apiGroups: [ "" ]
-    resources: [ "persistentvolumes" ]
+    resources: [ "persistentvolumes", "configmaps" ]
     verbs: [ "get", "list", "watch" ]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ include "sandbox-manager.serviceAccountName" . }}-secrets
+  name: {{ include "sandbox-manager.serviceAccountName" . }}-manager-secrets
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "sandbox-manager.labels" . | nindent 4 }}
@@ -39,30 +39,62 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ include "sandbox-manager.serviceAccountName" . }}
+  name: {{ include "sandbox-manager.serviceAccountName" . }}-manager
   labels:
     {{- include "sandbox-manager.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ include "sandbox-manager.serviceAccountName" . }}
+  name: {{ include "sandbox-manager.serviceAccountName" . }}-manager
 subjects:
   - kind: ServiceAccount
-    name: {{ include "sandbox-manager.serviceAccountName" . }}
+    name: {{ include "sandbox-manager.serviceAccountName" . }}-manager
     namespace: {{ .Release.Namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: {{ include "sandbox-manager.serviceAccountName" . }}-secrets
+  name: {{ include "sandbox-manager.serviceAccountName" . }}-manager-secrets
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "sandbox-manager.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: {{ include "sandbox-manager.serviceAccountName" . }}-secrets
+  name: {{ include "sandbox-manager.serviceAccountName" . }}-manager-secrets
 subjects:
   - kind: ServiceAccount
-    name: {{ include "sandbox-manager.serviceAccountName" . }}
+    name: {{ include "sandbox-manager.serviceAccountName" . }}-manager
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "sandbox-manager.serviceAccountName" . }}-gateway
+  labels:
+    {{- include "sandbox-gateway.labels" . | nindent 4 }}
+rules:
+  - apiGroups: ["agents.kruise.io"]
+    resources: ["sandboxes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["agents.kruise.io"]
+    resources: ["sandboxes/status"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "sandbox-manager.serviceAccountName" . }}-gateway
+  labels:
+    {{- include "sandbox-gateway.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "sandbox-manager.serviceAccountName" . }}-gateway
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "sandbox-manager.serviceAccountName" . }}-gateway
     namespace: {{ .Release.Namespace }}

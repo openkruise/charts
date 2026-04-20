@@ -96,6 +96,7 @@ rules:
   - apiGroups:
       - ""
     resources:
+      - pods/resize
       - pods/status
     verbs:
       - get
@@ -111,6 +112,15 @@ rules:
       - list
       - patch
       - update
+      - watch
+  - apiGroups:
+      - agents.kruise.io
+    resources:
+      - checkpoints
+      - sandboxtemplates
+    verbs:
+      - get
+      - list
       - watch
   - apiGroups:
       - agents.kruise.io
