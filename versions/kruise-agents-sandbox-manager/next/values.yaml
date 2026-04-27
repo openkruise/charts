@@ -1,0 +1,87 @@
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 2
+
+e2b:
+  domain: "your.domain.com"
+  enableAuth: true
+  adminApiKey: "admin-987654321"
+  maxTimeout: 2592000
+
+controller:
+  repository: openkruise/sandbox-manager
+  tag: v0.1.0
+  pullPolicy: IfNotPresent
+  logLevel: 3
+  infra: sandbox-cr
+  resources:
+    cpu: "2"
+    memory: 4Gi
+  hostNetwork: false
+  maxClaimWorkers: 100
+  maxCreateQPS: 200
+  extProcMaxConcurrency: 3000
+
+proxy:
+  repository: envoyproxy/envoy
+  pullPolicy: IfNotPresent
+  tag: v1.33-latest
+  resources:
+    cpu: "2"
+    memory: 4Gi
+
+service:
+  type: ClusterIP
+  port: 7788
+
+ingress:
+  className: nginx
+  annotations: { }
+  certSecretName: sandbox-manager-tls
+
+imagePullSecrets: { }
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  automount: true
+  annotations: { }
+  name: ""
+
+podAnnotations: { }
+podLabels: { }
+
+podSecurityContext:
+  fsGroup: 2000
+  seccompProfile:
+    type: RuntimeDefault
+
+podSecurityContextAllowPrivilegeEscalation: false
+
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+    add:
+      - NET_BIND_SERVICE
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  runAsNonRoot: true
+  runAsUser: 65532
+
+nodeSelector: { }
+
+tolerations: [ ]
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: agents-sandbox-manager
+              app.kubernetes.io/instance: agents-sandbox-manager
+              component: agents-sandbox-manager
+          topologyKey: kubernetes.io/hostname
