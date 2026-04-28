@@ -4,9 +4,9 @@ description: The Helm chart for Agents Sandbox Controller
 
 type: application
 
-version: v0.1.0
+version: v0.2.0
 
-appVersion: "v0.1.0"
+appVersion: "v0.2.0"
 
 keywords:
   - agent
@@ -15,3 +15,6 @@ keywords:
   - kruise
   - kubernetes
   - openkruise
+annotations:
+  artifacthub.io/changes: |
+    - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"

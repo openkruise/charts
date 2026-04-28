@@ -32,10 +32,8 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- if and (eq (int .Capabilities.KubeVersion.Major) 1) (ge (int .Capabilities.KubeVersion.Minor) 26) }}
-        allowPrivilegeEscalation: {{ .Values.podSecurityContextAllowPrivilegeEscalation }}
-      {{- end }}
       hostNetwork: {{ .Values.controller.hostNetwork | default false }}
+      dnsPolicy: Default
       containers:
         - name: controller
           {{- with .Values.securityContext }}
@@ -49,7 +47,17 @@ spec:
           args:
             - -v={{ .Values.controller.logLevel }}
             - --zap-log-level={{ .Values.controller.logLevel }}
-            - --peer-selector=agents.kruise.io/sandbox-manager-peer-finder={{ .Release.Name }}-{{ .Release.Revision }}
+            - --system-namespace={{ .Release.Namespace }}
+            - --peer-selector=agents.kruise.io/sandbox-manager-peer-finder={{ .Release.Name }}
+            - --kube-client-qps=10000
+            - --kube-client-burst=30000
+            - --e2b-domain={{ .Values.e2b.domain }}
+            - --e2b-admin-key={{ required "e2b.adminApiKey is required" .Values.e2b.adminApiKey }}
+            - --e2b-enable-auth={{ .Values.e2b.enableAuth }}
+            - --e2b-max-timeout={{ int .Values.e2b.maxTimeout }}
+            - --max-claim-workers={{ int .Values.controller.maxClaimWorkers }}
+            - --max-create-qps={{ int .Values.controller.maxCreateQPS }}
+            - --ext-proc-max-concurrency={{ int .Values.controller.extProcMaxConcurrency }}
           ports:
             - containerPort: 8080
               name: http-manager
@@ -77,30 +85,8 @@ spec:
             failureThreshold: 30
             timeoutSeconds: 5
           env:
-            - name: SYSTEM_NAMESPACE
-              value: {{ .Release.Namespace }}
-            - name: PEER_SELECTOR
-              value: agents.kruise.io/sandbox-manager-peer-finder={{ .Release.Name }}-{{ .Release.Revision }}
-            - name: KUBE_CLIENT_QPS
-              value: "10000"
-            - name: KUBE_CLIENT_BURST
-              value: "30000"
-            - name: E2B_DOMAIN
-              value: {{ .Values.e2b.domain }}
-            - name: E2B_ADMIN_KEY
-              value: {{ .Values.e2b.adminApiKey }}
-            - name: E2B_ENABLE_AUTH
-              value: {{ .Values.e2b.enableAuth | quote }}
-            - name: E2B_MAX_TIMEOUT
-              value: {{ printf "%d" (int .Values.e2b.maxTimeout) | quote }}
             - name: INFRA
               value: {{ .Values.controller.infra }}
-            - name: MAX_CLAIM_WORKERS
-              value: {{ printf "%d" (int .Values.controller.maxClaimWorkers) | quote }}
-            - name: MAX_CREATE_QPS
-              value: {{ printf "%d" (int .Values.controller.maxCreateQPS) | quote }}
-            - name: EXT_PROC_MAX_CONCURRENCY
-              value: {{ printf "%d" (int .Values.controller.extProcMaxConcurrency) | quote }}
           {{- with .Values.controller.resources }}
           resources:
             limits:
@@ -144,13 +130,6 @@ spec:
             - name: envoy-config
               mountPath: /etc/envoy/envoy.yaml
               subPath: envoy.yaml
-          {{- with .Values.proxy.resources }}
-          resources:
-            limits:
-              {{- toYaml . | nindent 14 }}
-            requests:
-              {{- toYaml . | nindent 14 }}
-          {{- end }}
       volumes:
         - name: envoy-config
           configMap:

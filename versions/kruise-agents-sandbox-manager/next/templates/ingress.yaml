@@ -7,18 +7,17 @@ metadata:
   {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80},{"HTTPS": 443}]'
   {{- end }}
 spec:
-  {{- with .Values.ingress.className }}
-  ingressClassName: {{ . }}
-  {{- end }}
+  ingressClassName: {{ required "ingress.className is required" .Values.ingress.className }}
   tls:
     - hosts:
         - "*.{{ .Values.e2b.domain }}"
         - "{{ .Values.e2b.domain }}"
       secretName: "{{ .Values.ingress.certSecretName }}"
   rules:
-    - host: '*.{{ .Values.e2b.domain }}'
+    - host: 'api.{{ .Values.e2b.domain }}'
       http:
         paths:
           - backend:
@@ -26,18 +25,14 @@ spec:
                 name: {{ include "sandbox-manager.fullname" . }}
                 port:
                   number: 8080
-            path: /sandboxes
+            path: /
             pathType: Prefix
+    - host: '*.{{ .Values.e2b.domain }}'
+      http:
+        paths:
           - backend:
               service:
-                name: {{ include "sandbox-manager.fullname" . }}
-                port:
-                  number: 8080
-            path: /v2/sandboxes
-            pathType: Prefix
-          - backend:
-              service:
-                name: {{ include "sandbox-manager.fullname" . }}
+                name: {{ .Values.ingress.dataplaneService }}
                 port:
                   number: 7788
             path: /
@@ -54,7 +49,7 @@ spec:
             pathType: Prefix
           - backend:
               service:
-                name: {{ include "sandbox-manager.fullname" . }}
+                name: {{ .Values.ingress.dataplaneService }}
                 port:
                   number: 7788
             path: /

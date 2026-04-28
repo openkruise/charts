@@ -1,6 +1,8 @@
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
+  annotations:
+    template: ""
   name: sandbox-controller-mutating-webhook-configuration
 webhooks:
   - admissionReviewVersions:
@@ -48,6 +50,8 @@ webhooks:
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
+  annotations:
+    template: ""
   name: sandbox-controller-validating-webhook-configuration
 webhooks:
   - admissionReviewVersions:
@@ -90,4 +94,50 @@ webhooks:
           - CREATE
         resources:
           - sandboxtemplates
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: sandbox-controller-manager-webhook-service
+        namespace: {{ include "sandbox-controller.namespace" . }}
+        path: /validate-pod-delete
+    failurePolicy: Ignore
+    name: v-pod-delete.kb.io
+    objectSelector:
+      matchExpressions:
+        - key: agents.kruise.io/created-by
+          operator: In
+          values:
+            - sandbox
+    rules:
+      - apiGroups:
+          - ""
+        apiVersions:
+          - v1
+        operations:
+          - DELETE
+        resources:
+          - pods
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: sandbox-controller-manager-webhook-service
+        namespace: {{ include "sandbox-controller.namespace" . }}
+        path: /validate-pod-delete
+    failurePolicy: Ignore
+    name: v-pod-eviction.kb.io
+    rules:
+      - apiGroups:
+          - ""
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+        resources:
+          - pods/eviction
     sideEffects: None

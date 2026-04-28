@@ -1,29 +1,32 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "sandbox-manager.fullname" . }}-envoy-config
+  name: envoy-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sandbox-gateway.labels" . | nindent 4 }}
 data:
   envoy.yaml: |
     admin:
       access_log_path: /dev/stdout
       address:
         socket_address:
-          protocol: TCP
-          address: 127.0.0.1
-          port_value: 9901
+          address: {{ .Values.gateway.envoy.admin.address }}
+          port_value: {{ .Values.gateway.envoy.admin.port }}
     static_resources:
       listeners:
         - name: listener_0
           address:
             socket_address:
-              address: 0.0.0.0
-              port_value: 7788
+              address: {{ .Values.gateway.envoy.listener.address }}
+              port_value: {{ .Values.gateway.envoy.listener.port }}
           filter_chains:
             - filters:
                 - name: envoy.filters.network.http_connection_manager
                   typed_config:
                     "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
                     stat_prefix: ingress_http
+                    stream_idle_timeout: 600s
                     access_log:
                       - name: envoy.access_loggers.file
                         typed_config:
@@ -48,59 +51,53 @@ data:
                     route_config:
                       name: local_route
                       virtual_hosts:
-                        - name: default
-                          domains:
-                            - "*"
+                        - name: backend
+                          domains: ["*"]
                           routes:
                             - match:
                                 prefix: "/"
                               route:
-                                cluster: sbx_original_dst_cluster
+                                cluster: original_dst_cluster
                                 timeout: 600s
                     http_filters:
-                      - name: envoy.filters.http.ext_proc
+                      - name: envoy.filters.http.golang
                         typed_config:
-                          "@type": type.googleapis.com/envoy.extensions.filters.http.ext_proc.v3.ExternalProcessor
-                          grpc_service:
-                            envoy_grpc:
-                              cluster_name: ext_proc_cluster
-                          processing_mode:
-                            request_header_mode: SEND
-                            response_header_mode: SEND
-                          mutation_rules:
-                            allow_envoy: true
+                          "@type": type.googleapis.com/envoy.extensions.filters.http.golang.v3alpha.Config
+                          library_id: {{ .Values.gateway.envoy.golangFilter.libraryId }}
+                          library_path: {{ .Values.gateway.envoy.golangFilter.libraryPath }}
+                          plugin_name: {{ .Values.gateway.envoy.golangFilter.pluginName }}
+                          plugin_config:
+                            "@type": type.googleapis.com/xds.type.v3.TypedStruct
+                            value:
+                              host-header-name: {{ .Values.gateway.envoy.pluginConfig.hostHeaderName }}
+                              sandbox-header-name: {{ .Values.gateway.envoy.pluginConfig.sandboxHeaderName }}
+                              sandbox-port-header: {{ .Values.gateway.envoy.pluginConfig.sandboxPortHeader }}
+                              default-port: "{{ .Values.gateway.envoy.pluginConfig.defaultPort }}"
                       - name: envoy.filters.http.router
                         typed_config:
                           "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
                     upgrade_configs:
                       - upgrade_type: websocket
       clusters:
-        - name: ext_proc_cluster
-          type: STATIC
-          connect_timeout: 5s
-          http2_protocol_options:
-            max_concurrent_streams: {{ .Values.controller.extProcMaxConcurrency }}
-          load_assignment:
-            cluster_name: ext_proc_cluster
-            endpoints:
-              - lb_endpoints:
-                  - endpoint:
-                      address:
-                        socket_address:
-                          address: 127.0.0.1
-                          port_value: 9002
-        - name: sbx_original_dst_cluster
+        - name: original_dst_cluster
           type: ORIGINAL_DST
-          connect_timeout: 90s
           lb_policy: CLUSTER_PROVIDED
           common_http_protocol_options:
             max_requests_per_connection: 1
+          connect_timeout: 5s
           original_dst_lb_config:
-            use_http_header: true
+            metadata_key:
+              key: "envoy.lb.original_dst"
+              path:
+              - key: "host"
+          {{- if .Values.gateway.envoy.circuitBreakers.enabled }}
           circuit_breakers:
             thresholds:
-              - priority: DEFAULT
-                max_connections: 100000
-                max_pending_requests: 50000
-                max_requests: 150000
-                max_retries: 10
+            {{- range .Values.gateway.envoy.circuitBreakers.thresholds }}
+            - priority: {{ .priority }}
+              max_connections: {{ .maxConnections }}
+              max_pending_requests: {{ .maxPendingRequests }}
+              max_requests: {{ .maxRequests }}
+              max_retries: {{ .maxRetries }}
+            {{- end }}
+          {{- end }}

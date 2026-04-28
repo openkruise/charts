@@ -6,14 +6,14 @@ replicaCount: 2
 e2b:
   domain: "your.domain.com"
   enableAuth: true
-  adminApiKey: "admin-987654321"
+  adminApiKey: ""
   maxTimeout: 2592000
 
 controller:
   repository: openkruise/sandbox-manager
-  tag: v0.1.0
+  tag: v0.2.0
   pullPolicy: IfNotPresent
-  logLevel: 3
+  logLevel: 5
   infra: sandbox-cr
   resources:
     cpu: "2"
@@ -27,18 +27,16 @@ proxy:
   repository: envoyproxy/envoy
   pullPolicy: IfNotPresent
   tag: v1.33-latest
-  resources:
-    cpu: "2"
-    memory: 4Gi
 
 service:
   type: ClusterIP
   port: 7788
 
 ingress:
-  className: nginx
+  className: ""
   annotations: { }
   certSecretName: sandbox-manager-tls
+  dataplaneService: sandbox-gateway
 
 imagePullSecrets: { }
 nameOverride: ""
@@ -56,8 +54,6 @@ podSecurityContext:
   fsGroup: 2000
   seccompProfile:
     type: RuntimeDefault
-
-podSecurityContextAllowPrivilegeEscalation: false
 
 securityContext:
   capabilities:
@@ -85,3 +81,92 @@ affinity:
               app.kubernetes.io/instance: agents-sandbox-manager
               component: agents-sandbox-manager
           topologyKey: kubernetes.io/hostname
+
+gateway:
+  replicaCount: 2
+  image:
+    repository: openkruise/sandbox-gateway
+    pullPolicy: IfNotPresent
+    tag: "v0.2.1"
+  imagePullSecrets: [ ]
+  nameOverride: ""
+  serviceAccount:
+    annotations: { }
+    name: ""
+  podAnnotations: { }
+  podSecurityContext: { }
+  securityContext: { }
+  resources:
+    cpu: "2"
+    memory: 4Gi
+  nodeSelector: { }
+  initContainer:
+    enabled: false
+    image:
+      repository: busybox
+      tag: 1.36.1
+      pullPolicy: IfNotPresent
+    securityContext:
+      capabilities:
+        drop:
+          - ALL
+        add:
+          - SYS_ADMIN
+
+  tolerations: [ ]
+
+  affinity: { }
+
+  podAntiAffinity:
+    type: "soft"
+    weight: 100
+    topologyKey: "kubernetes.io/hostname"
+
+  livenessProbe:
+    tcpSocket:
+      port: 10000
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readinessProbe:
+    tcpSocket:
+      port: 10000
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+  envoy:
+    admin:
+      address: 127.0.0.1
+      port: 9901
+    listener:
+      address: 0.0.0.0
+      port: 10000
+    logLevel: warn
+    golangFilter:
+      libraryId: sandbox-gateway
+      libraryPath: /etc/envoy/sandbox-gateway.so
+      pluginName: sandbox-gateway
+    circuitBreakers:
+      enabled: true
+      thresholds:
+        - priority: DEFAULT
+          maxConnections: 32768
+          maxPendingRequests: 32768
+          maxRequests: 65536
+          maxRetries: 5
+    concurrency: "4"
+    pluginConfig:
+      hostHeaderName: Host
+      sandboxHeaderName: e2b-sandbox-id
+      sandboxPortHeader: e2b-sandbox-port
+      defaultPort: "49983"
+  service:
+    type: ClusterIP
+    port: 7788
+    targetPort: 10000
+    annotations: { }
+    labels: { }
