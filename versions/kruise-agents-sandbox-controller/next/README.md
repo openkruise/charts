@@ -37,5 +37,6 @@ The following table lists the configurable parameters of the agents-sandbox-cont
 Specify each parameter using the `--set key=value[,key=value]` argument. For example:
 
 ```bash
-helm install agents-sandbox-controller . -n <namespace> openkruise/kruise-agents-sandbox-controller --set key=value...
+helm install agents-sandbox-controller . -n <namespace> openkruise/kruise-agents-sandbox-controller \
+  --set key=value...
 ```
