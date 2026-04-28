@@ -8,7 +8,7 @@ The following table lists the configurable parameters of the agents-sandbox-mana
 |----------------------------------------------|-----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `replicaCount`                               | Number of sandbox-manager replicas            | `2`                                                                                                                                                           |
 | `controller.repository`                      | sandbox-manager controller image repository   | `openkruise/sandbox-manager`                                                                                                                                  |
-| `controller.tag`                             | sandbox-manager controller image tag          | `v0.1.0`                                                                                                                                                      |
+| `controller.tag`                             | sandbox-manager controller image tag          | `v0.2.0`                                                                                                                                                      |
 | `controller.pullPolicy`                      | Controller container image pull policy        | `IfNotPresent`                                                                                                                                                |
 | `controller.logLevel`                        | Controller log level                          | `5`                                                                                                                                                           |
 | `controller.infra`                           | Sandbox manager infrastructure type           | `sandbox-cr`                                                                                                                                                  |
@@ -24,11 +24,11 @@ The following table lists the configurable parameters of the agents-sandbox-mana
 | `proxy.pullPolicy`                           | Envoy proxy container image pull policy       | `IfNotPresent`                                                                                                                                                |
 | `e2b.domain`                                 | E2B protocol domain                           | `"your.domain.com"`                                                                                                                                           |
 | `e2b.enableAuth`                             | Whether to enable E2B authentication          | `true`                                                                                                                                                        |
-| `e2b.adminApiKey`                            | E2B admin API key                             | `""`                                                                                                                                                          |
+| `e2b.adminApiKey`                            | E2B admin API key (required)                  | `""`                                                                                                                                                          |
 | `e2b.maxTimeout`                             | E2B maximum timeout (seconds)                 | `2592000`                                                                                                                                                     |
 | `service.type`                               | sandbox-manager service type                  | `ClusterIP`                                                                                                                                                   |
 | `service.port`                               | Envoy proxy service port                      | `7788`                                                                                                                                                        |
-| `ingress.className`                          | Ingress class name                            | `""`                                                                                                                                                          |
+| `ingress.className`                          | Ingress class name (required)                 | `""`                                                                                                                                                          |
 | `ingress.annotations`                        | Ingress annotations                           | `{}`                                                                                                                                                          |
 | `ingress.certSecretName`                     | Ingress TLS certificate Secret name           | `sandbox-manager-tls`                                                                                                                                         |
 | `ingress.dataplaneService`                   | Dataplane backend service name for Ingress    | `sandbox-manager`                                                                                                                                             |
@@ -68,5 +68,8 @@ The following table lists the configurable parameters of the agents-sandbox-mana
 Specify each parameter using the `--set key=value[,key=value]` argument. For example:
 
 ```bash
-helm install agents-sandbox-manager . -n <namespace> openkruise/kruise-agents-sandbox-manager --set key=value...
+helm install agents-sandbox-manager . -n <namespace> openkruise/kruise-agents-sandbox-manager \
+  --set e2b.adminApiKey=<your-admin-api-key> \
+  --set ingress.className=<alb|nginx> \
+  --set key=value...
 ```

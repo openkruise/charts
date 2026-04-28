@@ -27,7 +27,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "sandbox-manager.serviceAccountName" . }}-manager
+      serviceAccountName: {{ include "sandbox-manager.serviceAccountName" . }}
       {{- with .Values.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
@@ -52,7 +52,7 @@ spec:
             - --kube-client-qps=10000
             - --kube-client-burst=30000
             - --e2b-domain={{ .Values.e2b.domain }}
-            - --e2b-admin-key=={{ required "e2b.adminApiKey is required" .Values.e2b.adminApiKey }}
+            - --e2b-admin-key={{ required "e2b.adminApiKey is required" .Values.e2b.adminApiKey }}
             - --e2b-enable-auth={{ .Values.e2b.enableAuth }}
             - --e2b-max-timeout={{ int .Values.e2b.maxTimeout }}
             - --max-claim-workers={{ int .Values.controller.maxClaimWorkers }}
