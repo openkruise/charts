@@ -1,0 +1,172 @@
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 2
+
+e2b:
+  domain: "your.domain.com"
+  enableAuth: true
+  adminApiKey: ""
+  maxTimeout: 2592000
+
+controller:
+  repository: openkruise/sandbox-manager
+  tag: v0.2.0
+  pullPolicy: IfNotPresent
+  logLevel: 5
+  infra: sandbox-cr
+  resources:
+    cpu: "2"
+    memory: 4Gi
+  hostNetwork: false
+  maxClaimWorkers: 100
+  maxCreateQPS: 200
+  extProcMaxConcurrency: 3000
+
+proxy:
+  repository: envoyproxy/envoy
+  pullPolicy: IfNotPresent
+  tag: v1.33-latest
+
+service:
+  type: ClusterIP
+  port: 7788
+
+ingress:
+  className: ""
+  annotations: { }
+  certSecretName: sandbox-manager-tls
+  dataplaneService: sandbox-gateway
+
+imagePullSecrets: { }
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  automount: true
+  annotations: { }
+  name: ""
+
+podAnnotations: { }
+podLabels: { }
+
+podSecurityContext:
+  fsGroup: 2000
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+    add:
+      - NET_BIND_SERVICE
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  runAsNonRoot: true
+  runAsUser: 65532
+
+nodeSelector: { }
+
+tolerations: [ ]
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: agents-sandbox-manager
+              app.kubernetes.io/instance: agents-sandbox-manager
+              component: agents-sandbox-manager
+          topologyKey: kubernetes.io/hostname
+
+gateway:
+  replicaCount: 2
+  image:
+    repository: openkruise/sandbox-gateway
+    pullPolicy: IfNotPresent
+    tag: "v0.2.1"
+  imagePullSecrets: [ ]
+  nameOverride: ""
+  serviceAccount:
+    annotations: { }
+    name: ""
+  podAnnotations: { }
+  podSecurityContext: { }
+  securityContext: { }
+  resources:
+    cpu: "2"
+    memory: 4Gi
+  nodeSelector: { }
+  initContainer:
+    enabled: false
+    image:
+      repository: busybox
+      tag: 1.36.1
+      pullPolicy: IfNotPresent
+    securityContext:
+      capabilities:
+        drop:
+          - ALL
+        add:
+          - SYS_ADMIN
+
+  tolerations: [ ]
+
+  affinity: { }
+
+  podAntiAffinity:
+    type: "soft"
+    weight: 100
+    topologyKey: "kubernetes.io/hostname"
+
+  livenessProbe:
+    tcpSocket:
+      port: 10000
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readinessProbe:
+    tcpSocket:
+      port: 10000
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+  envoy:
+    admin:
+      address: 127.0.0.1
+      port: 9901
+    listener:
+      address: 0.0.0.0
+      port: 10000
+    logLevel: warn
+    golangFilter:
+      libraryId: sandbox-gateway
+      libraryPath: /etc/envoy/sandbox-gateway.so
+      pluginName: sandbox-gateway
+    circuitBreakers:
+      enabled: true
+      thresholds:
+        - priority: DEFAULT
+          maxConnections: 32768
+          maxPendingRequests: 32768
+          maxRequests: 65536
+          maxRetries: 5
+    concurrency: "4"
+    pluginConfig:
+      hostHeaderName: Host
+      sandboxHeaderName: e2b-sandbox-id
+      sandboxPortHeader: e2b-sandbox-port
+      defaultPort: "49983"
+  service:
+    type: ClusterIP
+    port: 7788
+    targetPort: 10000
+    annotations: { }
+    labels: { }

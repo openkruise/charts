@@ -1,0 +1,132 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sandbox-gateway
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sandbox-gateway.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.gateway.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "sandbox-gateway.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  template:
+    metadata:
+      {{- with .Values.gateway.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "sandbox-gateway.selectorLabels" . | nindent 8 }}
+        {{- include "sandbox-manager.peerLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "sandbox-manager.serviceAccountName" . }}-gateway
+      {{- if .Values.gateway.initContainer.enabled }}
+      initContainers:
+        - name: init-sysctl
+          image: "{{ .Values.gateway.initContainer.image.repository }}:{{ .Values.gateway.initContainer.image.tag }}"
+          imagePullPolicy: {{ .Values.gateway.initContainer.image.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - |-
+              mount -o remount rw /proc/sys
+              sysctl -w net.core.somaxconn=65535
+              sysctl -w net.ipv4.ip_local_port_range="1024 65535"
+              sysctl -w net.ipv4.tcp_tw_reuse=1
+              sysctl -w fs.file-max=1048576
+          securityContext:
+            {{- toYaml .Values.gateway.initContainer.securityContext | nindent 12 }}
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+      {{- end }}
+      containers:
+        - name: gateway
+          securityContext:
+            {{- toYaml .Values.gateway.securityContext | nindent 12 }}
+          image: "{{ .Values.gateway.image.repository }}:{{ .Values.gateway.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.gateway.image.pullPolicy }}
+          command:
+            - envoy
+          args:
+            - -c
+            - /etc/envoy/envoy.yaml
+            - -l
+            - {{ .Values.gateway.envoy.logLevel }}
+            - --concurrency
+            - "{{ .Values.gateway.envoy.concurrency }}"
+          env:
+            - name: GOMAXPROCS
+              value: "{{ .Values.gateway.envoy.concurrency }}"
+            - name: PEER_NAMESPACE
+              value: "{{ .Release.Namespace }}"
+            - name: PEER_LABEL_SELECTOR
+              value: "agents.kruise.io/sandbox-manager-peer-finder={{ .Release.Name }}"
+          ports:
+            - name: http
+              containerPort: {{ .Values.gateway.envoy.listener.port }}
+              protocol: TCP
+          livenessProbe:
+            {{- toYaml .Values.gateway.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.gateway.readinessProbe | nindent 12 }}
+          {{- with .Values.gateway.resources }}
+          resources:
+            limits:
+              {{- toYaml . | nindent 14 }}
+            requests:
+              {{- toYaml . | nindent 14 }}
+          {{- end }}
+          volumeMounts:
+            - name: envoy-config
+              mountPath: /etc/envoy/envoy.yaml
+              subPath: envoy.yaml
+              readOnly: true
+      volumes:
+        - name: envoy-config
+          configMap:
+            name: envoy-config
+      {{- with .Values.gateway.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      affinity:
+        {{- if .Values.gateway.affinity }}
+        {{- toYaml .Values.gateway.affinity | nindent 8 }}
+        {{- end }}
+        podAntiAffinity:
+          {{- if eq .Values.gateway.podAntiAffinity.type "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  {{- include "sandbox-gateway.selectorLabels" . | nindent 18 }}
+              topologyKey: {{ .Values.gateway.podAntiAffinity.topologyKey }}
+          {{- else }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: {{ .Values.gateway.podAntiAffinity.weight }}
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    {{- include "sandbox-gateway.selectorLabels" . | nindent 20 }}
+                topologyKey: {{ .Values.gateway.podAntiAffinity.topologyKey }}
+          {{- end }}
+      {{- with .Values.gateway.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

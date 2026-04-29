@@ -1,0 +1,56 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "sandbox-manager.fullname" . }}
+  labels:
+    {{- include "sandbox-manager.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80},{"HTTPS": 443}]'
+  {{- end }}
+spec:
+  ingressClassName: {{ required "ingress.className is required" .Values.ingress.className }}
+  tls:
+    - hosts:
+        - "*.{{ .Values.e2b.domain }}"
+        - "{{ .Values.e2b.domain }}"
+      secretName: "{{ .Values.ingress.certSecretName }}"
+  rules:
+    - host: 'api.{{ .Values.e2b.domain }}'
+      http:
+        paths:
+          - backend:
+              service:
+                name: {{ include "sandbox-manager.fullname" . }}
+                port:
+                  number: 8080
+            path: /
+            pathType: Prefix
+    - host: '*.{{ .Values.e2b.domain }}'
+      http:
+        paths:
+          - backend:
+              service:
+                name: {{ .Values.ingress.dataplaneService }}
+                port:
+                  number: 7788
+            path: /
+            pathType: Prefix
+    - host: {{ .Values.e2b.domain }}
+      http:
+        paths:
+          - backend:
+              service:
+                name: {{ include "sandbox-manager.fullname" . }}
+                port:
+                  number: 8080
+            path: /kruise/api
+            pathType: Prefix
+          - backend:
+              service:
+                name: {{ .Values.ingress.dataplaneService }}
+                port:
+                  number: 7788
+            path: /
+            pathType: Prefix
