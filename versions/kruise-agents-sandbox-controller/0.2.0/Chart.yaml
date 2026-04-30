@@ -1,0 +1,20 @@
+apiVersion: v2
+name: agents-sandbox-controller
+description: The Helm chart for Agents Sandbox Controller
+
+type: application
+
+version: 0.2.0
+
+appVersion: "v0.2.0"
+
+keywords:
+  - agent
+  - sandbox
+  - controller
+  - kruise
+  - kubernetes
+  - openkruise
+annotations:
+  artifacthub.io/changes: |
+    - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"

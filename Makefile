@@ -44,10 +44,12 @@ install-agents-sandbox-manager-from-local:
 	helm install agents-sandbox-manager charts/kruise-agents-sandbox-manager -n sandbox-system \
 		--set replicaCount=1 \
         --set-json 'controller.resources={"cpu":"500m","memory":"512Mi"}' \
-        --set-json 'proxy.resources={"cpu":"500m","memory":"512Mi"}' \
-        --set e2b.adminApiKey=test-key \
-        --set ingress.className=nginx
+        --set-json 'gateway.resources={"cpu":"500m","memory":"512Mi"}' \
+		--set e2b.adminApiKey='adminApiKey' \
+		--set ingress.className='alb' \
+		--set gateway.replicaCount=1
 	sleep 1
 	kubectl -n sandbox-system wait --for=condition=Ready pods -l component=agents-sandbox-manager --timeout=60s || exit 1
+	kubectl -n sandbox-system wait --for=condition=Ready pods -l app.kubernetes.io/name=sandbox-gateway --timeout=60s || exit 1
 
 install-from-local: install-kruise-from-local install-kruise-state-metrics-from-local
