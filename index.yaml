@@ -6,6 +6,26 @@ entries:
         - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"
     apiVersion: v2
     appVersion: v0.2.0
+    created: "2026-04-30T07:39:14.791214755Z"
+    description: The Helm chart for Agents Sandbox Controller
+    digest: 9a39a3613785bd3846f8b9298246457641d62993c6f1e3447f2d3adafea51b96
+    keywords:
+    - agent
+    - sandbox
+    - controller
+    - kruise
+    - kubernetes
+    - openkruise
+    name: agents-sandbox-controller
+    type: application
+    urls:
+    - https://github.com/openkruise/charts/releases/download/agents-sandbox-controller-0.2.0/agents-sandbox-controller-0.2.0.tgz
+    version: 0.2.0
+  - annotations:
+      artifacthub.io/changes: |
+        - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"
+    apiVersion: v2
+    appVersion: v0.2.0
     created: "2026-04-29T03:09:28.014970516Z"
     description: The Helm chart for Agents Sandbox Controller
     digest: a4cbd1f8845d0bbea58d42e741223a94cde4ebbdc80f88dbe48641394f347852
@@ -39,6 +59,27 @@ entries:
     - https://github.com/openkruise/charts/releases/download/agents-sandbox-controller-v0.1.0/agents-sandbox-controller-v0.1.0.tgz
     version: v0.1.0
   agents-sandbox-manager:
+  - annotations:
+      artifacthub.io/changes: |
+        - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"
+    apiVersion: v2
+    appVersion: v0.2.0
+    created: "2026-04-30T07:39:14.943933075Z"
+    description: The Helm chart for Agent Sandbox Manager
+    digest: 1d512193ac88fb4c12f83a0a52f59e9023ab90b0ee90c8429de7886b7219eb00
+    keywords:
+    - agent
+    - sandbox
+    - apiserver
+    - proxy
+    - rl
+    - e2b
+    - console-visibility:false
+    name: agents-sandbox-manager
+    type: application
+    urls:
+    - https://github.com/openkruise/charts/releases/download/agents-sandbox-manager-0.2.0/agents-sandbox-manager-0.2.0.tgz
+    version: 0.2.0
   - annotations:
       artifacthub.io/changes: |
         - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"
@@ -1550,4 +1591,4 @@ entries:
     urls:
     - https://github.com/openkruise/charts/releases/download/kruise-state-metrics-0.1.0/kruise-state-metrics-0.1.0.tgz
     version: 0.1.0
-generated: "2026-04-29T03:09:28.230654545Z"
+generated: "2026-04-30T07:39:14.944269201Z"
