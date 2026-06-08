@@ -14,7 +14,16 @@ webhook:
 
 # Metrics configuration
 metrics:
+  # Port the controller binds for the Prometheus /metrics endpoint.
+  # Served over HTTPS with authn/authz delegation to kube-apiserver
+  # (controller-runtime's --metrics-secure=true default).
   port: 8443
+  rbac:
+    # Create a ClusterRole that grants `get` on the /metrics nonResourceURL.
+    # Bind it to your Prometheus / ARMS scraper ServiceAccount to allow
+    # scraping the HTTPS endpoint. Disable if you manage metrics RBAC
+    # outside this chart.
+    create: true
 
 # Health probe configuration
 healthProbe:

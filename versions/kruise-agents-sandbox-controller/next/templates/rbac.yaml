@@ -219,4 +219,45 @@ subjects:
   - kind: ServiceAccount
     name: {{ include "sandbox-controller.serviceAccountName" . }}
     namespace: {{ include "sandbox-controller.namespace" . }}
+---
+# auth-delegator binding: required for controller-runtime's
+# --metrics-secure=true filter (WithAuthenticationAndAuthorization), which
+# delegates TokenReview/SubjectAccessReview to kube-apiserver. Without this,
+# every scrape against https://.../metrics returns 401.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "sandbox-controller.fullname" . }}-auth-delegator
+  labels:
+    {{- include "sandbox-controller.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "sandbox-controller.serviceAccountName" . }}
+    namespace: {{ include "sandbox-controller.namespace" . }}
+{{- if .Values.metrics.rbac.create }}
+---
+# Metrics reader role: grants permission to scrape /metrics on the
+# secured endpoint. Bind this to your Prometheus / ARMS scraper SA, e.g.:
+#
+#   kubectl create clusterrolebinding sandbox-controller-metrics-reader \
+#     --clusterrole={{ include "sandbox-controller.fullname" . }}-metrics-reader \
+#     --serviceaccount=monitoring:prometheus
+#
+# Or use `kubectl get --raw` from an account that already holds this role.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "sandbox-controller.fullname" . }}-metrics-reader
+  labels:
+    {{- include "sandbox-controller.labels" . | nindent 4 }}
+rules:
+  - nonResourceURLs:
+      - /metrics
+    verbs:
+      - get
+{{- end }}
 {{- end }}

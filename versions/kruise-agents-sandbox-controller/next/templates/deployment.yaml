@@ -49,7 +49,16 @@ spec:
             initialDelaySeconds: 15
             periodSeconds: 20
           name: manager
-          ports: [ ]
+          ports:
+            - name: https-metrics
+              containerPort: {{ .Values.metrics.port }}
+              protocol: TCP
+            - name: https-webhook
+              containerPort: {{ .Values.webhook.port }}
+              protocol: TCP
+            - name: health
+              containerPort: {{ .Values.healthProbe.port }}
+              protocol: TCP
           readinessProbe:
             httpGet:
               path: /readyz
