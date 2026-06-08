@@ -1,0 +1,24 @@
+apiVersion: v1
+name: kruise
+description: Helm chart for kruise components
+version: 1.9.0-alpha4
+appVersion: 1.9.0-alpha4
+kubeVersion: ">= 1.18.0-0"
+icon: https://openkruise.io/img/openkruise-logo-bg.jpg
+keywords:
+  - openkruise
+  - kubernetes
+  - kruise
+  - workload
+  - statefulset
+  - sidecar
+  - job
+  - deployment
+  - cloneset
+home: https://openkruise.io
+sources:
+  - https://github.com/openkruise/kruise
+annotations:
+  artifacthub.io/changes: |
+    - "[Added]: Add manager.restConfigQPS and manager.restConfigBurst values to configure REST client throttle limits"
+    - "[Added]: Add manager.image.pullPolicy value to configure image pull policy"
