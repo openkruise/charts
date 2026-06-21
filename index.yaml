@@ -163,6 +163,38 @@ entries:
   kruise:
   - annotations:
       artifacthub.io/changes: |
+        - "[Added]: AKS integration for webhooks via webhookConfiguration.aksIntegration to exclude AKS control-plane and managed namespaces"
+        - "[Added]: v1beta1 admission review versions support for webhooks"
+        - "[Added]: EphemeralJob validating webhook"
+        - "[Changed]: Standardized webhook paths (removed v1alpha1 prefix from paths)"
+        - "[Changed]: https://github.com/openkruise/kruise/blob/master/CHANGELOG.md"
+        - "[Security]: Fix potential security issues of dependent packages"
+    apiVersion: v1
+    appVersion: 1.9.0
+    created: "2026-06-21T07:11:58.833671164Z"
+    description: Helm chart for kruise components
+    digest: 96c0a60361e4d48bfcb20f817419d8e2f016ae41ed32cfce55f5308c182bd301
+    home: https://openkruise.io
+    icon: https://openkruise.io/img/openkruise-logo-bg.jpg
+    keywords:
+    - openkruise
+    - kubernetes
+    - kruise
+    - workload
+    - statefulset
+    - sidecar
+    - job
+    - deployment
+    - cloneset
+    kubeVersion: '>= 1.18.0-0'
+    name: kruise
+    sources:
+    - https://github.com/openkruise/kruise
+    urls:
+    - https://github.com/openkruise/charts/releases/download/kruise-1.9.0/kruise-1.9.0.tgz
+    version: 1.9.0
+  - annotations:
+      artifacthub.io/changes: |
         - "[Changed]: https://github.com/openkruise/kruise/blob/master/CHANGELOG.md"
         - "[Security]: Fix potential security issues of dependent packages"
     apiVersion: v1
@@ -195,9 +227,9 @@ entries:
         - "[Security]: Fix potential security issues of dependent packages"
     apiVersion: v1
     appVersion: 1.9.0-alpha2
-    created: "2026-01-24T07:25:39.396576009Z"
+    created: "2026-01-08T08:38:12.752273184Z"
     description: Helm chart for kruise components
-    digest: 5752750a6309ffd8c9b99006f474e776ceab3d442868d341bd82a37fc6c7f7d2
+    digest: 1a86d2bed58560818e262a3dd6396b8845b4d80319f9c48ab53c154f178456d1
     home: https://openkruise.io
     icon: https://openkruise.io/img/openkruise-logo-bg.jpg
     keywords:
@@ -223,9 +255,9 @@ entries:
         - "[Security]: Fix potential security issues of dependent packages"
     apiVersion: v1
     appVersion: 1.9.0-alpha2
-    created: "2026-01-08T08:38:12.752273184Z"
+    created: "2026-01-24T07:25:39.396576009Z"
     description: Helm chart for kruise components
-    digest: 1a86d2bed58560818e262a3dd6396b8845b4d80319f9c48ab53c154f178456d1
+    digest: 5752750a6309ffd8c9b99006f474e776ceab3d442868d341bd82a37fc6c7f7d2
     home: https://openkruise.io
     icon: https://openkruise.io/img/openkruise-logo-bg.jpg
     keywords:
@@ -1632,4 +1664,4 @@ entries:
     urls:
     - https://github.com/openkruise/charts/releases/download/kruise-state-metrics-0.1.0/kruise-state-metrics-0.1.0.tgz
     version: 0.1.0
-generated: "2026-05-22T05:55:26.035232718Z"
+generated: "2026-06-21T07:11:58.834083514Z"
