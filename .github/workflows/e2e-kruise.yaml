@@ -55,6 +55,12 @@ jobs:
       - name: install Agents Sandbox Manager
         run: |
           make install-agents-sandbox-manager-from-local
+      - name: Dump diagnostics on failure
+        if: always()
+        run: |
+          ./scripts/diagnose.sh kruise-rollout control-plane=kruise-rollout-controller-manager
+          ./scripts/diagnose.sh kruise-game-system control-plane=kruise-game-controller-manager
+          ./scripts/diagnose.sh sandbox-system
 
   # 1.27+
   install-for-higher:
@@ -91,3 +97,9 @@ jobs:
       - name: install Agents Sandbox Manager
         run: |
           make install-agents-sandbox-manager-from-local
+      - name: Dump diagnostics on failure
+        if: always()
+        run: |
+          ./scripts/diagnose.sh kruise-rollout control-plane=kruise-rollout-controller-manager
+          ./scripts/diagnose.sh kruise-game-system control-plane=kruise-game-controller-manager
+          ./scripts/diagnose.sh sandbox-system
