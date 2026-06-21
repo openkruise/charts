@@ -1,0 +1,24 @@
+dependencies:
+- name: kruise
+  repository: https://openkruise.github.io/charts/
+  version: 1.8.0
+- name: kruise-game
+  repository: file://../../kruise-game/1.1.0
+  version: 1.1.0
+- name: opentelemetry-collector
+  repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+  version: 0.140.0
+- name: loki
+  repository: https://grafana.github.io/helm-charts
+  version: 6.46.0
+- name: tempo
+  repository: https://grafana.github.io/helm-charts
+  version: 1.24.1
+- name: prometheus
+  repository: https://prometheus-community.github.io/helm-charts
+  version: 27.46.0
+- name: grafana
+  repository: https://grafana.github.io/helm-charts
+  version: 10.2.0
+digest: sha256:c102596633de319453dc6699df7c11d901198904906428924572e6ea0cc25df4
+generated: "2025-11-24T19:09:20.028399216-05:00"
