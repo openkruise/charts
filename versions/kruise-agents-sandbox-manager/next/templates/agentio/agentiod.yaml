@@ -59,10 +59,6 @@ spec:
           value: /var/run/secrets/remote/config
         - name: PILOT_ENABLE_AMBIENT
           value: "true"
-        {{- if .Values.agentio.ambient.enabled }}
-        - name: CA_TRUSTED_NODE_ACCOUNTS
-          value: {{ include "agentio.namespace" . }}/{{ include "agentio.ztunnel.name" . }}
-        {{- end }}
         - name: PILOT_TRACE_SAMPLING
           value: "1"
         - name: PILOT_ENABLE_ANALYSIS
@@ -77,8 +73,6 @@ spec:
 
         - name: MESH_CONFIG_MAP_NAME
           value: {{ .Values.agentio.global.resourcePrefix | quote }}
-        - name: INJECTOR_CONFIG_MAP_NAME
-          value: {{ printf "%s-sidecar-injector" .Values.agentio.global.resourcePrefix | quote }}
         - name: LEADER_ELECTION_PREFIX
           value: {{ .Values.agentio.global.resourcePrefix | quote }}
         {{- if .Values.agentio.agentiod.onDemandCertSignMode }}
@@ -93,10 +87,6 @@ spec:
           value: "true"
         - name: ENABLE_ON_DEMAND_CERTS
           value: "{{ .Values.agentio.agentiod.enableTlsTermination }}"
-        {{- if .Values.agentio.global.enableClusterTrustBundle }}
-        - name: ENABLE_CLUSTER_TRUST_BUNDLE_API
-          value: "true"
-        {{- end }}
         - name: PILOT_ENABLE_IP_AUTOALLOCATE
           value: "false"
         - name: MESH_INTERNAL_TRAFFIC_POLICY
@@ -104,7 +94,7 @@ spec:
         - name: AMBIENT_ENABLE_MULTI_NETWORK_WAYPOINT
           value: "false"
         - name: INJECT_ENABLED
-          value: "{{ .Values.agentio.sidecarInjector.enabled }}"
+          value: "false"
         - name: AMBIENT_ENABLE_STATUS
           value: "false"
         - name: PILOT_CA_CERT_CONFIGMAP
@@ -115,10 +105,6 @@ spec:
           value: "*.kruise.io,*.gateway.networking.k8s.io"
         - name: ISTIOD_CUSTOM_HOST
           value: {{ include "agentio.controller.name" . }}.{{ include "agentio.namespace" . }}.svc,{{ include "agentio.controller.name" . }}.{{ include "agentio.namespace" . }}.svc.cluster.local
-        {{- if .Values.agentio.sidecarInjector.enabled }}
-        - name: INJECTION_WEBHOOK_CONFIG_NAME
-          value: {{ .Values.agentio.global.resourcePrefix }}-sidecar-injector-{{ include "agentio.namespace" . }}
-        {{- end }}
         {{- if .Values.agentio.agentiod.krtEventDistributeDebounce }}
         - name: KRT_EVENT_DISTRIBUTE_DEBOUNCE
           value: {{ .Values.agentio.agentiod.krtEventDistributeDebounce | quote }}
@@ -142,9 +128,6 @@ spec:
           protocol: TCP
         - containerPort: 15012
           name: tls-xds
-          protocol: TCP
-        - containerPort: 15017
-          name: https-webhooks
           protocol: TCP
         - containerPort: 15014
           name: http-monitoring
@@ -220,10 +203,6 @@ spec:
   - name: https-dns
     port: 15012
     protocol: TCP
-  - name: https-webhook
-    port: 443
-    protocol: TCP
-    targetPort: 15017
   - name: http-monitoring
     port: 15014
     protocol: TCP

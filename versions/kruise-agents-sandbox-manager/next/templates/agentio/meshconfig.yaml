@@ -41,7 +41,7 @@ trustDomain: {{ .Values.agentio.global.trustDomain }}
 {{- if .Values.agentio.enabled }}
 
 
-{{/* Merge built-in defaults above with user overrides from .Values.meshConfig. */}}
+{{/* Merge built-in defaults above with user overrides from .Values.agentio.meshConfig. */}}
 {{/* The intent is that meshConfig.foo becomes the raw API rather than re-modeling every field in values.yaml. */}}
 {{- $defaults := include "agentio.meshConfig.defaults" . | fromYaml }}
 {{- $mesh := mergeOverwrite $defaults (.Values.agentio.meshConfig | default dict) }}

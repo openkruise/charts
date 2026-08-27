@@ -177,42 +177,18 @@ gateway:
 # BEGIN GENERATED AGENTIO VALUES - DO NOT EDIT
 agentio:
   enabled: false
-
   global:
     hub: docker.io/openkruise
     trustDomain: cluster.local
     clusterId: 'Kubernetes'
-    # -- CA certificate ConfigMap name. Shared by sidecar injector and ztunnel DaemonSet.
+    # -- CA certificate ConfigMap name distributed to traffic-proxy workload namespaces.
     caCertConfigMap: agentio-ca-certs
     # -- Mesh-internal traffic policy for sandbox tunnel proxies.
     # PEER_AWARE: full peer identity matching for mTLS and policy enforcement.
     # PASSTHROUGH: skip upstream discovery for in-cluster destinations.
     meshInternalTrafficPolicy: PASSTHROUGH
-    # -- When true, ztunnel (both sidecar and node-level) gets NET_ADMIN + root
-    # to manage iptables/nftables firewall rules.
-    enableFirewallRules: true
-    # -- Use the ClusterTrustBundle API instead of a ConfigMap to distribute the
-    # root cert. Requires the ClusterTrustBundle API enabled in the cluster. When
-    # true, agentiod publishes a ClusterTrustBundle and both injected sidecars and
-    # the node-level ztunnel mount it; when false they mount the caCertConfigMap.
-    enableClusterTrustBundle: false
-    # -- Single identifier shared by MESH_CONFIG_MAP_NAME, INJECTOR_CONFIG_MAP_NAME,
-    # LEADER_ELECTION_PREFIX, INJECTION_WEBHOOK_CONFIG_NAME and the matching ConfigMap /
-    # MutatingWebhookConfiguration names. Change in one place; all references follow.
+    # -- Identifier shared by Agentio configuration and leader-election resources.
     resourcePrefix: agentio
-
-  ztunnel:
-    image:
-      hub: ""
-      name: ztunnel
-      tag: "0.1.0"
-
-  sidecarInjector:
-    enabled: true
-    ztunnel:
-      # -- Firewall implementation used by injected per-pod ztunnels: auto or iptables.
-      firewallBackend: auto
-
   agentiod:
     replicas: 1
     env: {}
@@ -242,27 +218,11 @@ agentio:
         cpu: "4"
         memory: 4Gi
     # -- Node selector for control plane pods.
-    nodeSelector: { }
+    nodeSelector: {}
     # -- Tolerations for control plane pods.
-    tolerations: [ ]
+    tolerations: []
     # -- Affinity rules for control plane pods.
-    affinity: { }
-
-  proxy:
-    image:
-      hub: ""
-      name: proxyv2
-      tag: "0.1.0"
-
-  # -- Lightweight image used only by the istio-init/istio-validation containers
-  # to configure pod iptables. It contains pilot-agent and iptables/nftables, but
-  # does not contain Envoy.
-  proxyInit:
-    image:
-      hub: ""
-      name: proxy-init
-      tag: "0.1.0"
-
+    affinity: {}
   trafficExtension:
     enabled: false
     name: traffic-extension
@@ -293,15 +253,13 @@ agentio:
     # -- PDB minAvailable for the traffic extension Deployment.
     pdbMinAvailable: 1
     # -- Node selector for traffic extension pods.
-    nodeSelector: { }
+    nodeSelector: {}
     # -- Tolerations for traffic extension pods.
-    tolerations: [ ]
+    tolerations: []
     # -- Affinity rules for traffic extension pods.
-    affinity: { }
-
+    affinity: {}
   # -- Egress policies applied to agent traffic. Empty by default.
   egressPolicies: []
-
   # -- Statically chart-provisioned egress gateways — the alternative to creating
   # a Kubernetes Gateway and letting the controller provision it. Both approaches
   # produce workloads labeled networking.agents.kruise.io/sandbox-egress=true, so
@@ -344,107 +302,8 @@ agentio:
     # nodeSelector, tolerations, affinity, pdbMinAvailable,
     # terminationGracePeriodSeconds, statsFlushInterval, statsEvictionInterval.
     gateways: []
-
-  # -- Ambient mode. When enabled, deploys a node-level CNI DaemonSet and ztunnel
-  # DaemonSet for ambient mesh. Independent of sidecarInjector — both can be
-  # enabled simultaneously if needed.
-  ambient:
-    # -- Set true to deploy the CNI + ztunnel DaemonSets.
-    enabled: false
-
-    cni:
-      image:
-        hub: ""
-        name: install-cni
-        tag: "0.1.0"
-      # -- Host paths for CNI binary and config installation
-      cniBinDir: /opt/cni/bin
-      cniConfDir: /etc/cni/net.d
-      cniConfFileName: ""
-      cniNetnsDir: /var/run/netns
-      # -- Run install-cni in the host network namespace (hostNetwork + host DNS).
-      # Upstream default is false; only enable if your ambient setup requires
-      # sharing the host netns.
-      shareHostNetworkNamespace: false
-      # -- Deploy as chained CNI plugin (true) or standalone (false)
-      chained: true
-      # -- Namespaces excluded from CNI ambient redirection
-      excludeNamespaces:
-        - kube-system
-      # -- Enablement selector for ambient mode. Pods/namespaces matching
-      # these selectors will be enrolled into the ambient mesh.
-      enablementSelector:
-        # Pod-level: enrolled when the pod itself carries the label
-        - podSelector:
-            matchLabels:
-              istio.io/dataplane-mode: ambient
-        # Namespace-level: namespace has the label and the pod has not explicitly opted out
-        - podSelector:
-            matchExpressions:
-              - key: istio.io/dataplane-mode
-                operator: NotIn
-                values: [none]
-          namespaceSelector:
-            matchLabels:
-              istio.io/dataplane-mode: ambient
-      # -- DNS capture for ambient pods
-      dnsCapture: true
-      # -- IPv6 support
-      ipv6: true
-      # -- Reconcile iptables rules at startup
-      reconcileIptablesOnStartup: true
-      # -- Pod repair settings
-      repair:
-        enabled: true
-        repairPods: true
-        labelPods: false
-        deletePods: false
-        initContainerName: "istio-validation"
-        brokenPodLabelKey: "cni.istio.io/uninitialized"
-        brokenPodLabelValue: "true"
-      resources:
-        requests:
-          cpu: 100m
-          memory: 100Mi
-      tolerations:
-        - effect: NoSchedule
-          operator: Exists
-        - key: CriticalAddonsOnly
-          operator: Exists
-        - effect: NoExecute
-          operator: Exists
-      updateStrategy:
-        type: RollingUpdate
-        rollingUpdate:
-          maxUnavailable: 1
-      terminationGracePeriodSeconds: 30
-
-    ztunnel:
-      logLevel: info
-      # -- Output ztunnel logs in JSON format.
-      logAsJson: true
-      # -- Extra environment variables as key-value pairs injected into the ztunnel container.
-      env: {}
-      resources:
-        requests:
-          cpu: 1
-          memory: 1024Mi
-      tolerations:
-        - effect: NoSchedule
-          operator: Exists
-        - key: CriticalAddonsOnly
-          operator: Exists
-        - effect: NoExecute
-          operator: Exists
-      terminationGracePeriodSeconds: 30
-      updateStrategy:
-        type: RollingUpdate
-        rollingUpdate:
-          maxSurge: 1
-          maxUnavailable: 0
-
   # -- Raw overrides merged on top of the built-in agentio-config ConfigMap body.
   # Use this to set fields the chart does not model explicitly (e.g. clusterSettings)
   # or to override defaults. Maps deep-merge; lists are replaced wholesale.
-  agentioConfig: { }
+  agentioConfig: {}
 # END GENERATED AGENTIO VALUES
