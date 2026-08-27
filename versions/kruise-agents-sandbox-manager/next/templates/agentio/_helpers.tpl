@@ -108,3 +108,9 @@ app: {{ include "agentio.ztunnel.name" . }}
 {{ include "agentio.ztunnel.selectorLabels" . }}
 {{ include "agentio.commonLabels" . }}
 {{- end -}}
+
+{{/* Render a CRD with a Helm policy that preserves it during uninstall. */}}
+{{- define "agentio.renderCRD" -}}
+{{- $keepPolicy := dict "metadata" (dict "annotations" (dict "helm.sh/resource-policy" "keep")) -}}
+{{- mergeOverwrite (. | fromYaml) $keepPolicy | toYaml -}}
+{{- end -}}

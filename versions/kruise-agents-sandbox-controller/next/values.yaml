@@ -78,3 +78,39 @@ nodeSelector: { }
 tolerations: [ ]
 
 affinity: { }
+
+# BEGIN GENERATED AGENTIO TRAFFIC PROXY VALUES - DO NOT EDIT
+agentio:
+  trafficProxy:
+    caAddress: ""
+    caCertConfigMap: agentio-ca-certs
+    clusterId: Kubernetes
+    controlPlaneNamespace: agentio-system
+    controlPlaneService: agentiod
+    dnsCapture: true
+    excludeInboundPorts: ""
+    excludeOutboundIPRanges: ""
+    excludeOutboundPorts: ""
+    healthProbeRewrite: true
+    image: docker.io/openkruise/ztunnel:0.1.0
+    imagePullPolicy: IfNotPresent
+    includeInboundPorts: '*'
+    includeOutboundIPRanges: '*'
+    includeOutboundPorts: ""
+    initImage: docker.io/openkruise/proxy-init:0.1.0
+    initResources:
+      limits:
+        cpu: "1"
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    resources:
+      limits:
+        cpu: 200m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 64Mi
+    xdsAddress: ""
+# END GENERATED AGENTIO TRAFFIC PROXY VALUES
