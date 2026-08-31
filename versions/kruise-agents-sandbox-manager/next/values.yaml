@@ -180,6 +180,8 @@ agentio:
   global:
     # -- Namespace where Agentio control-plane resources are installed.
     namespace: agentio-system
+    # -- Create the Agentio control-plane namespace and retain it on uninstall.
+    createNamespace: true
     hub: docker.io/openkruise
     trustDomain: cluster.local
     clusterId: 'Kubernetes'
