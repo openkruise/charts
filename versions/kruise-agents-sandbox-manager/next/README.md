@@ -64,6 +64,23 @@ The following table lists the configurable parameters of the agents-sandbox-mana
 | `gateway.envoy.listener.port`                | Envoy listener port                           | `10000`                                                                                                                                                       |
 | `gateway.envoy.logLevel`                     | Envoy log level                               | `warn`                                                                                                                                                        |
 | `gateway.envoy.concurrency`                  | Envoy worker thread concurrency               | `4`                                                                                                                                                           |
+| `agentio.enabled`                            | Deploy the embedded Agentio control plane     | `false`                                                                                                                                                       |
+| `agentio.global.hub`                         | Default registry for Agentio images           | `docker.io/openkruise`                                                                                                                                        |
+| `agentio.global.trustDomain`                 | Agentio workload identity trust domain        | `cluster.local`                                                                                                                                               |
+| `agentio.global.clusterId`                   | Agentio cluster identifier                    | `Kubernetes`                                                                                                                                                  |
+| `agentio.global.caCertConfigMap`             | CA ConfigMap distributed to traffic proxies   | `agentio-ca-certs`                                                                                                                                            |
+| `agentio.agentiod.replicas`                  | Agentio control-plane replicas                | `1`                                                                                                                                                           |
+| `agentio.agentiod.image`                     | Agentio control-plane image settings          | `docker.io/openkruise/pilot:0.1.0`                                                                                                                            |
+| `agentio.agentiod.resources`                 | Agentio control-plane resources               | `requests/limits: 4 CPU, 4Gi`                                                                                                                                 |
+| `agentio.trafficExtension.enabled`           | Deploy the optional traffic extension         | `false`                                                                                                                                                       |
+| `agentio.trafficExtension.image`             | Traffic-extension image settings              | `docker.io/openkruise/traffic-extension:latest`                                                                                                                |
+| `agentio.egressGateway.gateways`             | Statically provisioned Agentio egress gateways | `[]`                                                                                                                                                          |
+| `agentio.agentioConfig`                      | Raw overrides for the Agentio configuration   | `{}`                                                                                                                                                          |
+
+The sandbox-manager integration intentionally excludes Agentio ambient mode and
+the Agentio sidecar injector. Kruise Agents injects the per-sandbox
+`traffic-proxy` from the `sandbox-injection-config` ConfigMap installed by the
+sandbox-controller chart.
 
 Specify each parameter using the `--set key=value[,key=value]` argument. For example:
 

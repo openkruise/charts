@@ -33,6 +33,22 @@ The following table lists the configurable parameters of the agents-sandbox-cont
 | `nodeSelector`               | Node selector for Pod scheduling          | `{}`                                                                                                                    |
 | `tolerations`                | Tolerations for Pod scheduling            | `[]`                                                                                                                    |
 | `affinity`                   | Affinity for Pod scheduling               | `{}`                                                                                                                    |
+| `agentio.trafficProxy.controlPlaneNamespace` | Namespace containing the Agentio control plane | `agentio-system` |
+| `agentio.trafficProxy.controlPlaneService` | Agentio control-plane Service name | `agentiod` |
+| `agentio.trafficProxy.xdsAddress` | Explicit XDS address; generated from service and namespace when empty | `""` |
+| `agentio.trafficProxy.caAddress` | Explicit CA address; generated from service and namespace when empty | `""` |
+| `agentio.trafficProxy.caCertConfigMap` | CA ConfigMap mounted in injected workload namespaces | `agentio-ca-certs` |
+| `agentio.trafficProxy.image` | Injected ztunnel image | `docker.io/openkruise/ztunnel:0.1.0` |
+| `agentio.trafficProxy.initImage` | Injected iptables init image | `docker.io/openkruise/proxy-init:0.1.0` |
+| `agentio.trafficProxy.imagePullPolicy` | Traffic-proxy image pull policy | `IfNotPresent` |
+| `agentio.trafficProxy.healthProbeRewrite` | Rewrite health probes for injected traffic proxies | `true` |
+| `agentio.trafficProxy.dnsCapture` | Enable DNS capture | `true` |
+| `agentio.trafficProxy.resources` | Injected ztunnel resources | `requests: 100m/64Mi, limits: 200m/128Mi` |
+| `agentio.trafficProxy.initResources` | Injected iptables init resources | `requests: 100m/128Mi, limits: 1/1Gi` |
+
+The `sandbox-injection-config` ConfigMap is installed in the sandbox-controller
+release namespace. `controlPlaneNamespace` is independent, so the injected
+traffic proxy can connect to Agentio running in another namespace.
 
 Specify each parameter using the `--set key=value[,key=value]` argument. For example:
 
