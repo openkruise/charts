@@ -92,12 +92,12 @@ agentio:
     excludeOutboundIPRanges: ""
     excludeOutboundPorts: ""
     healthProbeRewrite: true
-    image: docker.io/openkruise/ztunnel:0.1.0
+    image: docker.io/openkruise/ztunnel:0.1.1
     imagePullPolicy: IfNotPresent
     includeInboundPorts: '*'
     includeOutboundIPRanges: '*'
     includeOutboundPorts: ""
-    initImage: docker.io/openkruise/proxy-init:0.1.0
+    initImage: docker.io/openkruise/proxy-init:0.1.1
     initResources:
       limits:
         cpu: "1"

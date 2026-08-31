@@ -212,7 +212,7 @@ agentio:
     image:
       hub: ""
       name: pilot
-      tag: "0.1.0"
+      tag: 0.1.1
     # CPU request must equal limit so HPA-based utilization is meaningful.
     resources:
       requests:
@@ -227,15 +227,58 @@ agentio:
     tolerations: []
     # -- Affinity rules for control plane pods.
     affinity: {}
-  trafficExtension:
+  # -- Settings shared by native policy runtimes referenced by Workload discovery.
+  policyRuntime:
+    # -- Time an existing ready workload may keep its last-known-good policy snapshot
+    # while policy and Workload-reference updates converge after references become
+    # temporarily unresolved. Must exceed the
+    # control plane's worst-case gap between the two pushes, which is bounded by
+    # PILOT_DEBOUNCE_MAX (10s by default); a shorter value lets the grace period
+    # expire first and fails the workload closed. Recovery cancels the wait as
+    # soon as the streams converge, so this is an upper bound, not a fixed delay.
+    referenceResolutionGracePeriod: 15s
+  # -- Opt-in ClientHello SNI enforcement for sandbox egress gateways.
+  sniTrafficPolicy:
     enabled: false
-    name: traffic-extension
+  epe:
+    enabled: false
+    name: agentio-epe
     port: 9002
     env: {}
     # -- Replica count when autoscaling.enabled is false. Ignored when HPA is enabled.
     replicas: 1
-    # -- Identity provider endpoint used by the extension to mint sandbox tokens.
-    identityProviderUrl: ""
+    # -- Credential-provider client configuration.
+    credentialProvider:
+      # -- Base URL of the credential provider API. Rendered as the
+      # IDENTITY_PROVIDER_URL environment variable — that name predates the
+      # credential-provider naming and is kept for compatibility with non-chart
+      # deployments. Every credential lookup fails while this is empty.
+      url: ""
+      # -- Where EPE's mTLS material for the credential provider comes from.
+      # Exactly one source is used; there is no fallback between them. Material
+      # that is absent or unusable means no client certificate is presented and
+      # the provider is verified against the system trust store — a degraded
+      # mode, not a startup failure. The chosen source is watched, so material
+      # appearing or rotating later takes effect without a restart.
+      mtls:
+        # -- One of: files, secret, none.
+        source: files
+        # -- source=files only. Secret mounted read-only at
+        # /etc/epe/credential-provider, read as client.crt/client.key/ca.crt.
+        # The chart does NOT create this Secret; the mount is optional so it may
+        # appear afterwards. Empty means <epe.name>-mtls-client-cert.
+        secretName: ""
+        # -- source=secret only. The Secret EPE watches through the API server,
+        # same three data keys. Both fields are required when source=secret and
+        # rendering fails if either is missing; they may also come from epe.env.
+        secret:
+          namespace: ""
+          name: ""
+        # -- DANGER: disables verification of the credential provider's server
+        # certificate while still presenting the client certificate. Any on-path
+        # attacker can then read the sandbox bearer token and forge the
+        # credential response. Trusted test environments only.
+        insecureSkipVerify: false
     autoscaling:
       # -- Set to false to skip rendering the HPA.
       enabled: false
@@ -252,15 +295,15 @@ agentio:
         memory: 2Gi
     image:
       hub: "docker.io/openkruise"
-      name: traffic-extension
-      tag: latest
-    # -- PDB minAvailable for the traffic extension Deployment.
+      name: agentio-epe
+      tag: 0.1.1
+    # -- PDB minAvailable for the EPE Deployment.
     pdbMinAvailable: 1
-    # -- Node selector for traffic extension pods.
+    # -- Node selector for EPE pods.
     nodeSelector: {}
-    # -- Tolerations for traffic extension pods.
+    # -- Tolerations for EPE pods.
     tolerations: []
-    # -- Affinity rules for traffic extension pods.
+    # -- Affinity rules for EPE pods.
     affinity: {}
   # -- Egress policies applied to agent traffic. Empty by default.
   egressPolicies: []
@@ -274,7 +317,7 @@ agentio:
     image:
       hub: ""
       name: proxyv2
-      tag: "0.1.0"
+      tag: 0.1.1
     # -- Default replicas when a gateway's autoscaling is disabled.
     replicas: 2
     # -- Default resources per gateway (overridable per gateway).
