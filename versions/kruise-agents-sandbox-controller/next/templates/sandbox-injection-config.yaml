@@ -4,7 +4,6 @@ metadata:
   name: sandbox-injection-config
   namespace: {{ include "sandbox-controller.namespace" . }}
 data:
-  # BEGIN GENERATED AGENTIO TRAFFIC PROXY - DO NOT EDIT
   traffic-proxy: |
     {
       "annotations": {
@@ -289,4 +288,3 @@ data:
         }
       ]
     }
-  # END GENERATED AGENTIO TRAFFIC PROXY
