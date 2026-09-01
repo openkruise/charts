@@ -4,7 +4,7 @@ description: The Helm chart for Agents Sandbox Controller
 
 type: application
 
-version: 0.3.0
+version: 0.6.0
 
 appVersion: "v0.3.0"
 
@@ -17,4 +17,5 @@ keywords:
   - openkruise
 annotations:
   artifacthub.io/changes: |
+    - "[Added]: support injecting the agent-runtime native sidecar via the agent-runtime entry of the sandbox-injection-config ConfigMap"
     - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"

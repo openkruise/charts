@@ -288,3 +288,113 @@ data:
         }
       ]
     }
+  agent-runtime: |
+    {
+      "mainContainer": {
+        "env": [
+          {
+            "name": "ENVD_DIR",
+            "value": "/mnt/envd"
+          },
+          {
+            "name": "GODEBUG",
+            "value": "multipathtcp=0"
+          },
+          {
+            "name": "POD_UID",
+            "valueFrom": {
+              "fieldRef": {
+                "apiVersion": "v1",
+                "fieldPath": "metadata.uid"
+              }
+            }
+          }
+        ],
+        "volumeMounts": [
+          {
+            "mountPath": "/mnt/envd",
+            "name": "envd-volume"
+          },
+          {
+            "mountPath": "/var/run/agent-runtime",
+            "name": "agent-runtime-state"
+          },
+          {
+            "mountPath": "/var/run/agent-helper",
+            "name": "agent-helper"
+          }
+        ],
+        "lifecycle": {
+          "postStart": {
+            "exec": {
+              "command": [
+                "bash",
+                "/mnt/envd/envd-run.sh"
+              ]
+            }
+          }
+        }
+      },
+      "csiSidecar": [
+        {
+          "command": [
+            "sh",
+            "/workspace/entrypoint.sh"
+          ],
+          "env": [
+            {
+              "name": "ENVD_DIR",
+              "value": "/mnt/envd"
+            },
+            {
+              "name": "RUNTIME_MODE",
+              "value": "helper"
+            },
+            {
+              "name": "HELPER_SOCKET",
+              "value": "/var/run/agent-helper/helper.sock"
+            },
+            {
+              "name": "AGENT_RUNTIME_PORT",
+              "value": "49985"
+            },
+            {
+              "name": "ENVD_URL",
+              "value": "http://127.0.0.1:49983"
+            }
+          ],
+          "image": {{ printf "%s:%s" .Values.agentRuntime.image.repository .Values.agentRuntime.image.tag | quote }},
+          "imagePullPolicy": {{ .Values.agentRuntime.image.pullPolicy | quote }},
+          "name": "agent-runtime",
+          "restartPolicy": "Always",
+          "volumeMounts": [
+            {
+              "mountPath": "/mnt/envd",
+              "name": "envd-volume"
+            },
+            {
+              "mountPath": "/var/run/agent-runtime",
+              "name": "agent-runtime-state"
+            },
+            {
+              "mountPath": "/var/run/agent-helper",
+              "name": "agent-helper"
+            }
+          ]
+        }
+      ],
+      "volume": [
+        {
+          "emptyDir": {},
+          "name": "envd-volume"
+        },
+        {
+          "emptyDir": {},
+          "name": "agent-runtime-state"
+        },
+        {
+          "emptyDir": {},
+          "name": "agent-helper"
+        }
+      ]
+    }
