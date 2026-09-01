@@ -288,3 +288,73 @@ data:
         }
       ]
     }
+  agent-runtime: |
+    {
+      "mainContainer": {
+        "env": [
+          {
+            "name": "ENVD_DIR",
+            "value": "/mnt/envd"
+          },
+          {
+            "name": "GODEBUG",
+            "value": "multipathtcp=0"
+          },
+          {
+            "name": "POD_UID",
+            "valueFrom": {
+              "fieldRef": {
+                "apiVersion": "v1",
+                "fieldPath": "metadata.uid"
+              }
+            }
+          }
+        ],
+        "volumeMounts": [
+          {
+            "mountPath": "/mnt/envd",
+            "name": "envd-volume"
+          }
+        ],
+        "lifecycle": {
+          "postStart": {
+            "exec": {
+              "command": [
+                "bash",
+                "/mnt/envd/envd-run.sh"
+              ]
+            }
+          }
+        }
+      },
+      "csiSidecar": [
+        {
+          "command": [
+            "sh",
+            "/workspace/entrypoint.sh"
+          ],
+          "env": [
+            {
+              "name": "ENVD_DIR",
+              "value": "/mnt/envd"
+            }
+          ],
+          "image": {{ printf "%s:%s" .Values.agentRuntime.image.repository .Values.agentRuntime.image.tag | quote }},
+          "imagePullPolicy": {{ .Values.agentRuntime.image.pullPolicy | quote }},
+          "name": "agent-runtime",
+          "restartPolicy": "Always",
+          "volumeMounts": [
+            {
+              "mountPath": "/mnt/envd",
+              "name": "envd-volume"
+            }
+          ]
+        }
+      ],
+      "volume": [
+        {
+          "emptyDir": {},
+          "name": "envd-volume"
+        }
+      ]
+    }

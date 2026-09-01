@@ -79,6 +79,15 @@ tolerations: [ ]
 
 affinity: { }
 
+# Agent runtime injection configuration.
+# Used by the `agent-runtime` entry of the sandbox-injection-config ConfigMap,
+# which is injected when a Sandbox declares the `agent-runtime` runtime.
+agentRuntime:
+  image:
+    repository: openkruise/agent-runtime
+    tag: v0.3.0
+    pullPolicy: IfNotPresent
+
 # BEGIN GENERATED AGENTIO TRAFFIC PROXY VALUES - DO NOT EDIT
 agentio:
   trafficProxy:
