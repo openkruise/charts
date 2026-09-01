@@ -34,7 +34,7 @@ The following table lists the configurable parameters of the agents-sandbox-cont
 | `tolerations`                | Tolerations for Pod scheduling            | `[]`                                                                                                                    |
 | `affinity`                   | Affinity for Pod scheduling               | `{}`                                                                                                                    |
 | `agentRuntime.image.repository` | Injected agent-runtime sidecar image repository | `openkruise/agent-runtime` |
-| `agentRuntime.image.tag` | Injected agent-runtime sidecar image tag | `v0.3.0` |
+| `agentRuntime.image.tag` | Injected agent-runtime sidecar image tag | `v0.2.0` |
 | `agentRuntime.image.pullPolicy` | Injected agent-runtime sidecar image pull policy | `IfNotPresent` |
 | `agentio.trafficProxy.controlPlaneNamespace` | Namespace containing the Agentio control plane | `agentio-system` |
 | `agentio.trafficProxy.controlPlaneService` | Agentio control-plane Service name | `agentiod` |
@@ -75,7 +75,7 @@ When the runtime is declared, the controller injects:
 - A native sidecar container named `agent-runtime`, built from
   `agentRuntime.image.repository`, `agentRuntime.image.tag` and
   `agentRuntime.image.pullPolicy`. The default is the public image
-  `openkruise/agent-runtime:v0.3.0`. The sidecar carries its own `ENVD_DIR`
+  `openkruise/agent-runtime:v0.2.0`. The sidecar carries its own `ENVD_DIR`
   environment variable and mounts `envd-volume` at `/mnt/envd`.
 - `ENVD_DIR`, `GODEBUG` and `POD_UID` environment variables, the `envd-volume`
   (`/mnt/envd`) mount, and a `postStart` hook into the first business container.
