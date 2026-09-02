@@ -1,0 +1,59 @@
+scrape_configs:
+  - job_name: egress-gateway-stats
+    metrics_path: /stats/prometheus
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - agentio-system
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_container_port_name]
+        action: keep
+        regex: ".*-envoy-prom"
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+
+  - job_name: istio-proxy-stats
+    metrics_path: /stats/prometheus
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_container_port_name]
+        action: keep
+        regex: istio-proxy-stats
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+
+  - job_name: agentio-epe
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - agentio-system
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: agentio-epe;metrics
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+
+  - job_name: agentiod
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - agentio-system
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: agentiod;http-monitoring
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod

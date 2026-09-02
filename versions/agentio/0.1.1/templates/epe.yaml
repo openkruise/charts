@@ -1,0 +1,273 @@
+{{- if .Values.epe.enabled }}
+{{- include "agentio.epe.validateCredProviderMtls" . }}
+{{- $epeEnv := .Values.epe.env | default dict }}
+{{- $credMtls := .Values.epe.credentialProvider.mtls }}
+{{- $credMtlsSource := include "agentio.epe.credProviderMtlsSource" . }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Values.epe.name }}
+  namespace: {{ include "agentio.namespace" . }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.epe.name }}
+    {{- include "agentio.commonLabels" . | nindent 4 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Values.epe.name }}-role
+  labels:
+    app.kubernetes.io/name: {{ .Values.epe.name }}
+    {{- include "agentio.commonLabels" . | nindent 4 }}
+rules:
+  - apiGroups: ["agents.kruise.io"]
+    resources: ["securityprofiles", "globalsecurityprofiles"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["agents.kruise.io"]
+    resources: ["securityprofiles/status", "globalsecurityprofiles/status"]
+    verbs: ["get"]
+  # Sandboxes carry the per-workload inline security rules annotation; EPE
+  # only reads them and evaluates the rules under the Pod's own identity.
+  - apiGroups: ["agents.kruise.io"]
+    resources: ["sandboxes"]
+    verbs: ["get", "list", "watch"]
+  # The profile collections are delayed informers, so the process starts a CRD
+  # watcher to learn when the profile CRDs appear (cmd/epe/main.go). Without this
+  # rule that watcher never syncs, both profile informers block, and the process
+  # exits on "Kube client cache sync interrupted" — a CrashLoopBackOff, not a
+  # degraded mode.
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Values.epe.name }}-rolebinding
+  labels:
+    app.kubernetes.io/name: {{ .Values.epe.name }}
+    {{- include "agentio.commonLabels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ .Values.epe.name }}-role
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.epe.name }}
+    namespace: {{ include "agentio.namespace" . }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.epe.name }}
+  namespace: {{ include "agentio.namespace" . }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.epe.name }}
+    {{- include "agentio.commonLabels" . | nindent 4 }}
+    app.kubernetes.io/component: extproc
+spec:
+  clusterIP: None
+  ports:
+    - name: extproc
+      port: {{ .Values.epe.port }}
+      targetPort: {{ .Values.epe.port }}
+      protocol: TCP
+    - name: health
+      port: 9003
+      targetPort: 9003
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: {{ .Values.epe.name }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.epe.name }}
+  namespace: {{ include "agentio.namespace" . }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.epe.name }}
+    {{- include "agentio.commonLabels" . | nindent 4 }}
+spec:
+  {{- if not .Values.epe.autoscaling.enabled }}
+  replicas: {{ .Values.epe.replicas | default 1 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.epe.name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.epe.name }}
+      annotations:
+        sidecar.istio.io/inject: "false"
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+      serviceAccountName: {{ .Values.epe.name }}
+      containers:
+        - name: {{ .Values.epe.name }}
+          image: {{ include "agentio.image" (dict "hub" .Values.epe.image.hub "name" .Values.epe.image.name "tag" .Values.epe.image.tag "globalHub" .Values.global.hub) }}
+          imagePullPolicy: IfNotPresent
+          args:
+            - -grpc-port={{ .Values.epe.port }}
+            - -grpc-health-port=9003
+            - -metrics-port=9090
+          env:
+            # Named IDENTITY_PROVIDER_URL for compatibility; it is the
+            # credential provider's base URL, hence the values location.
+            - name: IDENTITY_PROVIDER_URL
+              value: {{ .Values.epe.credentialProvider.url | quote }}
+            # Fallback for responses without cacheExpiresInSeconds.
+            - name: TOKEN_CACHE_TTL
+              value: "15m"
+            - name: TOKEN_CACHE_MAX_SIZE
+              value: "10000"
+            {{- /*
+            The source is rendered explicitly rather than left to the binary's
+            own default, so an existing release keeps its source if that default
+            ever changes. Every entry here is skipped when epe.env already
+            carries the same key, because the range below would then emit a
+            second env entry with the same name.
+            */}}
+            {{- if not (get $epeEnv "CREDENTIAL_PROVIDER_MTLS_SOURCE") }}
+            - name: CREDENTIAL_PROVIDER_MTLS_SOURCE
+              value: {{ $credMtlsSource | quote }}
+            {{- end }}
+            {{- if eq $credMtlsSource "secret" }}
+            {{- if not (get $epeEnv "CREDENTIAL_PROVIDER_SECRET_NAMESPACE") }}
+            - name: CREDENTIAL_PROVIDER_SECRET_NAMESPACE
+              value: {{ $credMtls.secret.namespace | quote }}
+            {{- end }}
+            {{- if not (get $epeEnv "CREDENTIAL_PROVIDER_SECRET_NAME") }}
+            - name: CREDENTIAL_PROVIDER_SECRET_NAME
+              value: {{ $credMtls.secret.name | quote }}
+            {{- end }}
+            {{- end }}
+            {{- if and $credMtls.insecureSkipVerify (not (get $epeEnv "CREDENTIAL_PROVIDER_INSECURE_SKIP_VERIFY")) }}
+            - name: CREDENTIAL_PROVIDER_INSECURE_SKIP_VERIFY
+              value: "true"
+            {{- end }}
+            {{- range $key, $val := .Values.epe.env }}
+            - name: {{ $key }}
+              value: {{ $val | quote }}
+            {{- end }}
+          {{- if eq $credMtlsSource "files" }}
+          volumeMounts:
+            - name: credential-provider-mtls
+              mountPath: /etc/epe/credential-provider
+              readOnly: true
+          {{- end }}
+          ports:
+            - containerPort: {{ .Values.epe.port }}
+              name: extproc
+              protocol: TCP
+            - containerPort: 9003
+              name: health
+              protocol: TCP
+            - containerPort: 9090
+              name: metrics
+              protocol: TCP
+          livenessProbe:
+            grpc:
+              port: 9003
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            grpc:
+              port: 9003
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          resources:
+            {{- if .Values.epe.resources }}
+            {{- toYaml .Values.epe.resources | nindent 12 }}
+            {{- else }}
+            requests:
+              cpu: "2"
+              memory: 1Gi
+            limits:
+              cpu: "2"
+              memory: 1Gi
+            {{- end }}
+      {{- if eq $credMtlsSource "files" }}
+      volumes:
+        # optional: the source treats absent material as a resting state and
+        # watches for it, so the Secret may be created after this Deployment.
+        - name: credential-provider-mtls
+          secret:
+            secretName: {{ include "agentio.epe.credProviderMtlsFilesSecretName" . }}
+            optional: true
+      {{- end }}
+      {{- with .Values.epe.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.epe.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.epe.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- if .Values.epe.autoscaling.enabled }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Values.epe.name }}
+  namespace: {{ include "agentio.namespace" . }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.epe.name }}
+    {{- include "agentio.commonLabels" . | nindent 4 }}
+spec:
+  maxReplicas: {{ .Values.epe.autoscaling.maxReplicas | default 5 }}
+  minReplicas: {{ .Values.epe.autoscaling.minReplicas | default 2 }}
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Values.epe.name }}
+  metrics:
+  {{- if .Values.epe.autoscaling.targetCPUUtilizationPercentage }}
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: {{ .Values.epe.autoscaling.targetCPUUtilizationPercentage }}
+  {{- end }}
+  {{- if .Values.epe.autoscaling.targetMemoryUtilizationPercentage }}
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: {{ .Values.epe.autoscaling.targetMemoryUtilizationPercentage }}
+  {{- end }}
+  {{- if .Values.epe.autoscaling.behavior }}
+  behavior:
+    {{- toYaml .Values.epe.autoscaling.behavior | nindent 4 }}
+  {{- end }}
+{{- end }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Values.epe.name }}
+  namespace: {{ include "agentio.namespace" . }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.epe.name }}
+    {{- include "agentio.commonLabels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.epe.pdbMinAvailable | default 1 }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.epe.name }}
+{{- end }}

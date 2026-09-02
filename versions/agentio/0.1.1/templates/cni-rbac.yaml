@@ -1,0 +1,99 @@
+{{- if .Values.ambient.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    {{- include "agentio.cni.labels" . | nindent 4 }}
+  name: {{ include "agentio.cni.name" . }}
+rules:
+- apiGroups: [""]
+  resources: ["pods", "nodes", "namespaces"]
+  verbs: ["get", "list", "watch"]
+---
+{{- if .Values.ambient.cni.repair.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    {{- include "agentio.cni.labels" . | nindent 4 }}
+  name: {{ include "agentio.cni.name" . }}-repair-role
+rules:
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["watch", "get", "list"]
+{{- if .Values.ambient.cni.repair.deletePods }}
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["delete"]
+{{- else if .Values.ambient.cni.repair.labelPods }}
+- apiGroups: [""]
+  resources: ["pods/status"]
+  verbs: ["patch", "update"]
+{{- end }}
+{{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    {{- include "agentio.cni.labels" . | nindent 4 }}
+  name: {{ include "agentio.cni.name" . }}-ambient
+rules:
+- apiGroups: [""]
+  resources: ["pods/status"]
+  verbs: ["patch", "update"]
+- apiGroups: ["apps"]
+  resources: ["daemonsets"]
+  resourceNames: ["{{ include "agentio.cni.daemonsetName" . }}"]
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    {{- include "agentio.cni.labels" . | nindent 4 }}
+  name: {{ include "agentio.cni.name" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "agentio.cni.name" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "agentio.cni.name" . }}
+  namespace: {{ include "agentio.namespace" . }}
+---
+{{- if .Values.ambient.cni.repair.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    {{- include "agentio.cni.labels" . | nindent 4 }}
+  name: {{ include "agentio.cni.name" . }}-repair-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "agentio.cni.name" . }}-repair-role
+subjects:
+- kind: ServiceAccount
+  name: {{ include "agentio.cni.name" . }}
+  namespace: {{ include "agentio.namespace" . }}
+{{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    {{- include "agentio.cni.labels" . | nindent 4 }}
+  name: {{ include "agentio.cni.name" . }}-ambient
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "agentio.cni.name" . }}-ambient
+subjects:
+- kind: ServiceAccount
+  name: {{ include "agentio.cni.name" . }}
+  namespace: {{ include "agentio.namespace" . }}
+{{- end }}

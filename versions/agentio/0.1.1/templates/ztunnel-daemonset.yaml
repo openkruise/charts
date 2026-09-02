@@ -1,0 +1,157 @@
+{{- if .Values.ambient.enabled }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    {{- include "agentio.ztunnel.labels" . | nindent 4 }}
+  name: {{ include "agentio.ztunnel.name" . }}
+  namespace: {{ include "agentio.namespace" . }}
+spec:
+  {{- with .Values.ambient.ztunnel.updateStrategy }}
+  updateStrategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "agentio.ztunnel.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        sidecar.istio.io/inject: "false"
+        istio.io/dataplane-mode: none
+        {{- include "agentio.ztunnel.labels" . | nindent 8 }}
+      annotations:
+        sidecar.istio.io/inject: "false"
+        prometheus.io/port: "15020"
+        prometheus.io/scrape: "true"
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      {{- with .Values.ambient.ztunnel.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "agentio.ztunnel.name" . }}
+      priorityClassName: system-node-critical
+      terminationGracePeriodSeconds: {{ .Values.ambient.ztunnel.terminationGracePeriodSeconds }}
+      containers:
+      - name: {{ include "agentio.ztunnel.name" . }}
+        image: {{ include "agentio.ztunnelImage" . }}
+        ports:
+        - containerPort: 15020
+          name: ztunnel-stats
+          protocol: TCP
+        {{- if .Values.ambient.ztunnel.resources }}
+        resources:
+          {{- toYaml .Values.ambient.ztunnel.resources | nindent 10 }}
+        {{- end }}
+        securityContext:
+          allowPrivilegeEscalation: true
+          privileged: false
+          capabilities:
+            drop:
+            - ALL
+            add:
+            - NET_ADMIN
+            - SYS_ADMIN
+            - NET_RAW
+          readOnlyRootFilesystem: true
+          runAsGroup: 1337
+          runAsNonRoot: false
+          runAsUser: 0
+        readinessProbe:
+          httpGet:
+            port: 15021
+            path: /healthz/ready
+        args:
+        - proxy
+        - ztunnel
+        env:
+        - name: CA_ADDRESS
+          value: {{ include "agentio.controller.name" . }}.{{ include "agentio.namespace" . }}.svc.cluster.local:15012
+        - name: XDS_ADDRESS
+          value: {{ include "agentio.controller.name" . }}.{{ include "agentio.namespace" . }}.svc.cluster.local:15012
+        - name: ENABLE_SANDBOX_MANAGER
+          value: "true"
+        - name: RUST_LOG
+          value: {{ .Values.ambient.ztunnel.logLevel | quote }}
+        {{- if .Values.ambient.ztunnel.logAsJson }}
+        - name: LOG_FORMAT
+          value: json
+        {{- end }}
+        - name: RUST_BACKTRACE
+          value: "1"
+        - name: ISTIO_META_CLUSTER_ID
+          value: {{ .Values.global.clusterId | quote }}
+        - name: INPOD_ENABLED
+          value: "true"
+        {{- if .Values.global.enableFirewallRules }}
+        - name: ENABLE_FIREWALL_RULES
+          value: "true"
+        {{- end }}
+        - name: TERMINATION_GRACE_PERIOD_SECONDS
+          value: {{ .Values.ambient.ztunnel.terminationGracePeriodSeconds | quote }}
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: INSTANCE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: SERVICE_ACCOUNT
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.serviceAccountName
+        - name: ZTUNNEL_CPU_LIMIT
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.cpu
+              divisor: "1"
+        {{- range $key, $val := .Values.ambient.ztunnel.env }}
+        - name: {{ $key }}
+          value: {{ $val | quote }}
+        {{- end }}
+        volumeMounts:
+        - mountPath: /var/run/secrets/istio
+          name: istiod-ca-cert
+        - mountPath: /var/run/secrets/tokens
+          name: istio-token
+        - mountPath: /var/run/ztunnel
+          name: cni-ztunnel-sock-dir
+        - mountPath: /tmp
+          name: tmp
+      volumes:
+      - name: istio-token
+        projected:
+          sources:
+          - serviceAccountToken:
+              path: istio-token
+              expirationSeconds: 43200
+              audience: istio-ca
+      - name: istiod-ca-cert
+        {{- if .Values.global.enableClusterTrustBundle }}
+        projected:
+          sources:
+          - clusterTrustBundle:
+              name: istio.io:istiod-ca:root-cert
+              path: root-cert.pem
+        {{- else }}
+        configMap:
+          name: {{ include "agentio.caCertConfigMap" . }}
+        {{- end }}
+      - name: cni-ztunnel-sock-dir
+        hostPath:
+          path: /var/run/ztunnel
+          type: DirectoryOrCreate
+      - name: tmp
+        emptyDir: {}
+{{- end }}

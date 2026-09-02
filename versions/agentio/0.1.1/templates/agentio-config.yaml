@@ -1,0 +1,14 @@
+{{/* Merge built-in defaults above with user overrides from .Values.agentioConfig. */}}
+{{/* The intent is that agentioConfig.foo becomes the raw API rather than re-modeling every field in values.yaml. */}}
+{{- $defaults := include "agentio.config" . | fromYaml }}
+{{- $sandbox := mergeOverwrite $defaults (.Values.agentioConfig | default dict) }}
+apiVersion: v1
+data:
+  config: |
+{{ $sandbox | toYaml | indent 4 }}
+kind: ConfigMap
+metadata:
+  name: agentio-config
+  namespace: {{ include "agentio.namespace" . }}
+  labels:
+    {{- include "agentio.commonLabels" . | nindent 4 }}

@@ -1,0 +1,9 @@
+{{- $namespace := include "agentio.namespace" . | trim }}
+{{- if and .Values.global.createNamespace (ne $namespace .Release.Namespace) }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ $namespace }}
+  annotations:
+    helm.sh/resource-policy: keep
+{{- end }}

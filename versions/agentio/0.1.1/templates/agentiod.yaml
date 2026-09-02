@@ -1,0 +1,271 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    {{- include "agentio.controller.labels" . | nindent 4 }}
+  name: {{ include "agentio.controller.name" . }}
+  namespace: {{ include "agentio.namespace" . }}
+spec:
+  {{- if not .Values.agentiod.autoscaling.enabled }}
+  replicas: {{ .Values.agentiod.replicas | default 1 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ include "agentio.controller.name" . }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      annotations:
+        prometheus.io/port: "15014"
+        prometheus.io/scrape: "true"
+      labels:
+        app: {{ include "agentio.controller.name" . }}
+    spec:
+      containers:
+      - args:
+        - discovery
+        - --monitoringAddr=:15014
+        - --log_output_level=default:info
+        - --domain
+        - {{ .Values.global.trustDomain }}
+        - --keepaliveMaxServerConnectionAge
+        - 30m
+        env:
+        - name: REVISION
+          value: default
+        - name: PILOT_CERT_PROVIDER
+          value: istiod
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: SERVICE_ACCOUNT
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.serviceAccountName
+        - name: KUBECONFIG
+          value: /var/run/secrets/remote/config
+        - name: PILOT_ENABLE_AMBIENT
+          value: "true"
+        {{- if .Values.ambient.enabled }}
+        - name: CA_TRUSTED_NODE_ACCOUNTS
+          value: {{ include "agentio.namespace" . }}/{{ include "agentio.ztunnel.name" . }}
+        {{- end }}
+        - name: PILOT_TRACE_SAMPLING
+          value: "1"
+        - name: PILOT_ENABLE_ANALYSIS
+          value: "false"
+        - name: CLUSTER_ID
+          value: "{{ .Values.global.clusterId }}"
+        - name: GOMAXPROCS
+          valueFrom:
+            resourceFieldRef:
+              divisor: "1"
+              resource: limits.cpu
+
+        - name: MESH_CONFIG_MAP_NAME
+          value: {{ .Values.global.resourcePrefix | quote }}
+        - name: INJECTOR_CONFIG_MAP_NAME
+          value: {{ printf "%s-sidecar-injector" .Values.global.resourcePrefix | quote }}
+        - name: LEADER_ELECTION_PREFIX
+          value: {{ .Values.global.resourcePrefix | quote }}
+        {{- if .Values.agentiod.onDemandCertSignMode }}
+        - name: ON_DEMAND_SIGN_MODE
+          value: {{ .Values.agentiod.onDemandCertSignMode | quote }}
+        {{- end }}
+        {{- if .Values.agentiod.restrictedSecretsScope }}
+        - name: RESTRICTED_SECRETS_SCOPE
+          value: {{ include "agentio.namespace" . }}
+        {{- end }}
+        - name: PILOT_HTTP10
+          value: "true"
+        - name: ENABLE_ON_DEMAND_CERTS
+          value: "{{ .Values.agentiod.enableTlsTermination }}"
+        {{- if .Values.sniTrafficPolicy.enabled }}
+        - name: ENABLE_SNI_TRAFFIC_POLICY
+          value: "true"
+        {{- end }}
+        {{- if .Values.global.enableClusterTrustBundle }}
+        - name: ENABLE_CLUSTER_TRUST_BUNDLE_API
+          value: "true"
+        {{- end }}
+        - name: PILOT_ENABLE_IP_AUTOALLOCATE
+          value: "false"
+        - name: MESH_INTERNAL_TRAFFIC_POLICY
+          value: {{ .Values.global.meshInternalTrafficPolicy | default "PEER_AWARE" | quote }}
+        - name: AMBIENT_ENABLE_MULTI_NETWORK_WAYPOINT
+          value: "false"
+        - name: INJECT_ENABLED
+          value: "{{ .Values.sidecarInjector.enabled }}"
+        - name: AMBIENT_ENABLE_STATUS
+          value: "false"
+        - name: PILOT_CA_CERT_CONFIGMAP
+          value: {{ include "agentio.caCertConfigMap" . }}
+        - name: PILOT_IGNORE_RESOURCES
+          value: "*."
+        - name: PILOT_INCLUDE_RESOURCES
+          value: "*.kruise.io,*.gateway.networking.k8s.io"
+        - name: ISTIOD_CUSTOM_HOST
+          value: {{ include "agentio.controller.name" . }}.{{ include "agentio.namespace" . }}.svc,{{ include "agentio.controller.name" . }}.{{ include "agentio.namespace" . }}.svc.cluster.local
+        {{- if .Values.sidecarInjector.enabled }}
+        - name: INJECTION_WEBHOOK_CONFIG_NAME
+          value: {{ .Values.global.resourcePrefix }}-sidecar-injector-{{ include "agentio.namespace" . }}
+        {{- end }}
+        {{- if .Values.agentiod.krtEventDistributeDebounce }}
+        - name: KRT_EVENT_DISTRIBUTE_DEBOUNCE
+          value: {{ .Values.agentiod.krtEventDistributeDebounce | quote }}
+        {{- end }}
+        {{- if .Values.agentiod.krtEventDistributeDebounceMax }}
+        - name: KRT_EVENT_DISTRIBUTE_DEBOUNCE_MAX
+          value: {{ .Values.agentiod.krtEventDistributeDebounceMax | quote }}
+        {{- end }}
+        {{- range $key, $val := .Values.agentiod.env }}
+        - name: {{ $key }}
+          value: {{ $val | quote }}
+        {{- end }}
+        image: {{ include "agentio.image" (dict "hub" .Values.agentiod.image.hub "name" .Values.agentiod.image.name "tag" .Values.agentiod.image.tag "globalHub" .Values.global.hub) }}
+        name: discovery
+        ports:
+        - containerPort: 8080
+          name: http-debug
+          protocol: TCP
+        - containerPort: 15010
+          name: grpc-xds
+          protocol: TCP
+        - containerPort: 15012
+          name: tls-xds
+          protocol: TCP
+        - containerPort: 15017
+          name: https-webhooks
+          protocol: TCP
+        - containerPort: 15014
+          name: http-monitoring
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 1
+          periodSeconds: 3
+          timeoutSeconds: 5
+        resources:
+          {{- if .Values.agentiod.resources }}
+          {{- toYaml .Values.agentiod.resources | nindent 10 }}
+          {{- else }}
+          requests:
+            cpu: 500m
+            memory: 2Gi
+          limits:
+            cpu: 500m
+            memory: 2Gi
+          {{- end }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+        volumeMounts:
+        - mountPath: /var/run/secrets/tokens
+          name: istio-token
+          readOnly: true
+        - mountPath: /var/run/secrets/istio-dns
+          name: local-certs
+      serviceAccountName: {{ include "agentio.controller.name" . }}
+      {{- with .Values.agentiod.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.agentiod.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.agentiod.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      - emptyDir:
+          medium: Memory
+        name: local-certs
+      - name: istio-token
+        projected:
+          sources:
+          - serviceAccountToken:
+              audience: istio-ca
+              expirationSeconds: 43200
+              path: istio-token
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    {{- include "agentio.controller.labels" . | nindent 4 }}
+  name: {{ include "agentio.controller.name" . }}
+  namespace: {{ include "agentio.namespace" . }}
+spec:
+  ports:
+  - name: grpc-xds
+    port: 15010
+    protocol: TCP
+  - name: https-dns
+    port: 15012
+    protocol: TCP
+  - name: https-webhook
+    port: 443
+    protocol: TCP
+    targetPort: 15017
+  - name: http-monitoring
+    port: 15014
+    protocol: TCP
+  selector:
+    app: {{ include "agentio.controller.name" . }}
+{{- if .Values.agentiod.autoscaling.enabled }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "agentio.controller.name" . }}
+  namespace: {{ include "agentio.namespace" . }}
+  labels:
+    {{- include "agentio.controller.labels" . | nindent 4 }}
+spec:
+  maxReplicas: {{ .Values.agentiod.autoscaling.maxReplicas | default 5 }}
+  minReplicas: {{ .Values.agentiod.autoscaling.minReplicas | default 2 }}
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "agentio.controller.name" . }}
+  metrics:
+  {{- if .Values.agentiod.autoscaling.targetCPUUtilizationPercentage }}
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: {{ .Values.agentiod.autoscaling.targetCPUUtilizationPercentage }}
+  {{- end }}
+  {{- if .Values.agentiod.autoscaling.targetMemoryUtilizationPercentage }}
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: {{ .Values.agentiod.autoscaling.targetMemoryUtilizationPercentage }}
+  {{- end }}
+  {{- if .Values.agentiod.autoscaling.behavior }}
+  behavior:
+    {{- toYaml .Values.agentiod.autoscaling.behavior | nindent 4 }}
+  {{- end }}
+{{- end }}

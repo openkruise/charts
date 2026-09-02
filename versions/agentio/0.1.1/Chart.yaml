@@ -1,0 +1,17 @@
+annotations:
+  artifacthub.io/changes: '- "[Changed]: See Agentio 0.1.1 release notes: https://github.com/openkruise/agentio/releases/tag/0.1.1"'
+apiVersion: v2
+appVersion: 0.1.1
+description: The Helm chart for Agentio — agent traffic governance
+home: https://github.com/openkruise/agentio
+keywords:
+- agent
+- proxy
+- mesh
+- traffic-governance
+- security
+name: agentio
+sources:
+- https://github.com/openkruise/agentio
+type: application
+version: 0.1.1

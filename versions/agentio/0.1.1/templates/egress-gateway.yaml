@@ -1,0 +1,385 @@
+{{- $egDefaultsAS := .Values.egressGateway.autoscaling | default dict }}
+{{- range $gw := .Values.egressGateway.gateways }}
+{{- $gwAS := $gw.autoscaling | default dict }}
+{{- $asEnabled := true }}
+{{- if hasKey $egDefaultsAS "enabled" }}{{ $asEnabled = $egDefaultsAS.enabled }}{{ end }}
+{{- if hasKey $gwAS "enabled" }}{{ $asEnabled = $gwAS.enabled }}{{ end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    networking.agents.kruise.io/sandbox-egress: "true"
+    gateway.networking.k8s.io/gateway-name: {{ $gw.name }}
+    {{- range $key, $value := $gw.labels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  name: {{ $gw.name }}
+  namespace: {{ include "agentio.namespace" $ }}
+spec:
+  progressDeadlineSeconds: 600
+  {{- if not $asEnabled }}
+  replicas: {{ $gw.replicas | default $.Values.egressGateway.replicas | default 2 }}
+  {{- end }}
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      gateway.networking.k8s.io/gateway-name: {{ $gw.name }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /stats/prometheus
+        prometheus.io/port: "15020"
+        prometheus.io/scrape: "true"
+        {{- with ($gw.statsFlushInterval | default $.Values.egressGateway.statsFlushInterval) }}
+        sidecar.istio.io/statsFlushInterval: {{ . | quote }}
+        {{- end }}
+        {{- with ($gw.statsEvictionInterval | default $.Values.egressGateway.statsEvictionInterval) }}
+        sidecar.istio.io/statsEvictionInterval: {{ . | quote }}
+        {{- end }}
+      labels:
+        gateway.networking.k8s.io/gateway-name: {{ $gw.name }}
+        networking.agents.kruise.io/sandbox-egress: "true"
+        {{- range $key, $value := $gw.labels }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+    spec:
+      containers:
+      - args:
+        - proxy
+        - waypoint
+        - --domain
+        - $(POD_NAMESPACE).svc.{{ $.Values.global.trustDomain }}
+        - --serviceCluster
+        - {{ $gw.name }}.$(POD_NAMESPACE)
+        - --proxyLogLevel
+        - warning
+        - --proxyComponentLogLevel
+        - misc:error
+        - --log_output_level
+        - default:info
+        env:
+        - name: ISTIO_META_SERVICE_ACCOUNT
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.serviceAccountName
+        - name: ISTIO_META_NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: PILOT_CERT_PROVIDER
+          value: istiod
+        - name: CA_ADDR
+          value: {{ include "agentio.controller.name" $ }}.{{ include "agentio.namespace" $ }}.svc:15012
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: INSTANCE_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        - name: SERVICE_ACCOUNT
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.serviceAccountName
+        - name: HOST_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.hostIP
+        - name: ISTIO_CPU_LIMIT
+          valueFrom:
+            resourceFieldRef:
+              divisor: "1"
+              resource: limits.cpu
+        - name: PROXY_CONFIG
+          value: |
+            {"discoveryAddress":"{{ include "agentio.controller.name" $ }}.{{ include "agentio.namespace" $ }}.svc:15012","proxyMetadata":{"ISTIO_META_DNS_CAPTURE":"true","ISTIO_META_ENABLE_HBONE":"true"},"image":{"imageType":"distroless"}}
+        - name: ISTIO_META_DNS_CAPTURE
+          value: "true"
+        - name: ISTIO_META_ENABLE_HBONE
+          value: "true"
+        {{- if $.Values.sniTrafficPolicy.enabled }}
+        - name: PEER_METADATA_DISCOVERY
+          value: "true"
+        - name: POLICY_RUNTIME_CAPABILITIES
+          value: "sni_traffic_policy"
+        - name: POLICY_STORE_REFERENCE_RESOLUTION_GRACE_PERIOD
+          value: {{ $.Values.policyRuntime.referenceResolutionGracePeriod | default "15s" | quote }}
+        {{- end }}
+        - name: GOMEMLIMIT
+          valueFrom:
+            resourceFieldRef:
+              divisor: "1"
+              resource: limits.memory
+        - name: GOMAXPROCS
+          valueFrom:
+            resourceFieldRef:
+              divisor: "1"
+              resource: limits.cpu
+        - name: ISTIO_META_CLUSTER_ID
+          value: "{{ $.Values.global.clusterId }}"
+        - name: ISTIO_META_INTERCEPTION_MODE
+          value: REDIRECT
+        - name: ISTIO_META_WORKLOAD_NAME
+          value: {{ $gw.name }}
+        - name: ISTIO_META_OWNER
+          value: kubernetes://apis/apps/v1/namespaces/{{ include "agentio.namespace" $ }}/deployments/{{ $gw.name }}
+        - name: ISTIO_META_MESH_ID
+          value: {{ $.Values.global.trustDomain }}
+        - name: TRUST_DOMAIN
+          value: {{ $.Values.global.trustDomain }}
+        {{- range $key, $val := $.Values.egressGateway.env }}
+        - name: {{ $key }}
+          value: {{ $val | quote }}
+        {{- end }}
+        image: {{ include "agentio.image" (dict "hub" $.Values.egressGateway.image.hub "name" $.Values.egressGateway.image.name "tag" $.Values.egressGateway.image.tag "globalHub" $.Values.global.hub) }}
+        imagePullPolicy: IfNotPresent
+        name: istio-proxy
+        ports:
+        - containerPort: 15020
+          name: metrics
+          protocol: TCP
+        - containerPort: 15021
+          name: status-port
+          protocol: TCP
+        - containerPort: 15090
+          name: http-envoy-prom
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 4
+          httpGet:
+            path: /healthz/ready
+            port: 15021
+            scheme: HTTP
+          periodSeconds: 15
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources:
+          {{- if $gw.resources }}
+          {{- toYaml $gw.resources | nindent 10 }}
+          {{- else if $.Values.egressGateway.resources }}
+          {{- toYaml $.Values.egressGateway.resources | nindent 10 }}
+          {{- else }}
+          requests:
+            cpu: "2"
+            memory: 1Gi
+          limits:
+            cpu: "2"
+            memory: 1Gi
+          {{- end }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          privileged: false
+          readOnlyRootFilesystem: true
+          runAsGroup: 1337
+          runAsNonRoot: true
+          runAsUser: 1337
+        # When the gateway policy store is enabled, /healthz/ready withholds
+        # readiness until its initial Workload and referenced policy subscriptions sync.
+        # Keep enough budget for the store's xDS initial_fetch_timeout and startup.
+        startupProbe:
+          failureThreshold: 60
+          httpGet:
+            path: /healthz/ready
+            port: 15021
+            scheme: HTTP
+          initialDelaySeconds: 1
+          periodSeconds: 1
+          successThreshold: 1
+          timeoutSeconds: 1
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /var/run/secrets/workload-spiffe-uds
+          name: workload-socket
+        - mountPath: /var/run/secrets/istio
+          name: istiod-ca-cert
+        - mountPath: /var/lib/istio/data
+          name: istio-data
+        - mountPath: /etc/istio/proxy
+          name: istio-envoy
+        - mountPath: /var/run/secrets/tokens
+          name: istio-token
+        - mountPath: /etc/istio/pod
+          name: egress-podinfo
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: {{ $gw.name }}
+      serviceAccountName: {{ $gw.name }}
+      terminationGracePeriodSeconds: {{ $gw.terminationGracePeriodSeconds | default $.Values.egressGateway.terminationGracePeriodSeconds | default 30 }}
+      {{- with ($gw.nodeSelector | default $.Values.egressGateway.nodeSelector) }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with ($gw.tolerations | default $.Values.egressGateway.tolerations) }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with ($gw.affinity | default $.Values.egressGateway.affinity) }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      - emptyDir: {}
+        name: workload-socket
+      - emptyDir:
+          medium: Memory
+        name: istio-envoy
+      - emptyDir:
+          medium: Memory
+        name: go-proxy-envoy
+      - emptyDir: {}
+        name: istio-data
+      - emptyDir: {}
+        name: go-proxy-data
+      - downwardAPI:
+          defaultMode: 420
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.labels
+            path: labels
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.annotations
+            path: annotations
+        name: egress-podinfo
+      - name: istio-token
+        projected:
+          defaultMode: 420
+          sources:
+          - serviceAccountToken:
+              audience: istio-ca
+              expirationSeconds: 43200
+              path: istio-token
+      - configMap:
+          defaultMode: 420
+          name: {{ include "agentio.caCertConfigMap" $ }}
+        name: istiod-ca-cert
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    networking.agents.kruise.io/sandbox-egress: "true"
+    gateway.networking.k8s.io/gateway-name: {{ $gw.name }}
+    {{- range $key, $value := $gw.labels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  name: {{ $gw.name }}
+  namespace: {{ include "agentio.namespace" $ }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    networking.agents.kruise.io/sandbox-egress: "true"
+    gateway.networking.k8s.io/gateway-name: {{ $gw.name }}
+    {{- range $key, $value := $gw.labels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  name: {{ $gw.name }}
+  namespace: {{ include "agentio.namespace" $ }}
+spec:
+  ports:
+  - appProtocol: tcp
+    name: status-port
+    port: 15021
+    protocol: TCP
+    targetPort: 15021
+  - appProtocol: hbone
+    name: mesh
+    port: 15008
+    protocol: TCP
+    targetPort: 15008
+  selector:
+    gateway.networking.k8s.io/gateway-name: {{ $gw.name }}
+  sessionAffinity: None
+  type: ClusterIP
+{{- if $asEnabled }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  labels:
+    networking.agents.kruise.io/sandbox-egress: "true"
+    gateway.networking.k8s.io/gateway-name: {{ $gw.name }}
+    {{- range $key, $value := $gw.labels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  name: {{ $gw.name }}
+  namespace: {{ include "agentio.namespace" $ }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ $gw.name }}
+  maxReplicas: {{ $gwAS.maxReplicas | default $egDefaultsAS.maxReplicas | default 5 }}
+  minReplicas: {{ $gwAS.minReplicas | default $egDefaultsAS.minReplicas | default 2 }}
+  {{- $cpuUtil := ($gwAS.targetCPUUtilizationPercentage | default $egDefaultsAS.targetCPUUtilizationPercentage) }}
+  {{- $memUtil := ($gwAS.targetMemoryUtilizationPercentage | default $egDefaultsAS.targetMemoryUtilizationPercentage) }}
+  {{- $behavior := ($gwAS.behavior | default $egDefaultsAS.behavior) }}
+  {{- if or $cpuUtil $memUtil }}
+  metrics:
+  {{- if $cpuUtil }}
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: {{ $cpuUtil }}
+  {{- end }}
+  {{- if $memUtil }}
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: {{ $memUtil }}
+  {{- end }}
+  {{- end }}
+  {{- if $behavior }}
+  behavior:
+    {{- toYaml $behavior | nindent 4 }}
+  {{- end }}
+{{- end }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    networking.agents.kruise.io/sandbox-egress: "true"
+    gateway.networking.k8s.io/gateway-name: {{ $gw.name }}
+    {{- range $key, $value := $gw.labels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  name: {{ $gw.name }}
+  namespace: {{ include "agentio.namespace" $ }}
+spec:
+  minAvailable: {{ $gw.pdbMinAvailable | default $.Values.egressGateway.pdbMinAvailable | default 1 }}
+  selector:
+    matchLabels:
+      gateway.networking.k8s.io/gateway-name: {{ $gw.name }}
+{{- end }}
