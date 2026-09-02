@@ -22,4 +22,23 @@ sandboxExtProc:
 egressPolicies:
 {{ toYaml .Values.agentio.egressPolicies }}
 {{- end }}
+{{- $defaultServiceEntries := .Values.agentio.egressGateway.serviceEntries | default list }}
+{{- $configuredGateways := list }}
+{{- range $gateway := .Values.agentio.egressGateway.gateways }}
+{{- $serviceEntries := $defaultServiceEntries }}
+{{- if hasKey $gateway "serviceEntries" }}
+{{- $serviceEntries = $gateway.serviceEntries }}
+{{- end }}
+{{- if $serviceEntries }}
+{{- $configuredGateways = append $configuredGateways (dict
+  "name" $gateway.name
+  "namespace" (include "agentio.namespace" $)
+  "serviceEntries" $serviceEntries
+) }}
+{{- end }}
+{{- end }}
+{{- if $configuredGateways }}
+egressGateways:
+{{ toYaml $configuredGateways }}
+{{- end }}
 {{- end }}
