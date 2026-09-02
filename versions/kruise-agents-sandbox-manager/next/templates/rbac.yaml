@@ -12,17 +12,32 @@ rules:
     resources: [ "pods/status" ]
     verbs: [ "get", "update", "patch" ]
   - apiGroups: [ "" ]
+    resources: [ "namespaces" ]
+    verbs: [ "get", "list", "watch" ]
+  - apiGroups: [ "" ]
     resources: [ "events" ]
     verbs: [ "create", "patch" ]
   - apiGroups: [ "agents.kruise.io" ]
-    resources: [ "sandboxes", "sandboxsets", "checkpoints", "sandboxtemplates" ]
+    resources: [ "sandboxes", "sandboxsets", "checkpoints", "sandboxtemplates", "trafficpolicies" ]
     verbs: [ "get", "list", "watch", "update", "patch", "delete", "create" ]
   - apiGroups: [ "agents.kruise.io" ]
     resources: [ "sandboxes/status", "sandboxsets/status" ]
     verbs: [ "get", "update", "patch" ]
   - apiGroups: [ "" ]
-    resources: [ "persistentvolumes", "configmaps" ]
+    resources: [ "persistentvolumes" ]
     verbs: [ "get", "list", "watch" ]
+  - apiGroups: [ "" ]
+    resources: [ "secrets", "configmaps" ]
+    verbs: [ "get", "list", "watch" ]
+  - apiGroups: [ "" ]
+    resources: [ "persistentvolumeclaims" ]
+    verbs: [ "get", "list", "watch", "create", "delete" ]
+  - apiGroups: [ "storage.k8s.io" ]
+    resources: [ "storageclasses" ]
+    verbs: [ "get", "list", "watch" ]
+  - apiGroups: [ "coordination.k8s.io" ]
+    resources: [ "leases" ]
+    verbs: [ "get", "list", "watch", "create", "update" ]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -34,6 +49,8 @@ metadata:
 rules:
   - apiGroups: [ "" ]
     resources: [ "secrets" ]
+    resourceNames:
+      - e2b-key-store
     verbs: [ "get", "list", "watch", "update", "patch" ]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -76,7 +93,7 @@ metadata:
 rules:
   - apiGroups: ["agents.kruise.io"]
     resources: ["sandboxes"]
-    verbs: ["get", "list", "watch"]
+    verbs: ["get", "list", "watch", "update", "patch"]
   - apiGroups: ["agents.kruise.io"]
     resources: ["sandboxes/status"]
     verbs: ["get"]

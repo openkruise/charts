@@ -162,3 +162,24 @@ webhooks:
         resources:
           - sandboxupdateops
     sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: sandbox-controller-manager-webhook-service
+        namespace: {{ include "sandbox-controller.namespace" . }}
+        path: /validate-poolautoscaler
+    failurePolicy: Fail
+    name: v-pa.kb.io
+    rules:
+      - apiGroups:
+          - agents.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - poolautoscalers
+    sideEffects: None
