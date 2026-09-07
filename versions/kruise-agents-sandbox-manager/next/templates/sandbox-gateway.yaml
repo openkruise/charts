@@ -23,7 +23,6 @@ spec:
       {{- end }}
       labels:
         {{- include "sandbox-gateway.selectorLabels" . | nindent 8 }}
-        {{- include "sandbox-manager.peerLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -57,7 +56,7 @@ spec:
                   fieldPath: status.hostIP
       {{- end }}
       containers:
-        - name: gateway
+        - name: sandbox-gateway
           securityContext:
             {{- toYaml .Values.gateway.securityContext | nindent 12 }}
           image: "{{ .Values.gateway.image.repository }}:{{ .Values.gateway.image.tag | default .Chart.AppVersion }}"
@@ -76,18 +75,34 @@ spec:
           env:
             - name: GOMAXPROCS
               value: "{{ .Values.gateway.resources.cpu }}"
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
             - name: PEER_NAMESPACE
               value: "{{ .Release.Namespace }}"
             - name: PEER_LABEL_SELECTOR
-              value: "agents.kruise.io/sandbox-manager-peer-finder={{ .Release.Name }}"
+              value: "component=sandbox-manager"
           ports:
             - name: http
               containerPort: {{ .Values.gateway.envoy.listener.port }}
               protocol: TCP
+            - name: metrics
+              containerPort: 9902
+              protocol: TCP
+            - name: system
+              containerPort: 7789
+              protocol: TCP
           livenessProbe:
             {{- toYaml .Values.gateway.livenessProbe | nindent 12 }}
           readinessProbe:
-            {{- toYaml .Values.gateway.readinessProbe | nindent 12 }}
+            httpGet:
+              path: /readyz
+              port: system
+            initialDelaySeconds: {{ .Values.gateway.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.gateway.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.gateway.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.gateway.readinessProbe.failureThreshold }}
           lifecycle:
             preStop:
               exec:

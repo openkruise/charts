@@ -23,9 +23,9 @@ spec:
         paths:
           - backend:
               service:
-                name: {{ include "sandbox-manager.fullname" . }}
+                name: sandbox-manager
                 port:
-                  number: 8080
+                  number: 7788
             path: /
             pathType: Prefix
     - host: '*.{{ .Values.e2b.domain }}'
@@ -33,7 +33,7 @@ spec:
         paths:
           - backend:
               service:
-                name: {{ .Values.ingress.dataplaneService }}
+                name: sandbox-manager
                 port:
                   number: 7788
             path: /
@@ -43,14 +43,14 @@ spec:
         paths:
           - backend:
               service:
-                name: {{ include "sandbox-manager.fullname" . }}
+                name: sandbox-manager
                 port:
                   number: 8080
             path: /kruise/api
             pathType: Prefix
           - backend:
               service:
-                name: {{ .Values.ingress.dataplaneService }}
+                name: sandbox-manager
                 port:
                   number: 7788
             path: /

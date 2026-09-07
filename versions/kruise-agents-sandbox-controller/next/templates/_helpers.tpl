@@ -31,24 +31,42 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
-Common labels
+Common labels. Applied to Deployment, Service, RBAC and ServiceAccount metadata
+where the source labels the resource with `app.kubernetes.io/name: sandbox-controller-manager`
+(the Deployment identity). Pod templates use podLabels, which use the pod identity
+(`app.kubernetes.io/name: sandbox-operator`) instead.
 */}}
 {{- define "sandbox-controller.labels" -}}
+helm.sh/chart: {{ include "sandbox-controller.chart" . }}
+app.kubernetes.io/name: sandbox-controller-manager
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+control-plane: sandbox-controller-manager
+{{- end }}
+
+{{/*
+Selector labels. Also used as the identity of the pod template, since the source
+selector includes the same keys the pod carries.
+*/}}
+{{- define "sandbox-controller.selectorLabels" -}}
+app.kubernetes.io/name: sandbox-operator
+app.kubernetes.io/instance: {{ .Release.Name }}
+control-plane: sandbox-controller-manager
+{{- end }}
+
+{{/*
+Pod template labels. Wraps selectorLabels with Helm-managed metadata.
+*/}}
+{{- define "sandbox-controller.podLabels" -}}
 helm.sh/chart: {{ include "sandbox-controller.chart" . }}
 {{ include "sandbox-controller.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end }}
-
-{{/*
-Selector labels
-*/}}
-{{- define "sandbox-controller.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "sandbox-controller.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-control-plane: {{ include "sandbox-controller.name" . }}
 {{- end }}
 
 {{/*

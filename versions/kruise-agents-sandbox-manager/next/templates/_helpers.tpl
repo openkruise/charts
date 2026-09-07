@@ -46,9 +46,23 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 Selector labels
 */}}
 {{- define "sandbox-manager.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "sandbox-manager.name" . }}
+app.kubernetes.io/name: sandbox-manager
 app.kubernetes.io/instance: {{ .Release.Name }}
-component: {{ include "sandbox-manager.name" . }}
+component: sandbox-manager
+{{- end }}
+
+{{/*
+Pod template labels — source-defined labels plus chart-managed metadata.
+*/}}
+{{- define "sandbox-manager.podLabels" -}}
+helm.sh/chart: {{ include "sandbox-manager.chart" . }}
+app.kubernetes.io/name: sandbox-manager
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+component: sandbox-manager
 {{- end }}
 
 {{- define "sandbox-manager.peerLabels" -}}
@@ -80,4 +94,5 @@ Selector labels
 {{- define "sandbox-gateway.selectorLabels" -}}
 app.kubernetes.io/name: sandbox-gateway
 app.kubernetes.io/instance: {{ .Release.Name }}
+component: sandbox-manager
 {{- end }}

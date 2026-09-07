@@ -18,7 +18,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "sandbox-controller.labels" . | nindent 8 }}
+        {{- include "sandbox-controller.podLabels" . | nindent 8 }}
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -33,22 +33,29 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
-        - args:
-            - --metrics-bind-address=:{{ .Values.metrics.port }}
+        - name: manager
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /manager
+          args:
+            {{- if .Values.metrics.bindAddress }}
+            - --metrics-bind-address=:{{ .Values.metrics.bindAddress }}
+            {{- end }}
             - --leader-elect
             - --health-probe-bind-address=:{{ .Values.healthProbe.port }}
             - --webhook-cert-path=/home/nonroot/sandbox-controller-webhook-certs
-          command:
-            - /manager
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: AGENT_JOB_IMAGE
+              value: commit-job:latest
+            - name: CLUSTER_ID
+              value: "e2e-cluster"
           livenessProbe:
             httpGet:
               path: /healthz
               port: {{ .Values.healthProbe.port }}
             initialDelaySeconds: 15
             periodSeconds: 20
-          name: manager
           ports:
             - name: https-metrics
               containerPort: {{ .Values.metrics.port }}
@@ -65,15 +72,17 @@ spec:
               port: {{ .Values.healthProbe.port }}
             initialDelaySeconds: 5
             periodSeconds: 10
+          securityContext:
+            {{- with .Values.securityContext }}
+            {{- toYaml (omit . "readOnlyRootFilesystem") | nindent 12 }}
+            {{- end }}
+            # The source controller writes under its root filesystem at runtime.
+            readOnlyRootFilesystem: false
           volumeMounts:
             - name: webhook-certs
               mountPath: /home/nonroot/sandbox-controller-webhook-certs
         {{- with .Values.resources }}
           resources:
-            {{- toYaml . | nindent 12 }}
-        {{- end }}
-        {{- with .Values.securityContext }}
-          securityContext:
             {{- toYaml . | nindent 12 }}
         {{- end }}
       terminationGracePeriodSeconds: 10
@@ -91,7 +100,7 @@ spec:
       topologySpreadConstraints:
         - labelSelector:
             matchLabels:
-              control-plane: {{ include "sandbox-controller.name" . }}
+              control-plane: sandbox-controller-manager
 {{- if and ( eq (int .Capabilities.KubeVersion.Major) 1) ( gt (int .Capabilities.KubeVersion.Minor) 26 ) }}
           matchLabelKeys:
             - pod-template-hash
