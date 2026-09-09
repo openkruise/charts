@@ -63,6 +63,7 @@ spec:
                               Condition message (stdout). When the message matches, the Agent is
                               considered inactive. When it does not match, the Agent is considered
                               active and the sandbox stays Running.
+                            maxLength: 512
                             type: string
                           probe:
                             description: |-
@@ -89,6 +90,30 @@ spec:
                   resume:
                     description: Resume defines the resume policy for the sandbox.
                     properties:
+                      onIngressTraffic:
+                        description: |-
+                          OnIngressTraffic resumes the sandbox when the sandbox-gateway receives
+                          inbound traffic addressed to it while it is paused. Unlike the probed
+                          rules this one is event-driven: it needs no probe, it produces no
+                          Status.Schedules entry, and it is executed by the sandbox-gateway rather
+                          than by the sandbox controller.
+                        properties:
+                          pauseTimeout:
+                            description: |-
+                              PauseTimeout is the auto-pause timeout re-armed by a traffic wake: the
+                              gateway writes Spec.PauseTime = now + PauseTimeout atomically with
+                              Spec.Paused = false, so the woken sandbox has running time before its
+                              next auto-pause. It applies only to auto-pause sandboxes (those that
+                              already carry Spec.PauseTime); never-timeout and shutdown-only
+                              sandboxes keep their timeout mode unchanged.
+                              When absent or non-positive, a traffic wake does not re-arm auto-pause:
+                              the woken sandbox keeps running until it is paused or deleted again.
+                              A positive value is subject to the resume timeout floor
+                              (timeout.DefaultMinResumeTimeoutSeconds, currently 300s): values below
+                              the floor are raised to it so the fresh PauseTime cannot expire while
+                              the sandbox is still resuming.
+                            type: string
+                        type: object
                       whenProbedScheduleTime:
                         description: |-
                           WhenProbedScheduleTime resumes the sandbox before a scheduled task
@@ -275,6 +300,8 @@ spec:
                       description: |-
                         Name is the unique identifier for this probe within the sandbox.
                         Probe results are written to a Condition with type "agents.kruise.io/<Name>".
+                      maxLength: 299
+                      pattern: ^[A-Za-z0-9]([-A-Za-z0-9_.]*[A-Za-z0-9])?$
                       type: string
                     periodSeconds:
                       description: |-
@@ -331,8 +358,11 @@ spec:
                   required:
                   - name
                   type: object
+                maxItems: 16
                 type: array
-                x-kubernetes-list-type: atomic
+                x-kubernetes-list-map-keys:
+                - name
+                x-kubernetes-list-type: map
               runtimes:
                 description: Runtimes - Runtime configuration for sandbox object
                 items:

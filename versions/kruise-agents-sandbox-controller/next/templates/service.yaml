@@ -5,6 +5,7 @@ metadata:
   namespace: {{ include "sandbox-controller.namespace" . }}
   labels:
     {{- include "sandbox-controller.labels" . | nindent 4 }}
+    control-plane: sandbox-controller-manager
 spec:
   ports:
     - name: https-webhook

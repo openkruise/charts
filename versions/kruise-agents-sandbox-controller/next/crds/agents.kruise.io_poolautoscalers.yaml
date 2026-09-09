@@ -163,7 +163,11 @@ spec:
                   - schedule
                   - targetReplicas
                   type: object
+                maxItems: 20
                 type: array
+                x-kubernetes-list-map-keys:
+                - name
+                x-kubernetes-list-type: map
               maxReplicas:
                 description: |-
                   MaxReplicas is the upper limit for the number of replicas to which the autoscaler can scale up.
@@ -232,6 +236,9 @@ spec:
                   - name
                   type: object
                 type: array
+                x-kubernetes-list-map-keys:
+                - name
+                x-kubernetes-list-type: map
               conditions:
                 description: Conditions is the set of conditions required for this
                   autoscaler to scale its target.
@@ -333,6 +340,8 @@ spec:
             - currentReplicas
             - desiredReplicas
             type: object
+        required:
+        - spec
         type: object
     served: true
     storage: true

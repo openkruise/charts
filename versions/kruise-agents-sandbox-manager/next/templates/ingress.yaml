@@ -4,6 +4,8 @@ metadata:
   name: {{ include "sandbox-manager.fullname" . }}
   labels:
     {{- include "sandbox-manager.labels" . | nindent 4 }}
+    app.kubernetes.io/name: sandbox-manager
+    component: sandbox-manager
   {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -18,22 +20,12 @@ spec:
         - "{{ .Values.e2b.domain }}"
       secretName: "{{ .Values.ingress.certSecretName }}"
   rules:
-    - host: 'api.{{ .Values.e2b.domain }}'
-      http:
-        paths:
-          - backend:
-              service:
-                name: {{ include "sandbox-manager.fullname" . }}
-                port:
-                  number: 8080
-            path: /
-            pathType: Prefix
     - host: '*.{{ .Values.e2b.domain }}'
       http:
         paths:
           - backend:
               service:
-                name: {{ .Values.ingress.dataplaneService }}
+                name: sandbox-manager
                 port:
                   number: 7788
             path: /
@@ -43,15 +35,15 @@ spec:
         paths:
           - backend:
               service:
-                name: {{ include "sandbox-manager.fullname" . }}
-                port:
-                  number: 8080
-            path: /kruise/api
-            pathType: Prefix
-          - backend:
-              service:
-                name: {{ .Values.ingress.dataplaneService }}
+                name: sandbox-manager
                 port:
                   number: 7788
             path: /
+            pathType: Prefix
+          - backend:
+              service:
+                name: sandbox-manager
+                port:
+                  number: 8080
+            path: /kruise/api
             pathType: Prefix
