@@ -25,7 +25,7 @@ spec:
               service:
                 name: {{ include "sandbox-manager.fullname" . }}
                 port:
-                  number: 8080
+                  number: 7788
             path: /
             pathType: Prefix
     - host: '*.{{ .Values.e2b.domain }}'
@@ -45,7 +45,7 @@ spec:
               service:
                 name: {{ include "sandbox-manager.fullname" . }}
                 port:
-                  number: 8080
+                  number: 7788
             path: /kruise/api
             pathType: Prefix
           - backend:
