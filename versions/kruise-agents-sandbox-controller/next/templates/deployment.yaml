@@ -91,7 +91,7 @@ spec:
       topologySpreadConstraints:
         - labelSelector:
             matchLabels:
-              control-plane: sandbox-controller-manager
+              control-plane: {{ include "sandbox-controller.name" . }}
 {{- if and ( eq (int .Capabilities.KubeVersion.Major) 1) ( gt (int .Capabilities.KubeVersion.Minor) 26 ) }}
           matchLabelKeys:
             - pod-template-hash
