@@ -344,10 +344,23 @@ agentio:
     nodeSelector: {}
     tolerations: []
     affinity: {}
+    # -- Default static service entries for all gateways. A gateway may replace
+    # the complete list with gateways[].serviceEntries, including an empty list.
+    serviceEntries: []
     # -- One entry per egress gateway. Minimal form: [{ name: my-egress }].
     # Each entry may override: labels, replicas, resources, autoscaling,
     # nodeSelector, tolerations, affinity, pdbMinAvailable,
-    # terminationGracePeriodSeconds, statsFlushInterval, statsEvictionInterval.
+    # terminationGracePeriodSeconds, statsFlushInterval, statsEvictionInterval,
+    # serviceEntries.
+    # Example:
+    # gateways:
+    #   - name: egress-gateway
+    #     serviceEntries:
+    #       - hosts:
+    #           - bff-cn-beijing.data.aliyun-inc.com
+    #         endpoints:
+    #           - address: 10.10.20.30
+    #           - address: 10.10.20.31
     gateways: []
   # -- Raw overrides merged on top of the built-in agentio-config ConfigMap body.
   # Use this to set fields the chart does not model explicitly (e.g. clusterSettings)
