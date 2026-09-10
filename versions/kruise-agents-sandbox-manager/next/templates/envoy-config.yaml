@@ -56,7 +56,7 @@ data:
                                 prefix: "/"
                               route:
                                 cluster: sbx_original_dst_cluster
-                                timeout: 600s
+                                timeout: 400s
                     http_filters:
                       - name: envoy.filters.http.ext_proc
                         typed_config:
@@ -64,6 +64,7 @@ data:
                           grpc_service:
                             envoy_grpc:
                               cluster_name: ext_proc_cluster
+                          message_timeout: 5s
                           processing_mode:
                             request_header_mode: SEND
                             response_header_mode: SEND
@@ -79,7 +80,7 @@ data:
           type: STATIC
           connect_timeout: 5s
           http2_protocol_options:
-            max_concurrent_streams: {{ .Values.controller.extProcMaxConcurrency }}
+            max_concurrent_streams: 10000
           load_assignment:
             cluster_name: ext_proc_cluster
             endpoints:

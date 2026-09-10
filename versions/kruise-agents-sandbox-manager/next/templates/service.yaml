@@ -5,6 +5,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "sandbox-manager.labels" . | nindent 4 }}
+    app.kubernetes.io/name: sandbox-manager
+    component: sandbox-manager
 spec:
   type: {{ .Values.service.type }}
   ports:
