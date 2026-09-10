@@ -21,7 +21,7 @@ controller:
   hostNetwork: false
   maxClaimWorkers: 100
   maxCreateQPS: 200
-  extProcMaxConcurrency: 3000
+  extProcMaxConcurrency: 10000
 
 proxy:
   repository: envoyproxy/envoy
@@ -154,9 +154,9 @@ gateway:
       enabled: true
       thresholds:
         - priority: DEFAULT
-          maxConnections: 32768
+          maxConnections: 80000
           maxPendingRequests: 32768
-          maxRequests: 65536
+          maxRequests: 80000
           maxRetries: 5
     concurrency: ""
     drainTimeSeconds: 30
