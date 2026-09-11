@@ -33,7 +33,10 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       hostNetwork: {{ .Values.controller.hostNetwork | default false }}
-      dnsPolicy: Default
+      dnsPolicy: ClusterFirst
+      {{- if gt (int .Values.gracefulShutdown.preStopSleepSeconds) 0 }}
+      terminationGracePeriodSeconds: {{ add (int .Values.gracefulShutdown.preStopSleepSeconds) 30 }}
+      {{- end }}
       containers:
         - name: controller
           {{- with .Values.securityContext }}
@@ -51,10 +54,13 @@ spec:
             - --peer-selector=agents.kruise.io/sandbox-manager-peer-finder={{ .Release.Name }}
             - --kube-client-qps=10000
             - --kube-client-burst=30000
-            - --e2b-domain={{ .Values.e2b.domain }}
             - --e2b-admin-key={{ required "e2b.adminApiKey is required" .Values.e2b.adminApiKey }}
             - --e2b-enable-auth={{ .Values.e2b.enableAuth }}
             - --e2b-max-timeout={{ int .Values.e2b.maxTimeout }}
+            - --e2b-key-storage={{ .Values.e2b.keyStorage.mode }}
+            - --e2b-key-storage-disable-schema-auto-update
+            - --quota-redis-addr={{ ternary .Values.quota.redis.addr "" .Values.quota.enabled }}
+            - --quota-redis-db={{ int .Values.quota.redis.db }}
             - --max-claim-workers={{ int .Values.controller.maxClaimWorkers }}
             - --max-create-qps={{ int .Values.controller.maxCreateQPS }}
             - --ext-proc-max-concurrency={{ int .Values.controller.extProcMaxConcurrency }}
@@ -87,12 +93,38 @@ spec:
           env:
             - name: INFRA
               value: {{ .Values.controller.infra }}
+            - name: E2B_KEY_STORAGE_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "sandbox-manager.fullname" . }}-runtime-config
+                  key: E2B_KEY_STORAGE_DSN
+            - name: E2B_KEY_HASH_PEPPER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "sandbox-manager.fullname" . }}-runtime-config
+                  key: E2B_KEY_HASH_PEPPER
+            - name: QUOTA_REDIS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "sandbox-manager.fullname" . }}-runtime-config
+                  key: QUOTA_REDIS_USERNAME
+            - name: QUOTA_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "sandbox-manager.fullname" . }}-runtime-config
+                  key: QUOTA_REDIS_PASSWORD
           {{- with .Values.controller.resources }}
           resources:
             limits:
               {{- toYaml . | nindent 14 }}
             requests:
               {{- toYaml . | nindent 14 }}
+          {{- end }}
+          {{- if gt (int .Values.gracefulShutdown.preStopSleepSeconds) 0 }}
+          lifecycle:
+            preStop:
+              sleep:
+                seconds: {{ int .Values.gracefulShutdown.preStopSleepSeconds }}
           {{- end }}
         - name: envoy-proxy
           {{- with .Values.securityContext }}
@@ -130,6 +162,12 @@ spec:
             - name: envoy-config
               mountPath: /etc/envoy/envoy.yaml
               subPath: envoy.yaml
+          {{- if gt (int .Values.gracefulShutdown.preStopSleepSeconds) 0 }}
+          lifecycle:
+            preStop:
+              sleep:
+                seconds: {{ int .Values.gracefulShutdown.preStopSleepSeconds }}
+          {{- end }}
       volumes:
         - name: envoy-config
           configMap:

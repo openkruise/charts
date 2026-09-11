@@ -84,6 +84,11 @@ spec:
             - name: http
               containerPort: {{ .Values.gateway.envoy.listener.port }}
               protocol: TCP
+            {{- if .Values.gateway.envoy.prometheus.enabled }}
+            - name: metrics
+              containerPort: {{ .Values.gateway.envoy.prometheus.port }}
+              protocol: TCP
+            {{- end }}
           livenessProbe:
             {{- toYaml .Values.gateway.livenessProbe | nindent 12 }}
           readinessProbe:

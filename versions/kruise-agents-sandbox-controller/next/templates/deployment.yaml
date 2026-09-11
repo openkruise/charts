@@ -38,6 +38,12 @@ spec:
             - --leader-elect
             - --health-probe-bind-address=:{{ .Values.healthProbe.port }}
             - --webhook-cert-path=/home/nonroot/sandbox-controller-webhook-certs
+            - --sandbox-workers={{ .Values.controller.workers.sandboxWorkers }}
+            - --sandboxset-workers={{ .Values.controller.workers.sandboxsetWorkers }}
+            - --sandboxclaim-workers={{ .Values.controller.workers.sandboxclaimWorkers }}
+            - --checkpoint-workers={{ .Values.controller.workers.checkpointWorkers }}
+            - --client-qps={{ .Values.controller.clientQPS }}
+            - --client-burst={{ .Values.controller.clientBurst }}
           command:
             - /manager
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"

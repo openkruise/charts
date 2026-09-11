@@ -1,0 +1,45 @@
+{{- if .Values.prometheus.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "sandbox-manager.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sandbox-manager.labels" . | nindent 4 }}
+  annotations:
+    arms.prometheus.io/discovery: 'true'
+spec:
+  endpoints:
+    - interval: 30s
+      port: manager
+      path: /metrics
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      {{- include "sandbox-manager.selectorLabels" . | nindent 6 }}
+{{- if .Values.gateway.envoy.prometheus.enabled }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: sandbox-gateway
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sandbox-gateway.labels" . | nindent 4 }}
+  annotations:
+    arms.prometheus.io/discovery: 'true'
+spec:
+  endpoints:
+    - interval: 30s
+      port: metrics
+      path: {{ .Values.gateway.envoy.prometheus.path }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      {{- include "sandbox-gateway.selectorLabels" . | nindent 6 }}
+{{- end }}
+{{- end }}
