@@ -61,6 +61,7 @@ spec:
             - --e2b-key-storage-disable-schema-auto-update
             - --quota-redis-addr={{ ternary .Values.quota.redis.addr "" .Values.quota.enabled }}
             - --quota-redis-db={{ int .Values.quota.redis.db }}
+            - --secret-config={{ include "sandbox-manager.fullname" . }}-runtime-config
             - --max-claim-workers={{ int .Values.controller.maxClaimWorkers }}
             - --max-create-qps={{ int .Values.controller.maxCreateQPS }}
             - --ext-proc-max-concurrency={{ int .Values.controller.extProcMaxConcurrency }}
@@ -93,26 +94,6 @@ spec:
           env:
             - name: INFRA
               value: {{ .Values.controller.infra }}
-            - name: E2B_KEY_STORAGE_DSN
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "sandbox-manager.fullname" . }}-runtime-config
-                  key: E2B_KEY_STORAGE_DSN
-            - name: E2B_KEY_HASH_PEPPER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "sandbox-manager.fullname" . }}-runtime-config
-                  key: E2B_KEY_HASH_PEPPER
-            - name: QUOTA_REDIS_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "sandbox-manager.fullname" . }}-runtime-config
-                  key: QUOTA_REDIS_USERNAME
-            - name: QUOTA_REDIS_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "sandbox-manager.fullname" . }}-runtime-config
-                  key: QUOTA_REDIS_PASSWORD
           {{- with .Values.controller.resources }}
           resources:
             limits:
