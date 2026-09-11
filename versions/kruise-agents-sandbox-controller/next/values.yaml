@@ -36,7 +36,6 @@ controller:
     sandboxWorkers: 200
     sandboxsetWorkers: 10
     sandboxclaimWorkers: 200
-    checkpointWorkers: 20
   # Kubernetes API client rate limit
   clientQPS: 30000
   clientBurst: 60000

@@ -41,7 +41,6 @@ spec:
             - --sandbox-workers={{ .Values.controller.workers.sandboxWorkers }}
             - --sandboxset-workers={{ .Values.controller.workers.sandboxsetWorkers }}
             - --sandboxclaim-workers={{ .Values.controller.workers.sandboxclaimWorkers }}
-            - --checkpoint-workers={{ .Values.controller.workers.checkpointWorkers }}
             - --client-qps={{ .Values.controller.clientQPS }}
             - --client-burst={{ .Values.controller.clientBurst }}
           command:
