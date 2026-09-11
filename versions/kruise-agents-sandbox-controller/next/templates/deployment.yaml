@@ -41,10 +41,16 @@ spec:
             - --sandbox-workers={{ .Values.controller.workers.sandboxWorkers }}
             - --sandboxset-workers={{ .Values.controller.workers.sandboxsetWorkers }}
             - --sandboxclaim-workers={{ .Values.controller.workers.sandboxclaimWorkers }}
+            - --sandboxupdateops-workers={{ .Values.controller.workers.sandboxupdateopsWorkers }}
+            - --poolautoscaler-workers={{ .Values.controller.workers.poolautoscalerWorkers }}
+            - --commit-workers={{ .Values.controller.workers.commitWorkers }}
             - --client-qps={{ .Values.controller.clientQPS }}
             - --client-burst={{ .Values.controller.clientBurst }}
           command:
             - /manager
+          env:
+            - name: AGENT_JOB_IMAGE
+              value: {{ printf "%s:%s" .Values.commitJob.image.repository .Values.commitJob.image.tag | quote }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           livenessProbe:
