@@ -1,57 +1,66 @@
+{{- $domains := concat (list .Values.e2b.domain) (default (list) .Values.e2b.extraDomains) | compact | uniq }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ include "sandbox-manager.fullname" . }}
   labels:
     {{- include "sandbox-manager.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
   annotations:
+    {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
+    {{- end }}
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80},{"HTTPS": 443}]'
-  {{- end }}
 spec:
-  ingressClassName: {{ required "ingress.className is required" .Values.ingress.className }}
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
   tls:
     - hosts:
-        - "api.{{ .Values.e2b.domain }}"
-        - "*.{{ .Values.e2b.domain }}"
-        - "{{ .Values.e2b.domain }}"
+        {{- range $domains }}
+        - "api.{{ . }}"
+        - "*.{{ . }}"
+        - "{{ . }}"
+        {{- end }}
       secretName: "{{ .Values.ingress.certSecretName }}"
   rules:
-    - host: 'api.{{ .Values.e2b.domain }}'
+    {{- range $domains }}
+    # Control Plane
+    - host: 'api.{{ . }}'
       http:
         paths:
           - backend:
               service:
-                name: {{ include "sandbox-manager.fullname" . }}
+                name: {{ include "sandbox-manager.fullname" $ }}
                 port:
                   number: 7788
             path: /
             pathType: Prefix
-    - host: '*.{{ .Values.e2b.domain }}'
+    # Data Plane
+    - host: '*.{{ . }}'
       http:
         paths:
           - backend:
               service:
-                name: {{ .Values.ingress.dataplaneService }}
+                name: {{ $.Values.ingress.dataplaneService }}
                 port:
                   number: 7788
             path: /
             pathType: Prefix
-    - host: {{ .Values.e2b.domain }}
+    - host: '{{ . }}'
       http:
         paths:
           - backend:
               service:
-                name: {{ include "sandbox-manager.fullname" . }}
+                name: {{ include "sandbox-manager.fullname" $ }}
                 port:
                   number: 7788
             path: /kruise/api
             pathType: Prefix
           - backend:
               service:
-                name: {{ .Values.ingress.dataplaneService }}
+                name: {{ $.Values.ingress.dataplaneService }}
                 port:
                   number: 7788
             path: /
             pathType: Prefix
+    {{- end }}

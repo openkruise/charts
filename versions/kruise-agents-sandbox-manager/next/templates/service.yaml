@@ -44,5 +44,11 @@ spec:
       targetPort: {{ .Values.gateway.service.targetPort }}
       protocol: TCP
       name: http
+    {{- if .Values.gateway.envoy.prometheus.enabled }}
+    - port: {{ .Values.gateway.envoy.prometheus.port }}
+      targetPort: {{ .Values.gateway.envoy.prometheus.port }}
+      protocol: TCP
+      name: metrics
+    {{- end }}
   selector:
     {{- include "sandbox-gateway.selectorLabels" . | nindent 4 }}

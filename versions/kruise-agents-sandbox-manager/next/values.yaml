@@ -5,9 +5,23 @@ replicaCount: 2
 
 e2b:
   domain: "your.domain.com"
+  extraDomains: []
   enableAuth: true
   adminApiKey: ""
   maxTimeout: 2592000
+  keyStorage:
+    mode: mysql
+    mysql:
+      dsn: ""
+      hashPepper: ""
+
+quota:
+  enabled: false
+  redis:
+    addr: ""
+    db: 0
+    username: ""
+    password: ""
 
 controller:
   repository: openkruise/sandbox-manager
@@ -37,6 +51,9 @@ ingress:
   annotations: { }
   certSecretName: sandbox-manager-tls
   dataplaneService: sandbox-gateway
+
+prometheus:
+  enabled: false
 
 imagePullSecrets: { }
 nameOverride: ""
@@ -81,6 +98,9 @@ affinity:
               app.kubernetes.io/instance: agents-sandbox-manager
               component: agents-sandbox-manager
           topologyKey: kubernetes.io/hostname
+
+gracefulShutdown:
+  preStopSleepSeconds: 0
 
 gateway:
   replicaCount: 2
@@ -142,6 +162,12 @@ gateway:
     admin:
       address: 127.0.0.1
       port: 9901
+    # -- Prometheus metrics endpoint (exposed externally; proxies to admin /stats/prometheus)
+    prometheus:
+      enabled: false
+      address: 0.0.0.0
+      port: 9902
+      path: /metrics
     listener:
       address: 0.0.0.0
       port: 7788
@@ -152,21 +178,29 @@ gateway:
       pluginName: sandbox-gateway
     circuitBreakers:
       enabled: true
-      thresholds:
-        - priority: DEFAULT
-          maxConnections: 80000
-          maxPendingRequests: 32768
-          maxRequests: 80000
-          maxRetries: 5
+      maxConnections: 80000
+      maxPendingRequests: 32768
+      maxRequests: 80000
+      maxRetries: 5
     concurrency: ""
     drainTimeSeconds: 30
     streamIdleTimeout: "600s"
     connectTimeout: "5s"
+    useDownstreamProtocolConfig: false
+    perConnectionBufferLimitBytes: 1048576
+    tcpKeepalive:
+      enabled: false
+      keepaliveProbes: 3
+      keepaliveTime: 60
+      keepaliveInterval: 10
     pluginConfig:
       hostHeaderName: Host
       sandboxHeaderName: e2b-sandbox-id
       sandboxPortHeader: e2b-sandbox-port
       defaultPort: "49983"
+      enableAuth: true
+      trafficAccessTokenHeader: e2b-traffic-access-token
+      enableJwtAuth: false
   service:
     type: ClusterIP
     port: 7788
