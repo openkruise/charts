@@ -1,0 +1,295 @@
+{{- if .Values.rbac.create }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "sandbox-controller.fullname" . }}-controller-role
+  namespace: {{ include "sandbox-controller.namespace" . }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "sandbox-controller.fullname" . }}-leader-election-role
+  namespace: {{ include "sandbox-controller.namespace" . }}
+  labels:
+    {{- include "sandbox-controller.labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "sandbox-controller.fullname" . }}-controller-role
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - persistentvolumeclaims
+      - pods
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - persistentvolumes
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - pods/resize
+      - pods/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - admissionregistration.k8s.io
+    resources:
+      - mutatingwebhookconfigurations
+      - validatingwebhookconfigurations
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - agents.kruise.io
+    resources:
+      - checkpoints
+      - sandboxtemplates
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - agents.kruise.io
+    resources:
+      - commits
+      - poolautoscalers
+      - sandboxes
+      - sandboxsets
+      - sandboxupdateops
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - agents.kruise.io
+    resources:
+      - commits/finalizers
+      - sandboxes/finalizers
+      - sandboxsets/finalizers
+    verbs:
+      - update
+  - apiGroups:
+      - agents.kruise.io
+    resources:
+      - commits/status
+      - poolautoscalers/status
+      - sandboxclaims/status
+      - sandboxes/status
+      - sandboxsets/status
+      - sandboxupdateops/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - agents.kruise.io
+    resources:
+      - sandboxclaims
+    verbs:
+      - delete
+      - get
+      - list
+      - patch
+      - watch
+  - apiGroups:
+      - agents.kruise.io
+    resources:
+      - trafficpolicies
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - batch
+    resources:
+      - jobs
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "sandbox-controller.fullname" . }}-controller-rolebinding
+  namespace: {{ include "sandbox-controller.namespace" . }}
+  labels:
+    {{- include "sandbox-controller.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "sandbox-controller.fullname" . }}-controller-role
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "sandbox-controller.serviceAccountName" . }}
+    namespace: {{ include "sandbox-controller.namespace" . }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "sandbox-controller.fullname" . }}-leader-election-rolebinding
+  namespace: {{ include "sandbox-controller.namespace" . }}
+  labels:
+    {{- include "sandbox-controller.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "sandbox-controller.fullname" . }}-leader-election-role
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "sandbox-controller.serviceAccountName" . }}
+    namespace: {{ include "sandbox-controller.namespace" . }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "sandbox-controller.fullname" . }}-controller-rolebinding
+  labels:
+      {{- include "sandbox-controller.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "sandbox-controller.fullname" . }}-controller-role
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "sandbox-controller.serviceAccountName" . }}
+    namespace: {{ include "sandbox-controller.namespace" . }}
+---
+# auth-delegator binding: required for controller-runtime's
+# --metrics-secure=true filter (WithAuthenticationAndAuthorization), which
+# delegates TokenReview/SubjectAccessReview to kube-apiserver. Without this,
+# every scrape against https://.../metrics returns 401.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "sandbox-controller.fullname" . }}-auth-delegator
+  labels:
+    {{- include "sandbox-controller.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "sandbox-controller.serviceAccountName" . }}
+    namespace: {{ include "sandbox-controller.namespace" . }}
+{{- if .Values.metrics.rbac.create }}
+---
+# Metrics reader role: grants permission to scrape /metrics on the
+# secured endpoint. Bind this to your Prometheus / ARMS scraper SA, e.g.:
+#
+#   kubectl create clusterrolebinding sandbox-controller-metrics-reader \
+#     --clusterrole={{ include "sandbox-controller.fullname" . }}-metrics-reader \
+#     --serviceaccount=monitoring:prometheus
+#
+# Or use `kubectl get --raw` from an account that already holds this role.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "sandbox-controller.fullname" . }}-metrics-reader
+  labels:
+    {{- include "sandbox-controller.labels" . | nindent 4 }}
+rules:
+  - nonResourceURLs:
+      - /metrics
+    verbs:
+      - get
+{{- end }}
+{{- end }}
