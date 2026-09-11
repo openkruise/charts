@@ -79,6 +79,18 @@ spec:
         - name: pre-delete-job
           image: {{ .Values.helmHooks.image.repository }}:{{ .Values.helmHooks.image.tag }}
           imagePullPolicy: IfNotPresent
+      {{- with .Values.helmHooks.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.helmHooks.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.helmHooks.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 ---
 # write a service account named kruise-helm-hook:
 apiVersion: v1
