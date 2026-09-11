@@ -54,7 +54,6 @@ spec:
             - --peer-selector=agents.kruise.io/sandbox-manager-peer-finder={{ .Release.Name }}
             - --kube-client-qps=10000
             - --kube-client-burst=30000
-            - --e2b-admin-key={{ required "e2b.adminApiKey is required" .Values.e2b.adminApiKey }}
             - --e2b-enable-auth={{ .Values.e2b.enableAuth }}
             - --e2b-max-timeout={{ int .Values.e2b.maxTimeout }}
             - --e2b-key-storage={{ .Values.e2b.keyStorage.mode }}
