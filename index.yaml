@@ -3,6 +3,29 @@ entries:
   agents-sandbox-controller:
   - annotations:
       artifacthub.io/changes: |
+        - "[Added]: support injecting the agent-runtime native sidecar via the agent-runtime entry of the sandbox-injection-config ConfigMap"
+        - "[Added]: configure the Commit job image through the AGENT_JOB_IMAGE environment variable of the controller"
+        - "[Added]: make the sandboxupdateops, poolautoscaler and commit reconciler worker counts configurable"
+        - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"
+    apiVersion: v2
+    appVersion: v0.6.0-alpha2
+    created: "2026-09-11T15:00:14.691994601Z"
+    description: The Helm chart for Agents Sandbox Controller
+    digest: c2a42d9e0d8e2bd72bfafc7752bf46dbfeb1a39ea912cf83c5e21e120a2e6078
+    keywords:
+    - agent
+    - sandbox
+    - controller
+    - kruise
+    - kubernetes
+    - openkruise
+    name: agents-sandbox-controller
+    type: application
+    urls:
+    - https://github.com/openkruise/charts/releases/download/agents-sandbox-controller-0.6.0-alpha2/agents-sandbox-controller-0.6.0-alpha2.tgz
+    version: 0.6.0-alpha2
+  - annotations:
+      artifacthub.io/changes: |
         - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"
     apiVersion: v2
     appVersion: v0.3.0
@@ -79,6 +102,27 @@ entries:
     - https://github.com/openkruise/charts/releases/download/agents-sandbox-controller-v0.1.0/agents-sandbox-controller-v0.1.0.tgz
     version: v0.1.0
   agents-sandbox-manager:
+  - annotations:
+      artifacthub.io/changes: |
+        - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"
+    apiVersion: v2
+    appVersion: v0.6.0-alpha2
+    created: "2026-09-11T15:00:14.854380401Z"
+    description: The Helm chart for Agent Sandbox Manager
+    digest: da888e86217596ef46548f365585917c60fd82eb7a0741fb84e9d8d75aee7a5e
+    keywords:
+    - agent
+    - sandbox
+    - apiserver
+    - proxy
+    - rl
+    - e2b
+    - console-visibility:false
+    name: agents-sandbox-manager
+    type: application
+    urls:
+    - https://github.com/openkruise/charts/releases/download/agents-sandbox-manager-0.6.0-alpha2/agents-sandbox-manager-0.6.0-alpha2.tgz
+    version: 0.6.0-alpha2
   - annotations:
       artifacthub.io/changes: |
         - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"
@@ -1706,4 +1750,4 @@ entries:
     urls:
     - https://github.com/openkruise/charts/releases/download/kruise-state-metrics-0.1.0/kruise-state-metrics-0.1.0.tgz
     version: 0.1.0
-generated: "2026-07-04T11:48:14.791177934Z"
+generated: "2026-09-11T15:00:14.854591106Z"
