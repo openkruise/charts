@@ -10,7 +10,10 @@ e2b:
   adminApiKey: ""
   maxTimeout: 2592000
   keyStorage:
-    mode: mysql
+    # "secret" stores E2B API keys in the e2b-key-store Secret. "mysql" is also
+    # supported, but requires a non-empty dsn and hashPepper: the manager
+    # validates them at startup and exits if either is blank.
+    mode: secret
     mysql:
       dsn: ""
       hashPepper: ""
