@@ -1,0 +1,26 @@
+************************************************************
+
+     Thanks for installing agents-sandbox-controller (ﾉ◕ヮ◕)ﾉ*.✨
+                   Chart Version: {{ .Chart.Version }}
+                   App Version: {{ .Chart.AppVersion }}
+
+************************************************************
+
+The agents-sandbox-controller has been installed successfully!
+
+1. Check the controller status:
+   kubectl get pods -n {{ include "sandbox-controller.namespace" . }} -l "app.kubernetes.io/name={{ include "sandbox-controller.name" . }},control-plane=sandbox-controller"
+
+2. View controller logs:
+   kubectl logs -n {{ include "sandbox-controller.namespace" . }} -l "app.kubernetes.io/name={{ include "sandbox-controller.name" . }},control-plane=sandbox-controller" -f
+
+3. Check the CRDs:
+   kubectl get crd | grep agents.kruise.io
+
+4. Verify webhook service:
+   kubectl get svc -n {{ include "sandbox-controller.namespace" . }} {{ include "sandbox-controller.fullname" . }}-webhook-service
+
+5. Test health endpoints (requires port-forward):
+   kubectl port-forward -n {{ include "sandbox-controller.namespace" . }} pod/<pod-name> 8081:8081
+   curl http://localhost:8081/healthz
+   curl http://localhost:8081/readyz
