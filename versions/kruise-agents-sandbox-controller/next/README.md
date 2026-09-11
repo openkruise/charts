@@ -36,6 +36,8 @@ The following table lists the configurable parameters of the agents-sandbox-cont
 | `agentRuntime.image.repository` | Injected agent-runtime sidecar image repository | `openkruise/agent-runtime` |
 | `agentRuntime.image.tag` | Injected agent-runtime sidecar image tag | `v0.2.0` |
 | `agentRuntime.image.pullPolicy` | Injected agent-runtime sidecar image pull policy | `IfNotPresent` |
+| `commitJob.image.repository` | Image repository of the Commit job pods | `openkruise/commit-job` |
+| `commitJob.image.tag` | Image tag of the Commit job pods | `v0.3.0` |
 | `agentio.trafficProxy.controlPlaneNamespace` | Namespace containing the Agentio control plane | `agentio-system` |
 | `agentio.trafficProxy.controlPlaneService` | Agentio control-plane Service name | `agentiod` |
 | `agentio.trafficProxy.xdsAddress` | Explicit XDS address; generated from service and namespace when empty | `""` |

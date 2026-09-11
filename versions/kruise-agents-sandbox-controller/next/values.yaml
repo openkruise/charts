@@ -36,6 +36,9 @@ controller:
     sandboxWorkers: 200
     sandboxsetWorkers: 10
     sandboxclaimWorkers: 200
+    sandboxupdateopsWorkers: 5
+    poolautoscalerWorkers: 3
+    commitWorkers: 5
   # Kubernetes API client rate limit
   clientQPS: 30000
   clientBurst: 60000
@@ -98,6 +101,13 @@ agentRuntime:
     repository: openkruise/agent-runtime
     tag: v0.2.0
     pullPolicy: IfNotPresent
+
+# Image used by the Job pods the controller creates for Commit CRs.
+# Rendered into the controller's AGENT_JOB_IMAGE environment variable.
+commitJob:
+  image:
+    repository: openkruise/commit-job
+    tag: v0.3.0
 
 # BEGIN GENERATED AGENTIO TRAFFIC PROXY VALUES - DO NOT EDIT
 agentio:
