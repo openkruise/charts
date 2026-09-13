@@ -28,6 +28,12 @@ serviceAccount:
   # Annotations to add to the service account
   annotations: {}
 
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
 service:
   port: 8443
 
