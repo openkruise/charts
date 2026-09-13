@@ -50,20 +50,27 @@ app: {{ include "agentio.controller.name" . }}
 Image helpers
 */}}
 
-{{/* Construct a full image reference: hub/name:tag with global.hub fallback. */}}
+{{/* Construct a full image reference: registry/repository:tag. The registry falls
+     back to agentio.global.registry and then to the chart-wide image.registry,
+     and is dropped when the repository already names a host. */}}
 {{- define "agentio.image" -}}
-{{- $hub := .hub | default .globalHub -}}
-{{- printf "%s/%s:%s" $hub .name .tag -}}
+{{- $registry := .registry | default .globalRegistry | default .root.Values.image.registry -}}
+{{- $host := first (splitList "/" .repository) -}}
+{{- if or (contains "." $host) (contains ":" $host) -}}
+{{- printf "%s:%s" .repository .tag -}}
+{{- else -}}
+{{- printf "%s/%s:%s" $registry .repository .tag -}}
+{{- end -}}
 {{- end -}}
 
 {{/* Ztunnel image (shared by sidecar injection and ambient DaemonSet). */}}
 {{- define "agentio.ztunnelImage" -}}
-{{- include "agentio.image" (dict "hub" .Values.agentio.ztunnel.image.hub "name" .Values.agentio.ztunnel.image.name "tag" .Values.agentio.ztunnel.image.tag "globalHub" .Values.agentio.global.hub) -}}
+{{- include "agentio.image" (dict "root" . "registry" .Values.agentio.ztunnel.image.registry "repository" .Values.agentio.ztunnel.image.repository "tag" .Values.agentio.ztunnel.image.tag "globalRegistry" .Values.agentio.global.registry) -}}
 {{- end -}}
 
 {{/* Lightweight image used by the iptables init container. */}}
 {{- define "agentio.proxyInitImage" -}}
-{{- include "agentio.image" (dict "hub" .Values.agentio.proxyInit.image.hub "name" .Values.agentio.proxyInit.image.name "tag" .Values.agentio.proxyInit.image.tag "globalHub" .Values.agentio.global.hub) -}}
+{{- include "agentio.image" (dict "root" . "registry" .Values.agentio.proxyInit.image.registry "repository" .Values.agentio.proxyInit.image.repository "tag" .Values.agentio.proxyInit.image.tag "globalRegistry" .Values.agentio.global.registry) -}}
 {{- end -}}
 
 {{/*

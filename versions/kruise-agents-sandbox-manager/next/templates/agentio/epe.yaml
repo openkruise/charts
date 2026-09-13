@@ -116,7 +116,7 @@ spec:
       serviceAccountName: {{ .Values.agentio.epe.name }}
       containers:
         - name: {{ .Values.agentio.epe.name }}
-          image: {{ include "agentio.image" (dict "hub" .Values.agentio.epe.image.hub "name" .Values.agentio.epe.image.name "tag" .Values.agentio.epe.image.tag "globalHub" .Values.agentio.global.hub) }}
+          image: {{ include "agentio.image" (dict "root" . "registry" .Values.agentio.epe.image.registry "repository" .Values.agentio.epe.image.repository "tag" .Values.agentio.epe.image.tag "globalRegistry" .Values.agentio.global.registry) }}
           imagePullPolicy: IfNotPresent
           args:
             - -grpc-port={{ .Values.agentio.epe.port }}

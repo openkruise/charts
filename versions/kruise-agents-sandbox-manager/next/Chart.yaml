@@ -33,4 +33,5 @@ keywords:
   - console-visibility:false
 annotations:
   artifacthub.io/changes: |
+    - "[Added]: resolve every image in the chart from the chart-wide image.registry plus each image's repository and tag"
     - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"

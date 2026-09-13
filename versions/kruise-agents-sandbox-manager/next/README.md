@@ -7,6 +7,7 @@ The following table lists the configurable parameters of the agents-sandbox-mana
 | Parameter                                    | Description                                   | Default                                                                                                                                                       |
 |----------------------------------------------|-----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `replicaCount`                               | Number of sandbox-manager replicas            | `2`                                                                                                                                                           |
+| `image.registry`                             | Registry prepended to every image in this chart | `docker.io`                                                                                                                                                 |
 | `controller.repository`                      | sandbox-manager controller image repository   | `openkruise/sandbox-manager`                                                                                                                                  |
 | `controller.tag`                             | sandbox-manager controller image tag          | `v0.3.0`                                                                                                                                                      |
 | `controller.pullPolicy`                      | Controller container image pull policy        | `IfNotPresent`                                                                                                                                                |
@@ -65,15 +66,22 @@ The following table lists the configurable parameters of the agents-sandbox-mana
 | `gateway.envoy.logLevel`                     | Envoy log level                               | `warn`                                                                                                                                                        |
 | `gateway.envoy.concurrency`                  | Envoy worker thread concurrency               | `4`                                                                                                                                                           |
 | `agentio.enabled`                            | Deploy the embedded Agentio control plane     | `false`                                                                                                                                                       |
-| `agentio.global.hub`                         | Default registry for Agentio images           | `docker.io/openkruise`                                                                                                                                        |
+| `agentio.global.registry`                    | Default registry for Agentio images; empty inherits `image.registry` | `""`                                                                                                                                         |
 | `agentio.global.trustDomain`                 | Agentio workload identity trust domain        | `cluster.local`                                                                                                                                               |
 | `agentio.global.clusterId`                   | Agentio cluster identifier                    | `Kubernetes`                                                                                                                                                  |
 | `agentio.global.caCertConfigMap`             | CA ConfigMap distributed to traffic proxies   | `agentio-ca-certs`                                                                                                                                            |
 | `agentio.agentiod.replicas`                  | Agentio control-plane replicas                | `1`                                                                                                                                                           |
-| `agentio.agentiod.image`                     | Agentio control-plane image settings          | `docker.io/openkruise/pilot:0.1.0`                                                                                                                            |
+| `agentio.agentiod.image.registry`            | Agentio control-plane image registry; empty inherits `agentio.global.registry` | `""`                                                                                |
+| `agentio.agentiod.image.repository`          | Agentio control-plane image repository        | `openkruise/pilot`                                                                                                                                          |
+| `agentio.agentiod.image.tag`                 | Agentio control-plane image tag               | `0.1.1`                                                                                                                                                     |
 | `agentio.agentiod.resources`                 | Agentio control-plane resources               | `requests/limits: 4 CPU, 4Gi`                                                                                                                                 |
-| `agentio.trafficExtension.enabled`           | Deploy the optional traffic extension         | `false`                                                                                                                                                       |
-| `agentio.trafficExtension.image`             | Traffic-extension image settings              | `docker.io/openkruise/traffic-extension:latest`                                                                                                                |
+| `agentio.epe.enabled`                        | Deploy the credential-provider extension      | `false`                                                                                                                                                     |
+| `agentio.epe.image.registry`                 | EPE image registry; empty inherits `agentio.global.registry` | `""`                                                                                                                                        |
+| `agentio.epe.image.repository`               | EPE image repository                          | `openkruise/agentio-epe`                                                                                                                                    |
+| `agentio.epe.image.tag`                      | EPE image tag                                 | `0.1.1`                                                                                                                                                     |
+| `agentio.egressGateway.image.registry`       | Egress gateway proxy image registry; empty inherits `agentio.global.registry` | `""`                                                                             |
+| `agentio.egressGateway.image.repository`     | Egress gateway proxy image repository         | `openkruise/proxyv2`                                                                                                                                        |
+| `agentio.egressGateway.image.tag`            | Egress gateway proxy image tag                | `0.1.1`                                                                                                                                                     |
 | `agentio.egressGateway.gateways`             | Statically provisioned Agentio egress gateways | `[]`                                                                                                                                                          |
 | `agentio.agentioConfig`                      | Raw overrides for the Agentio configuration   | `{}`                                                                                                                                                          |
 
@@ -90,3 +98,15 @@ helm install agents-sandbox-manager . -n <namespace> openkruise/kruise-agents-sa
   --set ingress.className=<alb|nginx> \
   --set key=value...
 ```
+
+## Image Registry
+
+Every image in this chart is rendered as `<registry>/<repository>:<tag>`, where
+`registry` defaults to the chart-wide `image.registry`. The Agentio images
+resolve their registry through a longer chain: their own `image.registry`, then
+`agentio.global.registry`, then `image.registry`.
+
+The registry prefix is dropped when the first path segment of a repository
+already names a host (it contains a `.` or a `:`), so setting
+`controller.repository` to `myreg.io/openkruise/sandbox-manager` keeps working
+without also clearing `image.registry`.

@@ -4,6 +4,11 @@
 replicaCount: 2
 
 image:
+  # Registry prepended to every image configured in this chart. An image that
+  # sets its own registry overrides this one, and an empty registry inherits it.
+  # The prefix is skipped for a repository whose first path segment already
+  # names a host, so myreg.io/openkruise/commit-job still works as-is.
+  registry: docker.io
   repository: openkruise/agent-sandbox-controller
   pullPolicy: IfNotPresent
   tag: v0.3.0
@@ -122,12 +127,18 @@ agentio:
     excludeOutboundIPRanges: ""
     excludeOutboundPorts: ""
     healthProbeRewrite: true
-    image: docker.io/openkruise/ztunnel:0.1.1
+    image:
+      registry: ""
+      repository: openkruise/ztunnel
+      tag: 0.1.1
     imagePullPolicy: IfNotPresent
     includeInboundPorts: '*'
     includeOutboundIPRanges: '*'
     includeOutboundPorts: ""
-    initImage: docker.io/openkruise/proxy-init:0.1.1
+    initImage:
+      registry: ""
+      repository: openkruise/proxy-init
+      tag: 0.1.1
     initResources:
       limits:
         cpu: "1"

@@ -7,6 +7,7 @@ The following table lists the configurable parameters of the agents-sandbox-cont
 | Parameter                    | Description                               | Default                                                                                                                 |
 |------------------------------|-------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
 | `replicaCount`               | Number of sandbox-controller replicas     | `2`                                                                                                                     |
+| `image.registry`             | Registry prepended to every image in this chart | `docker.io`                                                                                                       |
 | `image.repository`           | sandbox-controller image repository       | `openkruise/agent-sandbox-controller`                                                                                   |
 | `image.tag`                  | sandbox-controller image tag              | `v0.3.0`                                                                                                                |
 | `image.pullPolicy`           | Controller image pull policy              | `IfNotPresent`                                                                                                          |
@@ -43,13 +44,28 @@ The following table lists the configurable parameters of the agents-sandbox-cont
 | `agentio.trafficProxy.xdsAddress` | Explicit XDS address; generated from service and namespace when empty | `""` |
 | `agentio.trafficProxy.caAddress` | Explicit CA address; generated from service and namespace when empty | `""` |
 | `agentio.trafficProxy.caCertConfigMap` | CA ConfigMap mounted in injected workload namespaces | `agentio-ca-certs` |
-| `agentio.trafficProxy.image` | Injected ztunnel image | `docker.io/openkruise/ztunnel:0.1.0` |
-| `agentio.trafficProxy.initImage` | Injected iptables init image | `docker.io/openkruise/proxy-init:0.1.0` |
+| `agentio.trafficProxy.image.registry` | Injected ztunnel image registry; empty inherits `image.registry` | `""` |
+| `agentio.trafficProxy.image.repository` | Injected ztunnel image repository | `openkruise/ztunnel` |
+| `agentio.trafficProxy.image.tag` | Injected ztunnel image tag | `0.1.1` |
+| `agentio.trafficProxy.initImage.registry` | Injected iptables init image registry; empty inherits `image.registry` | `""` |
+| `agentio.trafficProxy.initImage.repository` | Injected iptables init image repository | `openkruise/proxy-init` |
+| `agentio.trafficProxy.initImage.tag` | Injected iptables init image tag | `0.1.1` |
 | `agentio.trafficProxy.imagePullPolicy` | Traffic-proxy image pull policy | `IfNotPresent` |
 | `agentio.trafficProxy.healthProbeRewrite` | Rewrite health probes for injected traffic proxies | `true` |
 | `agentio.trafficProxy.dnsCapture` | Enable DNS capture | `true` |
 | `agentio.trafficProxy.resources` | Injected ztunnel resources | `requests: 100m/64Mi, limits: 200m/128Mi` |
 | `agentio.trafficProxy.initResources` | Injected iptables init resources | `requests: 100m/128Mi, limits: 1/1Gi` |
+
+## Image Registry
+
+Every image in this chart is rendered as `<registry>/<repository>:<tag>`, where
+`registry` defaults to the chart-wide `image.registry`. The agentio images carry
+their own `registry` key, which overrides `image.registry` when non-empty.
+
+The registry prefix is dropped when the first path segment of a repository
+already names a host (it contains a `.` or a `:`), so setting
+`image.repository` to `myreg.io/openkruise/agent-sandbox-controller` keeps
+working without also clearing `image.registry`.
 
 The `sandbox-injection-config` ConfigMap is installed in the sandbox-controller
 release namespace. `controlPlaneNamespace` is independent, so the injected

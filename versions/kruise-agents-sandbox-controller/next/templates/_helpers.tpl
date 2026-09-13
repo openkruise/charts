@@ -68,3 +68,22 @@ Namespace name
 {{- define "sandbox-controller.namespace" -}}
 {{- default .Values.namespace.name .Release.Namespace }}
 {{- end }}
+
+{{/*
+Build a full image reference from registry, repository and tag.
+
+Call with (dict "root" $ "repository" ... "tag" ... ["registry" ...]). An empty
+registry falls back to the chart-wide image.registry, and an empty tag falls
+back to the chart appVersion. A repository whose first path segment already
+names a host keeps its own registry, so fully-qualified repositories still work.
+*/}}
+{{- define "sandbox-controller.image" -}}
+{{- $registry := .registry | default .root.Values.image.registry -}}
+{{- $tag := .tag | default .root.Chart.AppVersion -}}
+{{- $host := first (splitList "/" .repository) -}}
+{{- if or (contains "." $host) (contains ":" $host) -}}
+{{- printf "%s:%s" .repository $tag -}}
+{{- else -}}
+{{- printf "%s/%s:%s" $registry .repository $tag -}}
+{{- end -}}
+{{- end }}

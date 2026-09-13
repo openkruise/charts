@@ -3,6 +3,14 @@
 
 replicaCount: 2
 
+# Registry prepended to every image configured in this chart. Each component
+# keeps its own repository/tag keys (controller, proxy, gateway, agentio); an
+# image that sets its own registry overrides this one, and an empty registry
+# inherits it. The prefix is skipped for a repository whose first path segment
+# already names a host, so myreg.io/openkruise/sandbox-manager still works.
+image:
+  registry: docker.io
+
 e2b:
   domain: "your.domain.com"
   extraDomains: []
@@ -219,7 +227,8 @@ agentio:
     namespace: agentio-system
     # -- Create the Agentio control-plane namespace and retain it on uninstall.
     createNamespace: true
-    hub: docker.io/openkruise
+    # -- Default registry for all Agentio images. Empty inherits `image.registry`.
+    registry: ""
     trustDomain: cluster.local
     clusterId: 'Kubernetes'
     # -- CA certificate ConfigMap name distributed to traffic-proxy workload namespaces.
@@ -247,8 +256,8 @@ agentio:
       maxReplicas: 5
       targetCPUUtilizationPercentage: 80
     image:
-      hub: ""
-      name: pilot
+      registry: ""
+      repository: openkruise/pilot
       tag: 0.1.1
     # CPU request must equal limit so HPA-based utilization is meaningful.
     resources:
@@ -331,8 +340,8 @@ agentio:
         cpu: 2
         memory: 2Gi
     image:
-      hub: "docker.io/openkruise"
-      name: agentio-epe
+      registry: ""
+      repository: openkruise/agentio-epe
       tag: 0.1.1
     # -- PDB minAvailable for the EPE Deployment.
     pdbMinAvailable: 1
@@ -352,8 +361,8 @@ agentio:
   # agentio-config EgressGateways list by name/namespace.
   egressGateway:
     image:
-      hub: ""
-      name: proxyv2
+      registry: ""
+      repository: openkruise/proxyv2
       tag: 0.1.1
     # -- Default replicas when a gateway's autoscaling is disabled.
     replicas: 2

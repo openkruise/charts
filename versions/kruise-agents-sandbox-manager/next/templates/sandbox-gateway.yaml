@@ -33,7 +33,7 @@ spec:
       {{- if .Values.gateway.initContainer.enabled }}
       initContainers:
         - name: init-sysctl
-          image: "{{ .Values.gateway.initContainer.image.repository }}:{{ .Values.gateway.initContainer.image.tag }}"
+          image: {{ include "sandbox-manager.image" (dict "root" $ "repository" .Values.gateway.initContainer.image.repository "tag" .Values.gateway.initContainer.image.tag) | quote }}
           imagePullPolicy: {{ .Values.gateway.initContainer.image.pullPolicy }}
           command:
             - /bin/sh
@@ -60,7 +60,7 @@ spec:
         - name: gateway
           securityContext:
             {{- toYaml .Values.gateway.securityContext | nindent 12 }}
-          image: "{{ .Values.gateway.image.repository }}:{{ .Values.gateway.image.tag | default .Chart.AppVersion }}"
+          image: {{ include "sandbox-manager.image" (dict "root" $ "repository" .Values.gateway.image.repository "tag" .Values.gateway.image.tag) | quote }}
           imagePullPolicy: {{ .Values.gateway.image.pullPolicy }}
           command:
             - envoy

@@ -43,7 +43,7 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          image: "{{ .Values.controller.repository }}:{{ .Values.controller.tag | default .Chart.AppVersion }}"
+          image: {{ include "sandbox-manager.image" (dict "root" $ "repository" .Values.controller.repository "tag" .Values.controller.tag) | quote }}
           imagePullPolicy: {{ .Values.controller.pullPolicy }}
           command:
             - /sandbox-manager
@@ -111,7 +111,7 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          image: "{{ .Values.proxy.repository }}:{{ .Values.proxy.tag | default .Chart.AppVersion }}"
+          image: {{ include "sandbox-manager.image" (dict "root" $ "repository" .Values.proxy.repository "tag" .Values.proxy.tag) | quote }}
           imagePullPolicy: {{ .Values.proxy.pullPolicy }}
           args:
             - "--config-path /etc/envoy/envoy.yaml"
