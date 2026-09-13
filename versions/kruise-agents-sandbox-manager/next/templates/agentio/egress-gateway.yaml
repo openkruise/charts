@@ -151,7 +151,7 @@ spec:
         - name: {{ $key }}
           value: {{ $val | quote }}
         {{- end }}
-        image: {{ include "agentio.image" (dict "hub" $.Values.agentio.egressGateway.image.hub "name" $.Values.agentio.egressGateway.image.name "tag" $.Values.agentio.egressGateway.image.tag "globalHub" $.Values.agentio.global.hub) }}
+        image: {{ include "agentio.image" (dict "root" $ "registry" $.Values.agentio.egressGateway.image.registry "repository" $.Values.agentio.egressGateway.image.repository "tag" $.Values.agentio.egressGateway.image.tag "globalRegistry" $.Values.agentio.global.registry) }}
         imagePullPolicy: IfNotPresent
         name: istio-proxy
         ports:

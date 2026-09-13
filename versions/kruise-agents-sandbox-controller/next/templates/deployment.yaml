@@ -50,8 +50,8 @@ spec:
             - /manager
           env:
             - name: AGENT_JOB_IMAGE
-              value: {{ printf "%s:%s" .Values.commitJob.image.repository .Values.commitJob.image.tag | quote }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+              value: {{ include "sandbox-controller.image" (dict "root" $ "repository" .Values.commitJob.image.repository "tag" .Values.commitJob.image.tag) | quote }}
+          image: {{ include "sandbox-controller.image" (dict "root" $ "repository" .Values.image.repository "tag" .Values.image.tag) | quote }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           livenessProbe:
             httpGet:

@@ -59,7 +59,7 @@ data:
               "value": "true"
             }
           ],
-          "image": {{ .Values.agentio.trafficProxy.initImage | quote }},
+          "image": {{ include "sandbox-controller.image" (dict "root" $ "registry" .Values.agentio.trafficProxy.initImage.registry "repository" .Values.agentio.trafficProxy.initImage.repository "tag" .Values.agentio.trafficProxy.initImage.tag) | quote }},
           "imagePullPolicy": {{ .Values.agentio.trafficProxy.imagePullPolicy | quote }},
           "name": "istio-init",
           "resources": {{ .Values.agentio.trafficProxy.initResources | toJson }},
@@ -185,7 +185,7 @@ data:
               "value": "true"
             }
           ],
-          "image": {{ .Values.agentio.trafficProxy.image | quote }},
+          "image": {{ include "sandbox-controller.image" (dict "root" $ "registry" .Values.agentio.trafficProxy.image.registry "repository" .Values.agentio.trafficProxy.image.repository "tag" .Values.agentio.trafficProxy.image.tag) | quote }},
           "imagePullPolicy": {{ .Values.agentio.trafficProxy.imagePullPolicy | quote }},
           "name": "traffic-proxy",
           "ports": [
@@ -363,7 +363,7 @@ data:
               "value": "http://127.0.0.1:49983"
             }
           ],
-          "image": {{ printf "%s:%s" .Values.agentRuntime.image.repository .Values.agentRuntime.image.tag | quote }},
+          "image": {{ include "sandbox-controller.image" (dict "root" $ "repository" .Values.agentRuntime.image.repository "tag" .Values.agentRuntime.image.tag) | quote }},
           "imagePullPolicy": {{ .Values.agentRuntime.image.pullPolicy | quote }},
           "name": "agent-runtime",
           "restartPolicy": "Always",
