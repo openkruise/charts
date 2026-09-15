@@ -1,8 +1,6 @@
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
-  annotations:
-    template: ""
   name: sandbox-controller-mutating-webhook-configuration
 webhooks:
   - admissionReviewVersions:
@@ -50,8 +48,6 @@ webhooks:
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
-  annotations:
-    template: ""
   name: sandbox-controller-validating-webhook-configuration
 webhooks:
   - admissionReviewVersions:

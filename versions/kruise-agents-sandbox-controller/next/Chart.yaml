@@ -6,7 +6,7 @@ type: application
 
 version: 0.6.0
 
-appVersion: "v0.3.0"
+appVersion: "v0.6.0-alpha3"
 
 keywords:
   - agent
@@ -21,4 +21,5 @@ annotations:
     - "[Added]: configure the Commit job image through the AGENT_JOB_IMAGE environment variable of the controller"
     - "[Added]: make the sandboxupdateops, poolautoscaler and commit reconciler worker counts configurable"
     - "[Added]: resolve every image in the chart from the chart-wide image.registry plus each image's repository and tag"
+    - "[Fixed]: drop the placeholder template annotation from the mutating/validating webhook configurations so helm upgrade no longer conflicts with the controller (field manager manager) that owns it"
     - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"

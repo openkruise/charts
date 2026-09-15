@@ -21,7 +21,7 @@ version: 0.3.0
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "v0.3.0"
+appVersion: "v0.6.0-alpha3"
 
 keywords:
   - agent
@@ -34,4 +34,5 @@ keywords:
 annotations:
   artifacthub.io/changes: |
     - "[Added]: resolve every image in the chart from the chart-wide image.registry plus each image's repository and tag"
+    - "[Removed]: drop the envoy-proxy sidecar container and its envoy-config ConfigMap from the sandbox-manager deployment; the data plane is now served by sandbox-gateway"
     - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"
