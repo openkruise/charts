@@ -48,11 +48,6 @@ controller:
   maxCreateQPS: 200
   extProcMaxConcurrency: 10000
 
-proxy:
-  repository: envoyproxy/envoy
-  pullPolicy: IfNotPresent
-  tag: v1.33-latest
-
 service:
   type: ClusterIP
   port: 7788

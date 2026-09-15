@@ -34,4 +34,5 @@ keywords:
 annotations:
   artifacthub.io/changes: |
     - "[Added]: resolve every image in the chart from the chart-wide image.registry plus each image's repository and tag"
+    - "[Removed]: drop the envoy-proxy sidecar container and its envoy-config ConfigMap from the sandbox-manager deployment; the data plane is now served by sandbox-gateway"
     - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"
