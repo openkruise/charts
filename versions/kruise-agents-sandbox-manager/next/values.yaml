@@ -223,193 +223,207 @@ gateway:
 agentio:
   enabled: false
   global:
-    # -- Namespace where Agentio control-plane resources are installed.
-    namespace: agentio-system
-    # -- Create the Agentio control-plane namespace and retain it on uninstall.
-    createNamespace: true
-    # -- Default registry for all Agentio images. Empty inherits `image.registry`.
-    registry: ""
+    tag: "0.2.0"
+    imagePullPolicy: IfNotPresent
+    imagePullSecrets: []
+    clusterId: Kubernetes
     trustDomain: cluster.local
-    clusterId: 'Kubernetes'
-    # -- CA certificate ConfigMap name distributed to traffic-proxy workload namespaces.
+    clusterDomain: cluster.local
     caCertConfigMap: agentio-ca-certs
-    # -- Mesh-internal traffic policy for sandbox tunnel proxies.
-    # PEER_AWARE: full peer identity matching for mTLS and policy enforcement.
-    # PASSTHROUGH: skip upstream discovery for in-cluster destinations.
-    meshInternalTrafficPolicy: PASSTHROUGH
-    # -- Identifier shared by Agentio configuration and leader-election resources.
-    resourcePrefix: agentio
+    namespace: agentio-system
+    createNamespace: true
+    registry: ""
   agentiod:
-    replicas: 1
-    env: {}
-    krtEventDistributeDebounce: "200ms"
-    krtEventDistributeDebounceMax: "10s"
-    enableTlsTermination: true
-    onDemandCertSignMode: "SELF_SIGN"
-    # -- Optional. When set, sets pilot RESTRICTED_SECRETS_SCOPE; when empty,
-    # the env var is omitted and pilot uses its built-in default.
-    restrictedSecretsScope: true
+    nameOverride: agentiod
+    fullnameOverride: ""
+    replicaCount: 1
+    image:
+      digest: sha256:1191d241c4db5a7a81908c9ab4b190bd85ff1d9ad264a40a556abc3740878ceb
+      registry: ""
+      repository: openkruise/agentiod
+      tag: ""
+    serviceAccount:
+      create: true
+      name: ""
+      annotations: {}
+    service:
+      annotations: {}
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
     autoscaling:
-      # -- Set to false to skip rendering the HPA. When true, `replicas` above is ignored.
       enabled: false
       minReplicas: 2
       maxReplicas: 5
       targetCPUUtilizationPercentage: 80
-    image:
-      registry: ""
-      repository: openkruise/pilot
-      tag: 0.1.1
-    # CPU request must equal limit so HPA-based utilization is meaningful.
-    resources:
-      requests:
-        cpu: "4"
-        memory: 4Gi
-      limits:
-        cpu: "4"
-        memory: 4Gi
-    # -- Node selector for control plane pods.
-    nodeSelector: {}
-    # -- Tolerations for control plane pods.
-    tolerations: []
-    # -- Affinity rules for control plane pods.
-    affinity: {}
-  # -- Settings shared by native policy runtimes referenced by Workload discovery.
-  policyRuntime:
-    # -- Time an existing ready workload may keep its last-known-good policy snapshot
-    # while policy and Workload-reference updates converge after references become
-    # temporarily unresolved. Must exceed the
-    # control plane's worst-case gap between the two pushes, which is bounded by
-    # PILOT_DEBOUNCE_MAX (10s by default); a shorter value lets the grace period
-    # expire first and fails the workload closed. Recovery cancels the wait as
-    # soon as the streams converge, so this is an upper bound, not a fixed delay.
-    referenceResolutionGracePeriod: 15s
-  # -- Opt-in ClientHello SNI enforcement for sandbox egress gateways.
-  sniTrafficPolicy:
-    enabled: false
-  epe:
-    enabled: false
-    name: agentio-epe
-    port: 9002
-    env: {}
-    # -- Replica count when autoscaling.enabled is false. Ignored when HPA is enabled.
-    replicas: 1
-    # -- Credential-provider client configuration.
-    credentialProvider:
-      # -- Base URL of the credential provider API. Rendered as the
-      # IDENTITY_PROVIDER_URL environment variable — that name predates the
-      # credential-provider naming and is kept for compatibility with non-chart
-      # deployments. Every credential lookup fails while this is empty.
-      url: ""
-      # -- Where EPE's mTLS material for the credential provider comes from.
-      # Exactly one source is used; there is no fallback between them. Material
-      # that is absent or unusable means no client certificate is presented and
-      # the provider is verified against the system trust store — a degraded
-      # mode, not a startup failure. The chosen source is watched, so material
-      # appearing or rotating later takes effect without a restart.
-      mtls:
-        # -- One of: files, secret, none.
-        source: files
-        # -- source=files only. Secret mounted read-only at
-        # /etc/epe/credential-provider, read as client.crt/client.key/ca.crt.
-        # The chart does NOT create this Secret; the mount is optional so it may
-        # appear afterwards. Empty means <epe.name>-mtls-client-cert.
-        secretName: ""
-        # -- source=secret only. The Secret EPE watches through the API server,
-        # same three data keys. Both fields are required when source=secret and
-        # rendering fails if either is missing; they may also come from epe.env.
-        secret:
-          namespace: ""
-          name: ""
-        # -- DANGER: disables verification of the credential provider's server
-        # certificate while still presenting the client certificate. Any on-path
-        # attacker can then read the sandbox bearer token and forge the
-        # credential response. Trusted test environments only.
-        insecureSkipVerify: false
-    autoscaling:
-      # -- Set to false to skip rendering the HPA.
+    podDisruptionBudget:
       enabled: false
-      minReplicas: 2
-      maxReplicas: 50
-      targetCPUUtilizationPercentage: 80
-    # CPU request must equal limit so HPA-based utilization is meaningful.
-    resources:
-      requests:
-        cpu: 2
-        memory: 2Gi
-      limits:
-        cpu: 2
-        memory: 2Gi
-    image:
-      registry: ""
-      repository: openkruise/agentio-epe
-      tag: 0.1.1
-    # -- PDB minAvailable for the EPE Deployment.
-    pdbMinAvailable: 1
-    # -- Node selector for EPE pods.
+      minAvailable: 1
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 25%
     nodeSelector: {}
-    # -- Tolerations for EPE pods.
     tolerations: []
-    # -- Affinity rules for EPE pods.
     affinity: {}
-  # -- Egress policies applied to agent traffic. Empty by default.
-  egressPolicies: []
-  # -- Statically chart-provisioned egress gateways — the alternative to creating
-  # a Kubernetes Gateway and letting the controller provision it. Both approaches
-  # produce workloads labeled networking.agents.kruise.io/sandbox-egress=true, so
-  # the control plane treats them identically; use whichever fits (or both).
-  # Per-gateway policy (tlsTermination, extProc, ...) is still matched from the
-  # agentio-config EgressGateways list by name/namespace.
+    topologySpreadConstraints: []
+    podAnnotations: {}
+    podLabels: {}
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 1337
+      runAsGroup: 1337
+      fsGroup: 1337
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: [ALL]
+      readOnlyRootFilesystem: true
+    tokenAudience: agentio-ca
+    logging:
+      level: info
+      format: text
+    keepalive:
+      # Set to 0s to disable periodic server-side gRPC connection expiry.
+      maxServerConnectionAge: 30m
+    enableDebugOnHTTP: true
+    meshInternalTrafficPolicy: PEER_AWARE
+    enableSNITrafficPolicy: false
+    ca:
+      secretName: agentio-ca-secret
+      configMapName: ""
+      leaseName: agentiod-ca-leader
+      trustBundleConfigMapName: agentio-ca-root-cert
+      trustBundleLeaseName: agentiod-trust-bundle-leader
+    mitm:
+      secretName: agentio-mitm-ca
+      secretNamespace: ""
+      signMode: SELF_SIGN
+    config:
+      name: agentio-config
+      primaryName: agentio-config-primary
+      values: {}
+      sourcesName: agentio-config-sources
+      sources: ""
+    gatewayDeployer:
+      leaseName: agentiod-gateway-deployer-leader
+    networkPolicy:
+      enabled: false
+    env: {}
   egressGateway:
+    mode: disabled
+    nameOverride: agentio-egress
+    fullnameOverride: ""
     image:
+      digest: sha256:850848747fa0481a31b0f01d33c7202305a9c2df50d745bdaa2684bb635de098
       registry: ""
       repository: openkruise/proxyv2
-      tag: 0.1.1
-    # -- Default replicas when a gateway's autoscaling is disabled.
-    replicas: 2
-    # -- Default resources per gateway (overridable per gateway).
+      tag: ""
+    tokenAudience: agentio-ca
+    replicaCount: 2
+    serviceAccount:
+      create: true
+      name: ""
+      annotations: {}
+    rbac:
+      readSecrets: false
+    service:
+      type: ClusterIP
+      annotations: {}
+      ports:
+        status: 15021
+        mesh: 15008
     resources:
       requests:
-        cpu: "2"
-        memory: 1Gi
-      limits:
-        cpu: "2"
-        memory: 1Gi
-    # -- Default autoscaling for every gateway (overridable per gateway).
+        cpu: 500m
+        memory: 512Mi
     autoscaling:
       enabled: true
       minReplicas: 2
       maxReplicas: 5
       targetCPUUtilizationPercentage: 80
-    pdbMinAvailable: 1
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1
     terminationGracePeriodSeconds: 30
-    # -- Optional Envoy stats flush/eviction intervals (empty = Istio defaults).
     statsFlushInterval: ""
     statsEvictionInterval: ""
-    # -- Extra env injected into every gateway proxy container.
+    sniTrafficPolicy:
+      enabled: false
     env: {}
+    podAnnotations: {}
+    podLabels: {}
     nodeSelector: {}
     tolerations: []
     affinity: {}
-    # -- Default static service entries for all gateways. A gateway may replace
-    # the complete list with gateways[].serviceEntries, including an empty list.
-    serviceEntries: []
-    # -- One entry per egress gateway. Minimal form: [{ name: my-egress }].
-    # Each entry may override: labels, replicas, resources, autoscaling,
-    # nodeSelector, tolerations, affinity, pdbMinAvailable,
-    # terminationGracePeriodSeconds, statsFlushInterval, statsEvictionInterval,
-    # serviceEntries.
-    # Example:
-    # gateways:
-    #   - name: egress-gateway
-    #     serviceEntries:
-    #       - hosts:
-    #           - bff-cn-beijing.data.aliyun-inc.com
-    #         endpoints:
-    #           - address: 10.10.20.30
-    #           - address: 10.10.20.31
-    gateways: []
-  # -- Raw overrides merged on top of the built-in agentio-config ConfigMap body.
-  # Use this to set fields the chart does not model explicitly (e.g. clusterSettings)
-  # or to override defaults. Maps deep-merge; lists are replaced wholesale.
-  agentioConfig: {}
+    topologySpreadConstraints: []
+    networkPolicy:
+      enabled: false
+    gatewayAPI:
+      create: false
+      name: agentio-egress
+      gatewayClassName: agentio-egress
+      infrastructure: {}
+      annotations: {}
+      labels: {}
+      listeners:
+        - name: mesh
+          port: 15008
+          protocol: HBONE
+  epe:
+    mode: disabled
+    nameOverride: agentio-epe
+    fullnameOverride: ""
+    image:
+      digest: sha256:7264636dfaaa32e59de877a5ff787d39733a54b1bd6200d2092917b7cea61e14
+      registry: ""
+      repository: openkruise/agentio-epe
+      tag: ""
+    replicaCount: 1
+    serviceAccount:
+      create: true
+      name: ""
+      annotations: {}
+    service:
+      grpcPort: 9002
+      healthPort: 9003
+      metricsPort: 9090
+    external:
+      address: ""
+      port: 9002
+    messageTimeout: 5s
+    credentialProvider:
+      url: ""
+      mtls:
+        source: files
+        secretName: ""
+        secret:
+          namespace: ""
+          name: ""
+        insecureSkipVerify: false
+    tokenCacheTTL: 15m
+    tokenCacheMaxSize: 10000
+    auditWebhook:
+      insecureSkipVerify: false
+    env: {}
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+    autoscaling:
+      enabled: false
+      minReplicas: 2
+      maxReplicas: 20
+      targetCPUUtilizationPercentage: 80
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1
+    podAnnotations: {}
+    podLabels: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    topologySpreadConstraints: []
+    networkPolicy:
+      enabled: false
 # END GENERATED AGENTIO VALUES

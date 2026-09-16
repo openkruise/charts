@@ -43,13 +43,19 @@ The following table lists the configurable parameters of the agents-sandbox-cont
 | `agentio.trafficProxy.controlPlaneService` | Agentio control-plane Service name | `agentiod` |
 | `agentio.trafficProxy.xdsAddress` | Explicit XDS address; generated from service and namespace when empty | `""` |
 | `agentio.trafficProxy.caAddress` | Explicit CA address; generated from service and namespace when empty | `""` |
-| `agentio.trafficProxy.caCertConfigMap` | CA ConfigMap mounted in injected workload namespaces | `agentio-ca-certs` |
+| `agentio.trafficProxy.caCertConfigMap` | CA ConfigMap mounted in injected workload namespaces | `agentio-ca-root-cert` |
 | `agentio.trafficProxy.image.registry` | Injected ztunnel image registry; empty inherits `image.registry` | `""` |
 | `agentio.trafficProxy.image.repository` | Injected ztunnel image repository | `openkruise/ztunnel` |
-| `agentio.trafficProxy.image.tag` | Injected ztunnel image tag | `0.1.1` |
+| `agentio.trafficProxy.image.tag` | Injected ztunnel tag used when digest is empty | `""` |
+| `agentio.trafficProxy.image.digest` | Ztunnel digest from the Agentio 0.2.0 BOM | See values.yaml |
 | `agentio.trafficProxy.initImage.registry` | Injected iptables init image registry; empty inherits `image.registry` | `""` |
 | `agentio.trafficProxy.initImage.repository` | Injected iptables init image repository | `openkruise/proxy-init` |
-| `agentio.trafficProxy.initImage.tag` | Injected iptables init image tag | `0.1.1` |
+| `agentio.trafficProxy.initImage.tag` | Injected init image tag used when digest is empty | `""` |
+| `agentio.trafficProxy.initImage.digest` | Init image digest from the Agentio 0.2.0 BOM | See values.yaml |
+| `agentio.trafficProxy.clusterDomain` | Kubernetes service DNS domain | `cluster.local` |
+| `agentio.trafficProxy.tokenAudience` | Projected workload token audience | `agentio-ca` |
+| `agentio.trafficProxy.enableFirewallRules` | Enable traffic-proxy firewall rules | `true` |
+| `agentio.trafficProxy.firewallBackend` | Firewall backend selection | `auto` |
 | `agentio.trafficProxy.imagePullPolicy` | Traffic-proxy image pull policy | `IfNotPresent` |
 | `agentio.trafficProxy.healthProbeRewrite` | Rewrite health probes for injected traffic proxies | `true` |
 | `agentio.trafficProxy.dnsCapture` | Enable DNS capture | `true` |
@@ -58,7 +64,8 @@ The following table lists the configurable parameters of the agents-sandbox-cont
 
 ## Image Registry
 
-Every image in this chart is rendered as `<registry>/<repository>:<tag>`, where
+Images render as `<registry>/<repository>:<tag>` or, for pinned Agentio images,
+`<registry>/<repository>@<digest>`. The
 `registry` defaults to the chart-wide `image.registry`. The agentio images carry
 their own `registry` key, which overrides `image.registry` when non-empty.
 
@@ -70,6 +77,14 @@ working without also clearing `image.registry`.
 The `sandbox-injection-config` ConfigMap is installed in the sandbox-controller
 release namespace. `controlPlaneNamespace` is independent, so the injected
 traffic proxy can connect to Agentio running in another namespace.
+
+Agentio 0.2.0 pins the traffic-proxy and init images by digest. Registry mirrors
+must contain those same manifests. To use a tag override, clear that image's
+`digest` and set its `tag`.
+
+Upgrade the traffic-proxy configuration together with the manager's Agentio
+control plane: the trust bundle is `agentio-ca-root-cert` and token audience is
+`agentio-ca`. Recreate workload Pods to receive the updated injection template.
 
 ## Agent Runtime Injection
 

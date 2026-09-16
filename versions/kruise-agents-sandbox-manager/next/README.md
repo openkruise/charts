@@ -65,25 +65,30 @@ The following table lists the configurable parameters of the agents-sandbox-mana
 | `gateway.envoy.listener.port`                | Envoy listener port                           | `10000`                                                                                                                                                       |
 | `gateway.envoy.logLevel`                     | Envoy log level                               | `warn`                                                                                                                                                        |
 | `gateway.envoy.concurrency`                  | Envoy worker thread concurrency               | `4`                                                                                                                                                           |
-| `agentio.enabled`                            | Deploy the embedded Agentio control plane     | `false`                                                                                                                                                       |
-| `agentio.global.registry`                    | Default registry for Agentio images; empty inherits `image.registry` | `""`                                                                                                                                         |
-| `agentio.global.trustDomain`                 | Agentio workload identity trust domain        | `cluster.local`                                                                                                                                               |
-| `agentio.global.clusterId`                   | Agentio cluster identifier                    | `Kubernetes`                                                                                                                                                  |
-| `agentio.global.caCertConfigMap`             | CA ConfigMap distributed to traffic proxies   | `agentio-ca-certs`                                                                                                                                            |
-| `agentio.agentiod.replicas`                  | Agentio control-plane replicas                | `1`                                                                                                                                                           |
-| `agentio.agentiod.image.registry`            | Agentio control-plane image registry; empty inherits `agentio.global.registry` | `""`                                                                                |
-| `agentio.agentiod.image.repository`          | Agentio control-plane image repository        | `openkruise/pilot`                                                                                                                                          |
-| `agentio.agentiod.image.tag`                 | Agentio control-plane image tag               | `0.1.1`                                                                                                                                                     |
-| `agentio.agentiod.resources`                 | Agentio control-plane resources               | `requests/limits: 4 CPU, 4Gi`                                                                                                                                 |
-| `agentio.epe.enabled`                        | Deploy the credential-provider extension      | `false`                                                                                                                                                     |
-| `agentio.epe.image.registry`                 | EPE image registry; empty inherits `agentio.global.registry` | `""`                                                                                                                                        |
-| `agentio.epe.image.repository`               | EPE image repository                          | `openkruise/agentio-epe`                                                                                                                                    |
-| `agentio.epe.image.tag`                      | EPE image tag                                 | `0.1.1`                                                                                                                                                     |
-| `agentio.egressGateway.image.registry`       | Egress gateway proxy image registry; empty inherits `agentio.global.registry` | `""`                                                                             |
-| `agentio.egressGateway.image.repository`     | Egress gateway proxy image repository         | `openkruise/proxyv2`                                                                                                                                        |
-| `agentio.egressGateway.image.tag`            | Egress gateway proxy image tag                | `0.1.1`                                                                                                                                                     |
-| `agentio.egressGateway.gateways`             | Statically provisioned Agentio egress gateways | `[]`                                                                                                                                                          |
-| `agentio.agentioConfig`                      | Raw overrides for the Agentio configuration   | `{}`                                                                                                                                                          |
+| `agentio.enabled` | Deploy the embedded Agentio control plane | `false` |
+| `agentio.global.registry` | Registry for Agentio images; empty inherits image.registry | `""` |
+| `agentio.global.namespace` | Agentio control-plane namespace | `agentio-system` |
+| `agentio.global.trustDomain` | Workload identity trust domain | `cluster.local` |
+| `agentio.global.clusterDomain` | Kubernetes service DNS domain | `cluster.local` |
+| `agentio.global.clusterId` | Agentio cluster identifier | `Kubernetes` |
+| `agentio.agentiod.ca.trustBundleConfigMapName` | CA trust bundle distributed to traffic proxies | `agentio-ca-root-cert` |
+| `agentio.agentiod.replicaCount` | Agentio control-plane replicas | `1` |
+| `agentio.agentiod.image.registry` | Control-plane registry; empty inherits agentio.global.registry | `""` |
+| `agentio.agentiod.image.repository` | Control-plane repository | `openkruise/agentiod` |
+| `agentio.agentiod.image.tag` | Tag used when digest is empty; defaults to agentio.global.tag | `""` |
+| `agentio.agentiod.image.digest` | Control-plane digest from the Agentio 0.2.0 BOM | `See values.yaml` |
+| `agentio.agentiod.resources` | Control-plane resource requests | `500m CPU, 512Mi` |
+| `agentio.epe.mode` | EPE deployment mode: disabled, managed, or external | `disabled` |
+| `agentio.epe.image.registry` | EPE registry; empty inherits agentio.global.registry | `""` |
+| `agentio.epe.image.repository` | EPE repository | `openkruise/agentio-epe` |
+| `agentio.epe.image.tag` | EPE tag used when digest is empty | `""` |
+| `agentio.epe.image.digest` | EPE digest from the Agentio 0.2.0 BOM | `See values.yaml` |
+| `agentio.egressGateway.mode` | Gateway mode: disabled, static, or gatewayAPI | `disabled` |
+| `agentio.egressGateway.image.registry` | Gateway registry; empty inherits agentio.global.registry | `""` |
+| `agentio.egressGateway.image.repository` | Gateway repository | `openkruise/proxyv2` |
+| `agentio.egressGateway.image.tag` | Gateway tag used when digest is empty | `""` |
+| `agentio.egressGateway.image.digest` | Gateway digest from the Agentio 0.2.0 BOM | `See values.yaml` |
+| `agentio.agentiod.config.values` | Overrides for the Agentio configuration | `{}` |
 
 The sandbox-manager integration intentionally excludes Agentio ambient mode and
 the Agentio sidecar injector. Kruise Agents injects the per-sandbox
@@ -101,7 +106,8 @@ helm install agents-sandbox-manager . -n <namespace> openkruise/kruise-agents-sa
 
 ## Image Registry
 
-Every image in this chart is rendered as `<registry>/<repository>:<tag>`, where
+Images render as `<registry>/<repository>:<tag>` or, for pinned Agentio images,
+`<registry>/<repository>@<digest>`. The
 `registry` defaults to the chart-wide `image.registry`. The Agentio images
 resolve their registry through a longer chain: their own `image.registry`, then
 `agentio.global.registry`, then `image.registry`.
@@ -110,3 +116,27 @@ The registry prefix is dropped when the first path segment of a repository
 already names a host (it contains a `.` or a `:`), so setting
 `controller.repository` to `myreg.io/openkruise/sandbox-manager` keeps working
 without also clearing `image.registry`.
+
+Agentio 0.2.0 pins all images by digest. A registry mirror must contain the same
+manifests. To use a tag override, clear the corresponding image's `digest` and
+set its `tag`; changing only `tag` does not override a digest.
+
+## Migrating Agentio 0.1 overrides
+
+The embedded integration now follows Agentio 0.2.0. Migrate existing values before
+upgrading; see the [Agentio integration guide](https://github.com/openkruise/agentio/blob/0.2.0/manifests/charts/OPENKRUISE.md#migrate-release-01-values)
+for the complete configuration changes.
+
+| Previous key | Agentio 0.2.0 key |
+| --- | --- |
+| `agentio.agentiod.replicas` | `agentio.agentiod.replicaCount` |
+| `agentio.epe.enabled: true` | `agentio.epe.mode: managed` |
+| `agentio.epe.replicas` | `agentio.epe.replicaCount` |
+| `agentio.egressGateway.gateways` | `agentio.egressGateway.mode: static` and `fullnameOverride` for one gateway |
+| `agentio.agentioConfig` | `agentio.agentiod.config.values` |
+| `agentio.global.meshInternalTrafficPolicy` | `agentio.agentiod.meshInternalTrafficPolicy` |
+
+The mesh-internal policy now defaults to `PEER_AWARE`. Set it to `PASSTHROUGH`
+explicitly if required. Workload proxies use the `agentio-ca-root-cert` trust
+bundle and `agentio-ca` token audience; upgrade the controller's traffic-proxy
+configuration with the manager and recreate workload Pods to receive it.

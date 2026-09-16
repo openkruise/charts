@@ -11,9 +11,7 @@ data:
         "networking.agents.kruise.io/sidecar-proxy": "traffic-proxy"
       },
       "labels": {
-        "networking.agents.kruise.io/proxy-type": "ztunnel",
-        "networking.istio.io/tunnel": "http",
-        "security.istio.io/tlsMode": "disabled"
+        "agentio.kruise.io/dataplane-mode": "none"
       },
       "initContainers": [
         {
@@ -59,9 +57,9 @@ data:
               "value": "true"
             }
           ],
-          "image": {{ include "sandbox-controller.image" (dict "root" $ "registry" .Values.agentio.trafficProxy.initImage.registry "repository" .Values.agentio.trafficProxy.initImage.repository "tag" .Values.agentio.trafficProxy.initImage.tag) | quote }},
+          "image": {{ include "agentio.registryImage" (dict "root" . "image" .Values.agentio.trafficProxy.initImage) | quote }},
           "imagePullPolicy": {{ .Values.agentio.trafficProxy.imagePullPolicy | quote }},
-          "name": "istio-init",
+          "name": "agentio-init",
           "resources": {{ .Values.agentio.trafficProxy.initResources | toJson }},
           "securityContext": {
             "allowPrivilegeEscalation": false,
@@ -91,6 +89,14 @@ data:
               "value": "true"
             },
             {
+              "name": "ENABLE_FIREWALL_RULES",
+              "value": {{ .Values.agentio.trafficProxy.enableFirewallRules | toString | quote }}
+            },
+            {
+              "name": "FIREWALL_BACKEND",
+              "value": {{ .Values.agentio.trafficProxy.firewallBackend | quote }}
+            },
+            {
               "name": "ENABLE_SIDECAR_MODE",
               "value": "true"
             },
@@ -108,11 +114,11 @@ data:
             },
             {
               "name": "CA_ADDRESS",
-              "value": {{ .Values.agentio.trafficProxy.caAddress | default (printf "%s.%s.svc.cluster.local:15012" .Values.agentio.trafficProxy.controlPlaneService .Values.agentio.trafficProxy.controlPlaneNamespace) | quote }}
+              "value": {{ .Values.agentio.trafficProxy.caAddress | default (printf "%s.%s.svc.%s:15012" .Values.agentio.trafficProxy.controlPlaneService .Values.agentio.trafficProxy.controlPlaneNamespace .Values.agentio.trafficProxy.clusterDomain) | quote }}
             },
             {
               "name": "XDS_ADDRESS",
-              "value": {{ .Values.agentio.trafficProxy.xdsAddress | default (printf "%s.%s.svc.cluster.local:15012" .Values.agentio.trafficProxy.controlPlaneService .Values.agentio.trafficProxy.controlPlaneNamespace) | quote }}
+              "value": {{ .Values.agentio.trafficProxy.xdsAddress | default (printf "%s.%s.svc.%s:15012" .Values.agentio.trafficProxy.controlPlaneService .Values.agentio.trafficProxy.controlPlaneNamespace .Values.agentio.trafficProxy.clusterDomain) | quote }}
             },
             {
               "name": "RUST_BACKTRACE",
@@ -185,7 +191,7 @@ data:
               "value": "true"
             }
           ],
-          "image": {{ include "sandbox-controller.image" (dict "root" $ "registry" .Values.agentio.trafficProxy.image.registry "repository" .Values.agentio.trafficProxy.image.repository "tag" .Values.agentio.trafficProxy.image.tag) | quote }},
+          "image": {{ include "agentio.registryImage" (dict "root" . "image" .Values.agentio.trafficProxy.image) | quote }},
           "imagePullPolicy": {{ .Values.agentio.trafficProxy.imagePullPolicy | quote }},
           "name": "traffic-proxy",
           "ports": [
@@ -267,7 +273,7 @@ data:
             "sources": [
               {
                 "serviceAccountToken": {
-                  "audience": "istio-ca",
+                  "audience": {{ .Values.agentio.trafficProxy.tokenAudience | quote }},
                   "expirationSeconds": 43200,
                   "path": "istio-token"
                 }

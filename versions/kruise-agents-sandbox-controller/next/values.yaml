@@ -118,27 +118,32 @@ commitJob:
 agentio:
   trafficProxy:
     caAddress: ""
-    caCertConfigMap: agentio-ca-certs
+    caCertConfigMap: agentio-ca-root-cert
+    clusterDomain: cluster.local
     clusterId: Kubernetes
     controlPlaneNamespace: agentio-system
     controlPlaneService: agentiod
     dnsCapture: true
+    enableFirewallRules: true
     excludeInboundPorts: ""
     excludeOutboundIPRanges: ""
     excludeOutboundPorts: ""
+    firewallBackend: auto
     healthProbeRewrite: true
     image:
+      digest: sha256:0b21b08212ca3c9a63bb161181cb97873b7ad2b7c7c2977e7b98dbfbeb4b1067
       registry: ""
       repository: openkruise/ztunnel
-      tag: 0.1.1
+      tag: ""
     imagePullPolicy: IfNotPresent
     includeInboundPorts: '*'
     includeOutboundIPRanges: '*'
     includeOutboundPorts: ""
     initImage:
+      digest: sha256:90149ed0be522e6ffa9f00d7d52076efbe12f9fd79af7c61e499d058c5312a38
       registry: ""
       repository: openkruise/proxy-init
-      tag: 0.1.1
+      tag: ""
     initResources:
       limits:
         cpu: "1"
@@ -153,5 +158,6 @@ agentio:
       requests:
         cpu: 100m
         memory: 64Mi
+    tokenAudience: agentio-ca
     xdsAddress: ""
 # END GENERATED AGENTIO TRAFFIC PROXY VALUES
