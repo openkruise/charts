@@ -6,6 +6,9 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
+{{- if .Values.externalCerts.annotations }}
+{{ toYaml .Values.externalCerts.annotations | indent 4 }}
+{{- end }}
   name: statefulsets.apps.kruise.io
 spec:
   conversion:
