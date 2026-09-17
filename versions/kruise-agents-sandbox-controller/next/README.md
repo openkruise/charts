@@ -46,11 +46,11 @@ The following table lists the configurable parameters of the agents-sandbox-cont
 | `agentio.trafficProxy.caCertConfigMap` | CA ConfigMap mounted in injected workload namespaces | `agentio-ca-root-cert` |
 | `agentio.trafficProxy.image.registry` | Injected ztunnel image registry; empty inherits `image.registry` | `""` |
 | `agentio.trafficProxy.image.repository` | Injected ztunnel image repository | `openkruise/ztunnel` |
-| `agentio.trafficProxy.image.tag` | Fixed Agentio release image tag | `0.2.0` |
+| `agentio.trafficProxy.image.tag` | Injected ztunnel image tag | `0.2.0` |
 | `agentio.trafficProxy.image.digest` | Optional digest override; takes precedence over tag | `""` |
 | `agentio.trafficProxy.initImage.registry` | Injected iptables init image registry; empty inherits `image.registry` | `""` |
 | `agentio.trafficProxy.initImage.repository` | Injected iptables init image repository | `openkruise/proxy-init` |
-| `agentio.trafficProxy.initImage.tag` | Fixed Agentio release image tag | `0.2.0` |
+| `agentio.trafficProxy.initImage.tag` | Injected iptables init image tag | `0.2.0` |
 | `agentio.trafficProxy.initImage.digest` | Optional digest override; takes precedence over tag | `""` |
 | `agentio.trafficProxy.clusterDomain` | Kubernetes service DNS domain | `cluster.local` |
 | `agentio.trafficProxy.tokenAudience` | Projected workload token audience | `agentio-ca` |
@@ -64,28 +64,15 @@ The following table lists the configurable parameters of the agents-sandbox-cont
 
 ## Image Registry
 
-Images render as `<registry>/<repository>:<tag>` or, with a digest override,
-`<registry>/<repository>@<digest>`. The
-`registry` defaults to the chart-wide `image.registry`. The agentio images carry
-their own `registry` key, which overrides `image.registry` when non-empty.
+Images render as `<registry>/<repository>:<tag>` or, with a digest override, `<registry>/<repository>@<digest>`. The `registry` defaults to the chart-wide `image.registry`. The agentio images carry their own `registry` key, which overrides `image.registry` when non-empty.
 
-The registry prefix is dropped when the first path segment of a repository
-already names a host (it contains a `.` or a `:`), so setting
-`image.repository` to `myreg.io/openkruise/agent-sandbox-controller` keeps
-working without also clearing `image.registry`.
+The registry prefix is dropped when the first path segment of a repository already names a host (it contains a `.` or a `:`), so setting `image.repository` to `myreg.io/openkruise/agent-sandbox-controller` keeps working without also clearing `image.registry`.
 
-The `sandbox-injection-config` ConfigMap is installed in the sandbox-controller
-release namespace. `controlPlaneNamespace` is independent, so the injected
-traffic proxy can connect to Agentio running in another namespace.
+The `sandbox-injection-config` ConfigMap is installed in the sandbox-controller release namespace. `controlPlaneNamespace` is independent, so the injected traffic proxy can connect to Agentio running in another namespace.
 
-Agentio images default to the fixed `0.2.0` release tag and an empty `digest`.
-Registry mirrors must provide that tag. Set an image's `tag` to override its
-version, or supply `digest` to pin a specific manifest instead. Future Agentio
-synchronizations set these defaults to the synchronized release version.
+Agentio images use the fixed `0.2.0` tag by default; an optional `digest` overrides the tag.
 
-Upgrade the traffic-proxy configuration together with the manager's Agentio
-control plane: the trust bundle is `agentio-ca-root-cert` and token audience is
-`agentio-ca`. Recreate workload Pods to receive the updated injection template.
+Upgrade the traffic-proxy configuration together with the Agentio control plane and recreate workload Pods for the `agentio-ca-root-cert` trust bundle and `agentio-ca` token audience.
 
 ## Agent Runtime Injection
 

@@ -65,35 +65,34 @@ The following table lists the configurable parameters of the agents-sandbox-mana
 | `gateway.envoy.listener.port`                | Envoy listener port                           | `10000`                                                                                                                                                       |
 | `gateway.envoy.logLevel`                     | Envoy log level                               | `warn`                                                                                                                                                        |
 | `gateway.envoy.concurrency`                  | Envoy worker thread concurrency               | `4`                                                                                                                                                           |
-| `agentio.enabled` | Deploy the embedded Agentio control plane | `false` |
-| `agentio.global.registry` | Registry for Agentio images; empty inherits image.registry | `""` |
-| `agentio.global.namespace` | Agentio control-plane namespace | `sandbox-system` |
-| `agentio.global.trustDomain` | Workload identity trust domain | `cluster.local` |
-| `agentio.global.clusterDomain` | Kubernetes service DNS domain | `cluster.local` |
-| `agentio.global.clusterId` | Agentio cluster identifier | `Kubernetes` |
-| `agentio.agentiod.ca.trustBundleConfigMapName` | CA trust bundle distributed to traffic proxies | `agentio-ca-root-cert` |
-| `agentio.agentiod.replicaCount` | Agentio control-plane replicas | `1` |
-| `agentio.agentiod.image.registry` | Control-plane registry; empty inherits agentio.global.registry | `""` |
-| `agentio.agentiod.image.repository` | Control-plane repository | `openkruise/agentiod` |
-| `agentio.agentiod.image.tag` | Fixed Agentio release image tag | `0.2.0` |
-| `agentio.agentiod.image.digest` | Optional digest override; takes precedence over tag | `""` |
-| `agentio.agentiod.resources` | Control-plane resource requests | `500m CPU, 512Mi` |
-| `agentio.epe.mode` | EPE deployment mode: disabled, managed, or external | `managed` |
-| `agentio.epe.image.registry` | EPE registry; empty inherits agentio.global.registry | `""` |
-| `agentio.epe.image.repository` | EPE repository | `openkruise/agentio-epe` |
-| `agentio.epe.image.tag` | Fixed Agentio release image tag | `0.2.0` |
-| `agentio.epe.image.digest` | Optional digest override; takes precedence over tag | `""` |
-| `agentio.egressGateway.mode` | Gateway mode: disabled, static, or gatewayAPI | `static` |
-| `agentio.egressGateway.image.registry` | Gateway registry; empty inherits agentio.global.registry | `""` |
-| `agentio.egressGateway.image.repository` | Gateway repository | `openkruise/proxyv2` |
-| `agentio.egressGateway.image.tag` | Fixed Agentio release image tag | `0.2.0` |
-| `agentio.egressGateway.image.digest` | Optional digest override; takes precedence over tag | `""` |
-| `agentio.agentiod.config.values` | Overrides for the Agentio configuration | `{}` |
+| `agentio.enabled`                            | Deploy the embedded Agentio control plane     | `false`                                                                                                                                                       |
+| `agentio.global.registry`                    | Default registry for Agentio images; empty inherits `image.registry` | `""`                                                                                                                                         |
+| `agentio.global.namespace`                   | Agentio control-plane namespace               | `sandbox-system`                                                                                                                                              |
+| `agentio.global.trustDomain`                 | Agentio workload identity trust domain        | `cluster.local`                                                                                                                                               |
+| `agentio.global.clusterDomain`               | Kubernetes service DNS domain                 | `cluster.local`                                                                                                                                               |
+| `agentio.global.clusterId`                   | Agentio cluster identifier                    | `Kubernetes`                                                                                                                                                  |
+| `agentio.agentiod.ca.trustBundleConfigMapName` | CA trust bundle distributed to traffic proxies | `agentio-ca-root-cert`                                                                                                                                        |
+| `agentio.agentiod.replicaCount`              | Agentio control-plane replicas                | `1`                                                                                                                                                           |
+| `agentio.agentiod.image.registry`            | Agentio control-plane image registry; empty inherits `agentio.global.registry` | `""`                                                                                |
+| `agentio.agentiod.image.repository`          | Agentio control-plane image repository        | `openkruise/agentiod`                                                                                                                                         |
+| `agentio.agentiod.image.tag`                 | Agentio control-plane image tag               | `0.2.0`                                                                                                                                                       |
+| `agentio.agentiod.image.digest`              | Optional digest override; takes precedence over tag | `""`                                                                                                                                                          |
+| `agentio.agentiod.resources`                 | Control-plane resource requests               | `500m CPU, 512Mi`                                                                                                                                             |
+| `agentio.epe.mode`                           | EPE deployment mode: disabled, managed, or external | `managed`                                                                                                                                                     |
+| `agentio.epe.image.registry`                 | EPE image registry; empty inherits `agentio.global.registry` | `""`                                                                                                                                        |
+| `agentio.epe.image.repository`               | EPE image repository                          | `openkruise/agentio-epe`                                                                                                                                    |
+| `agentio.epe.image.tag`                      | EPE image tag                                 | `0.2.0`                                                                                                                                                       |
+| `agentio.epe.image.digest`                   | Optional digest override; takes precedence over tag | `""`                                                                                                                                                          |
+| `agentio.egressGateway.mode`                 | Gateway mode: disabled, static, or gatewayAPI | `static`                                                                                                                                                      |
+| `agentio.egressGateway.image.registry`       | Egress gateway proxy image registry; empty inherits `agentio.global.registry` | `""`                                                                             |
+| `agentio.egressGateway.image.repository`     | Egress gateway proxy image repository         | `openkruise/proxyv2`                                                                                                                                        |
+| `agentio.egressGateway.image.tag`            | Egress gateway proxy image tag                | `0.2.0`                                                                                                                                                       |
+| `agentio.egressGateway.image.digest`         | Optional digest override; takes precedence over tag | `""`                                                                                                                                                          |
+| `agentio.agentiod.config.values`             | Raw overrides for the Agentio configuration   | `{}`                                                                                                                                                          |
 
-The sandbox-manager integration intentionally excludes Agentio ambient mode and
-the Agentio sidecar injector. Kruise Agents injects the per-sandbox
-`traffic-proxy` from the `sandbox-injection-config` ConfigMap installed by the
-sandbox-controller chart.
+The sandbox-manager integration intentionally excludes Agentio ambient mode and the Agentio sidecar injector. Kruise Agents injects the per-sandbox `traffic-proxy` from the `sandbox-injection-config` ConfigMap installed by the sandbox-controller chart.
+
+With `agentio.enabled=true`, a static egress gateway and managed EPE are enabled by default, and the default egress policy routes all external traffic through that gateway. Override `agentio.agentiod.config.values.egressPolicies` to change the route, or set it to `[]` to remove it. Set `agentio.egressGateway.mode=disabled` and `agentio.epe.mode=disabled` to disable these components. Existing `agentio-config-primary` overrides still take precedence.
 
 Specify each parameter using the `--set key=value[,key=value]` argument. For example:
 
@@ -106,50 +105,12 @@ helm install agents-sandbox-manager . -n <namespace> openkruise/kruise-agents-sa
 
 ## Image Registry
 
-Images render as `<registry>/<repository>:<tag>` or, with a digest override,
-`<registry>/<repository>@<digest>`. The
-`registry` defaults to the chart-wide `image.registry`. The Agentio images
-resolve their registry through a longer chain: their own `image.registry`, then
-`agentio.global.registry`, then `image.registry`.
+Images render as `<registry>/<repository>:<tag>` or, with a digest override, `<registry>/<repository>@<digest>`. The `registry` defaults to the chart-wide `image.registry`. The Agentio images resolve their registry through a longer chain: their own `image.registry`, then `agentio.global.registry`, then `image.registry`.
 
-The registry prefix is dropped when the first path segment of a repository
-already names a host (it contains a `.` or a `:`), so setting
-`controller.repository` to `myreg.io/openkruise/sandbox-manager` keeps working
-without also clearing `image.registry`.
+The registry prefix is dropped when the first path segment of a repository already names a host (it contains a `.` or a `:`), so setting `controller.repository` to `myreg.io/openkruise/sandbox-manager` keeps working without also clearing `image.registry`.
 
-Agentio images default to the fixed `0.2.0` release tag and an empty `digest`.
-Registry mirrors must provide that tag. Set an image's `tag` to override its
-version, or supply `digest` to pin a specific manifest instead. Future Agentio
-synchronizations set these defaults to the synchronized release version.
+Agentio images use the fixed `0.2.0` tag by default; an optional `digest` overrides the tag.
 
-## Migrating Agentio 0.1 overrides
+## Upgrading Agentio
 
-The embedded integration now follows Agentio 0.2.0. Migrate existing values before
-upgrading; see the [Agentio integration guide](https://github.com/openkruise/agentio/blob/0.2.0/manifests/charts/OPENKRUISE.md#migrate-release-01-values)
-for the complete configuration changes.
-
-| Previous key | Agentio 0.2.0 key |
-| --- | --- |
-| `agentio.agentiod.replicas` | `agentio.agentiod.replicaCount` |
-| `agentio.epe.enabled: true` | `agentio.epe.mode: managed` |
-| `agentio.epe.replicas` | `agentio.epe.replicaCount` |
-| `agentio.egressGateway.gateways` | `agentio.egressGateway.mode: static` and `fullnameOverride` for one gateway |
-| `agentio.agentioConfig` | `agentio.agentiod.config.values` |
-| `agentio.global.meshInternalTrafficPolicy` | `agentio.agentiod.meshInternalTrafficPolicy` |
-
-The mesh-internal policy now defaults to `PEER_AWARE`. Set it to `PASSTHROUGH`
-explicitly if required. Workload proxies use the `agentio-ca-root-cert` trust
-bundle and `agentio-ca` token audience; upgrade the controller's traffic-proxy
-configuration with the manager and recreate workload Pods to receive it.
-
-### Default egress routing
-
-With `agentio.enabled=true`, the integration deploys a static egress gateway and
-managed EPE by default. A catch-all `GATEWAY` egress policy points to
-`agentio-egress.sandbox-system.svc.cluster.local`; the generated address follows
-gateway name, namespace, and cluster-domain overrides.
-
-Set `agentio.agentiod.config.values.egressPolicies` to replace the default route,
-including an empty list to remove it. Setting `agentio.egressGateway.mode=disabled`
-suppresses the default gateway route; set `agentio.epe.mode=disabled` to disable
-EPE as well. Existing `agentio-config-primary` overrides still take precedence.
+For upgrades from Agentio 0.1, migrate renamed values using the [Agentio integration guide](https://github.com/openkruise/agentio/blob/0.2.0/manifests/charts/OPENKRUISE.md#migrate-release-01-values). Upgrade the controller's traffic-proxy configuration together with the control plane and recreate workload Pods for the `agentio-ca-root-cert` trust bundle and `agentio-ca` token audience. The mesh-internal policy now defaults to `PEER_AWARE`.
