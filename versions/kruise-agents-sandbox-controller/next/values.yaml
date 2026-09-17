@@ -121,7 +121,7 @@ agentio:
     caCertConfigMap: agentio-ca-root-cert
     clusterDomain: cluster.local
     clusterId: Kubernetes
-    controlPlaneNamespace: agentio-system
+    controlPlaneNamespace: sandbox-system
     controlPlaneService: agentiod
     dnsCapture: true
     enableFirewallRules: true

@@ -67,7 +67,7 @@ The following table lists the configurable parameters of the agents-sandbox-mana
 | `gateway.envoy.concurrency`                  | Envoy worker thread concurrency               | `4`                                                                                                                                                           |
 | `agentio.enabled` | Deploy the embedded Agentio control plane | `false` |
 | `agentio.global.registry` | Registry for Agentio images; empty inherits image.registry | `""` |
-| `agentio.global.namespace` | Agentio control-plane namespace | `agentio-system` |
+| `agentio.global.namespace` | Agentio control-plane namespace | `sandbox-system` |
 | `agentio.global.trustDomain` | Workload identity trust domain | `cluster.local` |
 | `agentio.global.clusterDomain` | Kubernetes service DNS domain | `cluster.local` |
 | `agentio.global.clusterId` | Agentio cluster identifier | `Kubernetes` |

@@ -230,7 +230,7 @@ agentio:
     trustDomain: cluster.local
     clusterDomain: cluster.local
     caCertConfigMap: agentio-ca-certs
-    namespace: agentio-system
+    namespace: sandbox-system
     createNamespace: true
     registry: ""
   agentiod:
