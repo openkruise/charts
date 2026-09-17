@@ -75,19 +75,19 @@ The following table lists the configurable parameters of the agents-sandbox-mana
 | `agentio.agentiod.replicaCount` | Agentio control-plane replicas | `1` |
 | `agentio.agentiod.image.registry` | Control-plane registry; empty inherits agentio.global.registry | `""` |
 | `agentio.agentiod.image.repository` | Control-plane repository | `openkruise/agentiod` |
-| `agentio.agentiod.image.tag` | Tag used when digest is empty; defaults to agentio.global.tag | `""` |
-| `agentio.agentiod.image.digest` | Control-plane digest from the Agentio 0.2.0 BOM | `See values.yaml` |
+| `agentio.agentiod.image.tag` | Fixed Agentio release image tag | `0.2.0` |
+| `agentio.agentiod.image.digest` | Optional digest override; takes precedence over tag | `""` |
 | `agentio.agentiod.resources` | Control-plane resource requests | `500m CPU, 512Mi` |
 | `agentio.epe.mode` | EPE deployment mode: disabled, managed, or external | `disabled` |
 | `agentio.epe.image.registry` | EPE registry; empty inherits agentio.global.registry | `""` |
 | `agentio.epe.image.repository` | EPE repository | `openkruise/agentio-epe` |
-| `agentio.epe.image.tag` | EPE tag used when digest is empty | `""` |
-| `agentio.epe.image.digest` | EPE digest from the Agentio 0.2.0 BOM | `See values.yaml` |
+| `agentio.epe.image.tag` | Fixed Agentio release image tag | `0.2.0` |
+| `agentio.epe.image.digest` | Optional digest override; takes precedence over tag | `""` |
 | `agentio.egressGateway.mode` | Gateway mode: disabled, static, or gatewayAPI | `disabled` |
 | `agentio.egressGateway.image.registry` | Gateway registry; empty inherits agentio.global.registry | `""` |
 | `agentio.egressGateway.image.repository` | Gateway repository | `openkruise/proxyv2` |
-| `agentio.egressGateway.image.tag` | Gateway tag used when digest is empty | `""` |
-| `agentio.egressGateway.image.digest` | Gateway digest from the Agentio 0.2.0 BOM | `See values.yaml` |
+| `agentio.egressGateway.image.tag` | Fixed Agentio release image tag | `0.2.0` |
+| `agentio.egressGateway.image.digest` | Optional digest override; takes precedence over tag | `""` |
 | `agentio.agentiod.config.values` | Overrides for the Agentio configuration | `{}` |
 
 The sandbox-manager integration intentionally excludes Agentio ambient mode and
@@ -106,7 +106,7 @@ helm install agents-sandbox-manager . -n <namespace> openkruise/kruise-agents-sa
 
 ## Image Registry
 
-Images render as `<registry>/<repository>:<tag>` or, for pinned Agentio images,
+Images render as `<registry>/<repository>:<tag>` or, with a digest override,
 `<registry>/<repository>@<digest>`. The
 `registry` defaults to the chart-wide `image.registry`. The Agentio images
 resolve their registry through a longer chain: their own `image.registry`, then
@@ -117,9 +117,10 @@ already names a host (it contains a `.` or a `:`), so setting
 `controller.repository` to `myreg.io/openkruise/sandbox-manager` keeps working
 without also clearing `image.registry`.
 
-Agentio 0.2.0 pins all images by digest. A registry mirror must contain the same
-manifests. To use a tag override, clear the corresponding image's `digest` and
-set its `tag`; changing only `tag` does not override a digest.
+Agentio images default to the fixed `0.2.0` release tag and an empty `digest`.
+Registry mirrors must provide that tag. Set an image's `tag` to override its
+version, or supply `digest` to pin a specific manifest instead. Future Agentio
+synchronizations set these defaults to the synchronized release version.
 
 ## Migrating Agentio 0.1 overrides
 

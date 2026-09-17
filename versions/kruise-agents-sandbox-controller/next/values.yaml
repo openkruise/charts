@@ -131,19 +131,19 @@ agentio:
     firewallBackend: auto
     healthProbeRewrite: true
     image:
-      digest: sha256:0b21b08212ca3c9a63bb161181cb97873b7ad2b7c7c2977e7b98dbfbeb4b1067
+      digest: ""
       registry: ""
       repository: openkruise/ztunnel
-      tag: ""
+      tag: 0.2.0
     imagePullPolicy: IfNotPresent
     includeInboundPorts: '*'
     includeOutboundIPRanges: '*'
     includeOutboundPorts: ""
     initImage:
-      digest: sha256:90149ed0be522e6ffa9f00d7d52076efbe12f9fd79af7c61e499d058c5312a38
+      digest: ""
       registry: ""
       repository: openkruise/proxy-init
-      tag: ""
+      tag: 0.2.0
     initResources:
       limits:
         cpu: "1"

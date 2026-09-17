@@ -238,10 +238,10 @@ agentio:
     fullnameOverride: ""
     replicaCount: 1
     image:
-      digest: sha256:1191d241c4db5a7a81908c9ab4b190bd85ff1d9ad264a40a556abc3740878ceb
+      digest: ""
       registry: ""
       repository: openkruise/agentiod
-      tag: ""
+      tag: 0.2.0
     serviceAccount:
       create: true
       name: ""
@@ -315,10 +315,10 @@ agentio:
     nameOverride: agentio-egress
     fullnameOverride: ""
     image:
-      digest: sha256:850848747fa0481a31b0f01d33c7202305a9c2df50d745bdaa2684bb635de098
+      digest: ""
       registry: ""
       repository: openkruise/proxyv2
-      tag: ""
+      tag: 0.2.0
     tokenAudience: agentio-ca
     replicaCount: 2
     serviceAccount:
@@ -375,10 +375,10 @@ agentio:
     nameOverride: agentio-epe
     fullnameOverride: ""
     image:
-      digest: sha256:7264636dfaaa32e59de877a5ff787d39733a54b1bd6200d2092917b7cea61e14
+      digest: ""
       registry: ""
       repository: openkruise/agentio-epe
-      tag: ""
+      tag: 0.2.0
     replicaCount: 1
     serviceAccount:
       create: true
