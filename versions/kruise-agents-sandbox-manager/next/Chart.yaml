@@ -33,5 +33,8 @@ keywords:
   - console-visibility:false
 annotations:
   artifacthub.io/changes: |
+    - "[Changed]: enable the Agentio egress gateway and EPE by default with a catch-all gateway route"
+    - "[Changed]: default the Agentio control plane and traffic-proxy connection to sandbox-system"
+    - "[Changed]: embed Agentio 0.2.0 with fixed 0.2.0 image tags while preserving chart-wide image.registry overrides"
     - "[Added]: resolve every image in the chart from the chart-wide image.registry plus each image's repository and tag"
     - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"

@@ -39,17 +39,23 @@ The following table lists the configurable parameters of the agents-sandbox-cont
 | `agentRuntime.image.pullPolicy` | Injected agent-runtime sidecar image pull policy | `IfNotPresent` |
 | `commitJob.image.repository` | Image repository of the Commit job pods | `openkruise/commit-job` |
 | `commitJob.image.tag` | Image tag of the Commit job pods | `v0.3.0` |
-| `agentio.trafficProxy.controlPlaneNamespace` | Namespace containing the Agentio control plane | `agentio-system` |
+| `agentio.trafficProxy.controlPlaneNamespace` | Namespace containing the Agentio control plane | `sandbox-system` |
 | `agentio.trafficProxy.controlPlaneService` | Agentio control-plane Service name | `agentiod` |
 | `agentio.trafficProxy.xdsAddress` | Explicit XDS address; generated from service and namespace when empty | `""` |
 | `agentio.trafficProxy.caAddress` | Explicit CA address; generated from service and namespace when empty | `""` |
-| `agentio.trafficProxy.caCertConfigMap` | CA ConfigMap mounted in injected workload namespaces | `agentio-ca-certs` |
+| `agentio.trafficProxy.caCertConfigMap` | CA ConfigMap mounted in injected workload namespaces | `agentio-ca-root-cert` |
 | `agentio.trafficProxy.image.registry` | Injected ztunnel image registry; empty inherits `image.registry` | `""` |
 | `agentio.trafficProxy.image.repository` | Injected ztunnel image repository | `openkruise/ztunnel` |
-| `agentio.trafficProxy.image.tag` | Injected ztunnel image tag | `0.1.1` |
+| `agentio.trafficProxy.image.tag` | Injected ztunnel image tag | `0.2.0` |
+| `agentio.trafficProxy.image.digest` | Optional digest override; takes precedence over tag | `""` |
 | `agentio.trafficProxy.initImage.registry` | Injected iptables init image registry; empty inherits `image.registry` | `""` |
 | `agentio.trafficProxy.initImage.repository` | Injected iptables init image repository | `openkruise/proxy-init` |
-| `agentio.trafficProxy.initImage.tag` | Injected iptables init image tag | `0.1.1` |
+| `agentio.trafficProxy.initImage.tag` | Injected iptables init image tag | `0.2.0` |
+| `agentio.trafficProxy.initImage.digest` | Optional digest override; takes precedence over tag | `""` |
+| `agentio.trafficProxy.clusterDomain` | Kubernetes service DNS domain | `cluster.local` |
+| `agentio.trafficProxy.tokenAudience` | Projected workload token audience | `agentio-ca` |
+| `agentio.trafficProxy.enableFirewallRules` | Enable traffic-proxy firewall rules | `true` |
+| `agentio.trafficProxy.firewallBackend` | Firewall backend selection | `auto` |
 | `agentio.trafficProxy.imagePullPolicy` | Traffic-proxy image pull policy | `IfNotPresent` |
 | `agentio.trafficProxy.healthProbeRewrite` | Rewrite health probes for injected traffic proxies | `true` |
 | `agentio.trafficProxy.dnsCapture` | Enable DNS capture | `true` |
@@ -58,18 +64,15 @@ The following table lists the configurable parameters of the agents-sandbox-cont
 
 ## Image Registry
 
-Every image in this chart is rendered as `<registry>/<repository>:<tag>`, where
-`registry` defaults to the chart-wide `image.registry`. The agentio images carry
-their own `registry` key, which overrides `image.registry` when non-empty.
+Images render as `<registry>/<repository>:<tag>` or, with a digest override, `<registry>/<repository>@<digest>`. The `registry` defaults to the chart-wide `image.registry`. The agentio images carry their own `registry` key, which overrides `image.registry` when non-empty.
 
-The registry prefix is dropped when the first path segment of a repository
-already names a host (it contains a `.` or a `:`), so setting
-`image.repository` to `myreg.io/openkruise/agent-sandbox-controller` keeps
-working without also clearing `image.registry`.
+The registry prefix is dropped when the first path segment of a repository already names a host (it contains a `.` or a `:`), so setting `image.repository` to `myreg.io/openkruise/agent-sandbox-controller` keeps working without also clearing `image.registry`.
 
-The `sandbox-injection-config` ConfigMap is installed in the sandbox-controller
-release namespace. `controlPlaneNamespace` is independent, so the injected
-traffic proxy can connect to Agentio running in another namespace.
+The `sandbox-injection-config` ConfigMap is installed in the sandbox-controller release namespace. `controlPlaneNamespace` is independent, so the injected traffic proxy can connect to Agentio running in another namespace.
+
+Agentio images use the fixed `0.2.0` tag by default; an optional `digest` overrides the tag.
+
+Upgrade the traffic-proxy configuration together with the Agentio control plane and recreate workload Pods for the `agentio-ca-root-cert` trust bundle and `agentio-ca` token audience.
 
 ## Agent Runtime Injection
 

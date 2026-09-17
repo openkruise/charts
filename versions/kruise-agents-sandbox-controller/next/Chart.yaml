@@ -17,6 +17,8 @@ keywords:
   - openkruise
 annotations:
   artifacthub.io/changes: |
+    - "[Changed]: default the Agentio control plane and traffic-proxy connection to sandbox-system"
+    - "[Changed]: sync the Agentio 0.2.0 traffic-proxy runtime with fixed 0.2.0 image tags and chart-wide image.registry overrides"
     - "[Added]: support injecting the agent-runtime native sidecar via the agent-runtime entry of the sandbox-injection-config ConfigMap"
     - "[Added]: configure the Commit job image through the AGENT_JOB_IMAGE environment variable of the controller"
     - "[Added]: make the sandboxupdateops, poolautoscaler and commit reconciler worker counts configurable"
