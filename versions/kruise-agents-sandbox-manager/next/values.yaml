@@ -311,7 +311,7 @@ agentio:
       enabled: false
     env: {}
   egressGateway:
-    mode: disabled
+    mode: static
     nameOverride: agentio-egress
     fullnameOverride: ""
     image:
@@ -371,7 +371,7 @@ agentio:
           port: 15008
           protocol: HBONE
   epe:
-    mode: disabled
+    mode: managed
     nameOverride: agentio-epe
     fullnameOverride: ""
     image:

@@ -78,12 +78,12 @@ The following table lists the configurable parameters of the agents-sandbox-mana
 | `agentio.agentiod.image.tag` | Fixed Agentio release image tag | `0.2.0` |
 | `agentio.agentiod.image.digest` | Optional digest override; takes precedence over tag | `""` |
 | `agentio.agentiod.resources` | Control-plane resource requests | `500m CPU, 512Mi` |
-| `agentio.epe.mode` | EPE deployment mode: disabled, managed, or external | `disabled` |
+| `agentio.epe.mode` | EPE deployment mode: disabled, managed, or external | `managed` |
 | `agentio.epe.image.registry` | EPE registry; empty inherits agentio.global.registry | `""` |
 | `agentio.epe.image.repository` | EPE repository | `openkruise/agentio-epe` |
 | `agentio.epe.image.tag` | Fixed Agentio release image tag | `0.2.0` |
 | `agentio.epe.image.digest` | Optional digest override; takes precedence over tag | `""` |
-| `agentio.egressGateway.mode` | Gateway mode: disabled, static, or gatewayAPI | `disabled` |
+| `agentio.egressGateway.mode` | Gateway mode: disabled, static, or gatewayAPI | `static` |
 | `agentio.egressGateway.image.registry` | Gateway registry; empty inherits agentio.global.registry | `""` |
 | `agentio.egressGateway.image.repository` | Gateway repository | `openkruise/proxyv2` |
 | `agentio.egressGateway.image.tag` | Fixed Agentio release image tag | `0.2.0` |
@@ -141,3 +141,15 @@ The mesh-internal policy now defaults to `PEER_AWARE`. Set it to `PASSTHROUGH`
 explicitly if required. Workload proxies use the `agentio-ca-root-cert` trust
 bundle and `agentio-ca` token audience; upgrade the controller's traffic-proxy
 configuration with the manager and recreate workload Pods to receive it.
+
+### Default egress routing
+
+With `agentio.enabled=true`, the integration deploys a static egress gateway and
+managed EPE by default. A catch-all `GATEWAY` egress policy points to
+`agentio-egress.sandbox-system.svc.cluster.local`; the generated address follows
+gateway name, namespace, and cluster-domain overrides.
+
+Set `agentio.agentiod.config.values.egressPolicies` to replace the default route,
+including an empty list to remove it. Setting `agentio.egressGateway.mode=disabled`
+suppresses the default gateway route; set `agentio.epe.mode=disabled` to disable
+EPE as well. Existing `agentio-config-primary` overrides still take precedence.

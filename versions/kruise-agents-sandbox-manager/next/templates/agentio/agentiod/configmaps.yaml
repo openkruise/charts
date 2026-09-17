@@ -11,6 +11,12 @@
 {{- $provider := dict "service" (include "agentio.epeService" .) "port" (include "agentio.epePort" . | int) "messageTimeout" .Values.agentio.epe.messageTimeout "request" $request "response" $response -}}
 {{- $_ := set $defaults "sandboxExtProc" $provider -}}
 {{- end -}}
+{{/* BEGIN INTEGRATION EGRESS DEFAULT */}}
+{{- if and (eq .Values.agentio.egressGateway.mode "static") (not (hasKey (.Values.agentio.agentiod.config.values | default dict) "egressPolicies")) -}}
+{{- $service := printf "%s.%s.svc.%s" (include "agentio.gateway.fullname" .) (include "agentio.namespace" .) .Values.agentio.global.clusterDomain -}}
+{{- $_ := set $defaults "egressPolicies" (list (dict "policy" "GATEWAY" "gateway" (dict "service" $service))) -}}
+{{- end -}}
+{{/* END INTEGRATION EGRESS DEFAULT */}}
 {{- $config := mergeOverwrite (deepCopy $defaults) (.Values.agentio.agentiod.config.values | default dict) -}}
 apiVersion: v1
 kind: ConfigMap
