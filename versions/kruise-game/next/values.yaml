@@ -15,6 +15,29 @@ kruiseGame:
     targetPort: 9876
   apiServerQps: 5
   apiServerQpsBurst: 10
+  # node selector for the controller-manager Pod
+  nodeSelector: {}
+  # tolerations for the controller-manager Pod
+  tolerations: []
+  # affinity rules for the controller-manager Pod
+  # for example, to spread replicas across different nodes:
+  # affinity:
+  #   podAntiAffinity:
+  #     preferredDuringSchedulingIgnoredDuringExecution:
+  #       - podAffinityTerm:
+  #           labelSelector:
+  #             matchExpressions:
+  #               - key: control-plane
+  #                 operator: In
+  #                 values:
+  #                   - kruise-game-controller-manager
+  #           topologyKey: kubernetes.io/hostname
+  #         weight: 100
+  affinity: {}
+
+# imagePullSecrets to pull the controller-manager image
+imagePullSecrets: []
+#  - name: my-registry-secret
 
 replicaCount: 1
 

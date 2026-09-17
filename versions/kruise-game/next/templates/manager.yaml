@@ -42,6 +42,22 @@ spec:
       labels:
         control-plane: {{ .Values.kruiseGame.fullname }}
     spec:
+{{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{- toYaml . | nindent 8 }}
+{{- end }}
+{{- with .Values.kruiseGame.affinity }}
+      affinity:
+{{- toYaml . | nindent 8 }}
+{{- end }}
+{{- if .Values.kruiseGame.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.kruiseGame.nodeSelector | indent 8 }}
+{{- end }}
+{{- if .Values.kruiseGame.tolerations }}
+      tolerations:
+{{ toYaml .Values.kruiseGame.tolerations | indent 8 }}
+{{- end }}
       #      securityContext:
       #        runAsNonRoot: true
       # TODO(user): For common cases that do not require escalating privileges
