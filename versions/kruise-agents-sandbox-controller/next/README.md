@@ -2,15 +2,15 @@
 
 ## Installation
 
-> **Server-side apply (SSA) is not supported by this chart.** The mutating and
-> validating webhook configurations carry `agents.kruise.io/webhook-template`
-> annotations that the sandbox-controller also reconciles at runtime under its
-> own field manager (`manager`). Installing or upgrading with Kubernetes
-> server-side apply therefore fails with a field-ownership conflict such as:
+> **Server-side apply (SSA) is not supported by this chart.** The
+> sandbox-controller manages the `template` annotation on the mutating and
+> validating webhook configurations at runtime under its own field manager
+> (`manager`). Applying the chart with Kubernetes server-side apply competes for
+> that same annotation and fails with a field-ownership conflict such as:
 >
 > ```
 > Apply failed with 1 conflict: conflict with "manager" using
-> admissionregistration.k8s.io/v1: .metadata.annotations...
+> admissionregistration.k8s.io/v1: .metadata.annotations.template
 > ```
 >
 > Disable server-side apply when using Helm. Do **not** pass `--server-side` to
