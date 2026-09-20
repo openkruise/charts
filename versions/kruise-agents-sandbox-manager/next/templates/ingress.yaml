@@ -30,9 +30,9 @@ spec:
         paths:
           - backend:
               service:
-                name: {{ include "sandbox-manager.fullname" $ }}
+                name: sandbox-manager
                 port:
-                  number: 7788
+                  number: 8080
             path: /
             pathType: Prefix
     # Data Plane
@@ -51,9 +51,9 @@ spec:
         paths:
           - backend:
               service:
-                name: {{ include "sandbox-manager.fullname" $ }}
+                name: sandbox-manager
                 port:
-                  number: 7788
+                  number: 8080
             path: /kruise/api
             pathType: Prefix
           - backend:
