@@ -79,6 +79,13 @@ static_resources:
                     - name: backend
                       domains: ["*"]
                       routes:
+                        # The manager route is only required by this repository's E2E setup.
+                        # Production deployments route only sandbox traffic through the gateway.
+                        - match:
+                            prefix: "/kruise/api"
+                          route:
+                            cluster: manager_cluster
+                            timeout: 600s
                         - match:
                             prefix: "/"
                           route:
@@ -180,6 +187,19 @@ static_resources:
           keepalive_time: {{ .Values.gateway.envoy.tcpKeepalive.keepaliveTime }}
           keepalive_interval: {{ .Values.gateway.envoy.tcpKeepalive.keepaliveInterval }}
       {{- end }}
+    - name: manager_cluster
+      type: STRICT_DNS
+      lb_policy: ROUND_ROBIN
+      connect_timeout: 5s
+      load_assignment:
+        cluster_name: manager_cluster
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: sandbox-manager.{{ .Release.Namespace }}.svc.cluster.local
+                      port_value: 8080
     {{- if .Values.gateway.envoy.prometheus.enabled }}
     - name: admin_cluster
       type: STATIC
