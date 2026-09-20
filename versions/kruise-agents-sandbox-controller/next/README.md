@@ -1,5 +1,29 @@
 # Agents Sandbox Controller v0.3.0
 
+## Installation
+
+> **Server-side apply (SSA) is not supported by this chart.** The mutating and
+> validating webhook configurations carry `agents.kruise.io/webhook-template`
+> annotations that the sandbox-controller also reconciles at runtime under its
+> own field manager (`manager`). Installing or upgrading with Kubernetes
+> server-side apply therefore fails with a field-ownership conflict such as:
+>
+> ```
+> Apply failed with 1 conflict: conflict with "manager" using
+> admissionregistration.k8s.io/v1: .metadata.annotations...
+> ```
+>
+> Disable server-side apply when using Helm. Do **not** pass `--server-side` to
+> `helm install` / `helm upgrade` (Helm 3 uses client-side apply by default). If
+> you use Helm 4 or another tool that applies with SSA by default, turn SSA off:
+>
+> ```bash
+> helm upgrade --install agents-sandbox-controller next \
+>   -n sandbox-system \
+>   --set image.registry=<your-registry>
+>   # do NOT add --server-side
+> ```
+
 ## Configuration Parameters
 
 The following table lists the configurable parameters of the agents-sandbox-controller chart and their default values.
