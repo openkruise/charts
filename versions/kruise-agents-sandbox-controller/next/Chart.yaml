@@ -21,5 +21,4 @@ annotations:
     - "[Added]: configure the Commit job image through the AGENT_JOB_IMAGE environment variable of the controller"
     - "[Added]: make the sandboxupdateops, poolautoscaler and commit reconciler worker counts configurable"
     - "[Added]: resolve every image in the chart from the chart-wide image.registry plus each image's repository and tag"
-    - "[Fixed]: replace the conflicting webhook template placeholder with chart-owned desired templates and checksums"
     - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"
