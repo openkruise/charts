@@ -8,18 +8,10 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-    - name: http-envoy
-      port: {{ .Values.service.port }}
-      protocol: TCP
-      targetPort: 7788
     - name: manager
       port: 8080
       protocol: TCP
       targetPort: 8080
-    - name: grpc-extproc
-      protocol: TCP
-      port: 9002
-      targetPort: 9002
   selector:
     {{- include "sandbox-manager.selectorLabels" . | nindent 4 }}
 ---

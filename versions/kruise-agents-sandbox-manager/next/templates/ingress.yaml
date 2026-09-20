@@ -32,7 +32,7 @@ spec:
               service:
                 name: sandbox-manager
                 port:
-                  number: 7788
+                  number: 8080
             path: /
             pathType: Prefix
     # Data Plane
@@ -53,7 +53,7 @@ spec:
               service:
                 name: sandbox-manager
                 port:
-                  number: 7788
+                  number: 8080
             path: /kruise/api
             pathType: Prefix
           - backend:
