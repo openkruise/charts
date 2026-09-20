@@ -39,4 +39,7 @@ annotations:
     - "[Added]: resolve every image in the chart from the chart-wide image.registry plus each image's repository and tag"
     - "[Removed]: drop the envoy-proxy sidecar container and its envoy-config ConfigMap from the sandbox-manager deployment; the data plane is now served by sandbox-gateway"
     - "[Added]: support short sandbox IDs via controller.enableShortSandboxId and controller.shortSandboxIdPrefix"
+    - "[Changed]: pin the sandbox-manager control-plane Service name to sandbox-manager and expose only the manager HTTP port (8080)"
+    - "[Changed]: extract the sandbox-gateway envoy config into a checksummed named template so config changes restart the gateway, and drop the gateway /kruise/api manager_cluster route"
+    - "[Added]: make the sandbox-gateway envoy streamIdleTimeout and wakeTimeoutSeconds configurable"
     - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"
