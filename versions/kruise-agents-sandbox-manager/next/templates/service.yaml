@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "sandbox-manager.fullname" . }}
+  name: sandbox-manager
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "sandbox-manager.labels" . | nindent 4 }}

@@ -30,7 +30,7 @@ spec:
         paths:
           - backend:
               service:
-                name: {{ include "sandbox-manager.fullname" $ }}
+                name: sandbox-manager
                 port:
                   number: 7788
             path: /
@@ -51,7 +51,7 @@ spec:
         paths:
           - backend:
               service:
-                name: {{ include "sandbox-manager.fullname" $ }}
+                name: sandbox-manager
                 port:
                   number: 7788
             path: /kruise/api
