@@ -64,6 +64,12 @@ spec:
             - --max-claim-workers={{ int .Values.controller.maxClaimWorkers }}
             - --max-create-qps={{ int .Values.controller.maxCreateQPS }}
             - --ext-proc-max-concurrency={{ int .Values.controller.extProcMaxConcurrency }}
+            {{- if .Values.controller.enableShortSandboxId }}
+            - --enable-short-sandbox-id=true
+            {{- with .Values.controller.shortSandboxIdPrefix }}
+            - --short-sandbox-id-prefix={{ . }}
+            {{- end }}
+            {{- end }}
           ports:
             - containerPort: 8080
               name: http-manager

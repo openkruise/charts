@@ -15,7 +15,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.3.0
+version: 0.6.0
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -38,4 +38,5 @@ annotations:
     - "[Changed]: embed Agentio 0.2.0 with fixed 0.2.0 image tags while preserving chart-wide image.registry overrides"
     - "[Added]: resolve every image in the chart from the chart-wide image.registry plus each image's repository and tag"
     - "[Removed]: drop the envoy-proxy sidecar container and its envoy-config ConfigMap from the sandbox-manager deployment; the data plane is now served by sandbox-gateway"
+    - "[Added]: support short sandbox IDs via controller.enableShortSandboxId and controller.shortSandboxIdPrefix"
     - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"

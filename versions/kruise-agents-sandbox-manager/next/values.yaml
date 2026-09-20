@@ -47,6 +47,10 @@ controller:
   maxClaimWorkers: 100
   maxCreateQPS: 200
   extProcMaxConcurrency: 10000
+  # enableShortSandboxId turns on short, human-friendly sandbox identifiers.
+  # shortSandboxIdPrefix is optional and only applied when non-empty.
+  enableShortSandboxId: true
+  shortSandboxIdPrefix: ""
 
 service:
   type: ClusterIP
