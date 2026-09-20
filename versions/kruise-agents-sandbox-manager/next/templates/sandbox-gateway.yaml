@@ -17,10 +17,11 @@ spec:
       maxSurge: 25%
   template:
     metadata:
-      {{- with .Values.gateway.podAnnotations }}
       annotations:
+        checksum/config: {{ include "sandbox-gateway.envoyConfig" . | sha256sum }}
+        {{- with .Values.gateway.podAnnotations }}
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- end }}
       labels:
         {{- include "sandbox-gateway.selectorLabels" . | nindent 8 }}
         {{- include "sandbox-manager.peerLabels" . | nindent 8 }}

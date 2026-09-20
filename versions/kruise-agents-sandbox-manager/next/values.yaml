@@ -211,6 +211,7 @@ gateway:
       enableAuth: true
       trafficAccessTokenHeader: e2b-traffic-access-token
       enableJwtAuth: false
+      wakeTimeoutSeconds: 60
   service:
     type: ClusterIP
     port: 7788
