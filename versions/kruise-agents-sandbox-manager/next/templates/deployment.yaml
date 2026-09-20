@@ -106,52 +106,6 @@ spec:
               sleep:
                 seconds: {{ int .Values.gracefulShutdown.preStopSleepSeconds }}
           {{- end }}
-        - name: envoy-proxy
-          {{- with .Values.securityContext }}
-          securityContext:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
-          image: {{ include "sandbox-manager.image" (dict "root" $ "repository" .Values.proxy.repository "tag" .Values.proxy.tag) | quote }}
-          imagePullPolicy: {{ .Values.proxy.pullPolicy }}
-          args:
-            - "--config-path /etc/envoy/envoy.yaml"
-          livenessProbe:
-            tcpSocket:
-              port: 7788
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 3
-          readinessProbe:
-            tcpSocket:
-              port: 7788
-            initialDelaySeconds: 5
-            periodSeconds: 5
-            timeoutSeconds: 3
-            failureThreshold: 3
-          startupProbe:
-            tcpSocket:
-              port: 7788
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            failureThreshold: 30
-            timeoutSeconds: 5
-          ports:
-            - containerPort: 7788
-          volumeMounts:
-            - name: envoy-config
-              mountPath: /etc/envoy/envoy.yaml
-              subPath: envoy.yaml
-          {{- if gt (int .Values.gracefulShutdown.preStopSleepSeconds) 0 }}
-          lifecycle:
-            preStop:
-              sleep:
-                seconds: {{ int .Values.gracefulShutdown.preStopSleepSeconds }}
-          {{- end }}
-      volumes:
-        - name: envoy-config
-          configMap:
-            name: {{ include "sandbox-manager.fullname" . }}-envoy-config
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
