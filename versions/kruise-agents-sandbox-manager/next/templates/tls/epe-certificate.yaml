@@ -8,8 +8,10 @@
 # credential provider. cert-manager writes ca.crt/tls.crt/tls.key into the same
 # files Secret EPE already mounts at /etc/epe/credential-provider; the volume in
 # agentio/epe/deployment.yaml remaps tls.crt/tls.key to the client.crt/client.key
-# names the EPE loader reads. EPE runs in the agentio namespace, so issuerKind is
-# normally a ClusterIssuer. The credential provider must trust this CA.
+# names the EPE loader reads. The Certificate is created in the agentio
+# namespace, so the default namespaced Issuer requires the CA Issuer to live
+# there too; see tls.epe.issuerKind for the cross-namespace override. The
+# credential provider must trust this CA.
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
