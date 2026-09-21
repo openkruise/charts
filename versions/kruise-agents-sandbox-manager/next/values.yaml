@@ -282,17 +282,22 @@ tls:
     # agentio.epe.credentialProvider.mtls.source=files. The certificate is
     # written into the same files Secret EPE mounts, with keys remapped to the
     # client.crt/client.key/ca.crt names EPE reads.
-    # WARNING: EPE runs in the agentio namespace, so issuerKind must be a
-    # ClusterIssuer (or the CA must also be installed in that namespace). The
-    # external credential provider must trust this CA, and the ca.crt written is
-    # this CA — correct only if the provider's server certificate chains to it.
+    # The EPE Certificate is created in the agentio namespace, so the default
+    # namespaced Issuer only works when that namespace also holds the CA Issuer
+    # (agentio.global.namespace and the controller's namespace both default to
+    # sandbox-system, matching the same-namespace, one-Issuer topology). If you
+    # deploy agentio into a different namespace, either set issuerKind:
+    # ClusterIssuer and issuerName to an operator-provided ClusterIssuer, or
+    # replicate the CA Issuer into the agentio namespace. The external
+    # credential provider must trust this CA, and the ca.crt written is this CA —
+    # correct only if the provider's server certificate chains to it.
     enabled: false
     # -- Certificate resource name. Empty defaults to <epe-fullname>-mtls-client-cert.
     certificateName: ""
     # -- Certificate commonName. Empty defaults to system:<epe-fullname>.
     commonName: ""
     issuerName: sandbox-signing-issuer
-    issuerKind: ClusterIssuer
+    issuerKind: Issuer
     issuerGroup: cert-manager.io
     duration: 2160h
     renewBefore: 360h
