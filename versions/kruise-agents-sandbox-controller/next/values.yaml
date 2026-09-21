@@ -117,6 +117,53 @@ commitJob:
     repository: openkruise/commit-job
     tag: v0.3.0
 
+# -- Master switch for the cert-manager / trust-manager based TLS provisioning.
+# When false (default) none of the templates under templates/tls/ render and the
+# controller keeps its current plaintext runtime behavior. Requires cert-manager
+# and (for the CA Bundle) trust-manager to be installed in the cluster.
+enableTLS: false
+
+tls:
+  # -- Create the shared root CA (selfSigned Issuer -> CA Certificate -> CA
+  # Issuer). The controller chart owns the CA; the sandbox-manager chart sets
+  # this to false and references the same Issuer by name.
+  createCA: true
+  selfSignedIssuerName: sandbox-selfsigned-issuer
+  caCertificateName: sandbox-ca
+  # -- Secret holding the CA key pair (tls.crt/tls.key). Also the trust-manager
+  # Bundle source and the CA Issuer's signing material.
+  caSecretName: sandbox-ca-key-pair
+  signingIssuerName: sandbox-signing-issuer
+  caCommonName: sandbox-ca
+  caOrganization: openkruise
+  caDuration: 87600h # 10 years
+  # -- Leaf certificate lifetime (matches docs/best-practices/cert-manager.yaml).
+  certDuration: 2160h # 90 days
+  certRenewBefore: 360h # 15 days
+
+  # -- Controller -> agent-runtime client certificate.
+  runtimeClientCertName: sandbox-controller-runtime-client
+  runtimeClientCertSecretName: sandbox-controller-runtime-client-cert
+  runtimeClientCommonName: system:sandbox-controller-manager
+  # -- Mount point for --runtime-client-cert-dir; the volume remaps the
+  # cert-manager tls.crt/tls.key/ca.crt keys to client.crt/client.key/ca.crt.
+  runtimeClientCertDir: /etc/agent-runtime-client/certs
+
+  # -- agent-runtime server certificate injected into sandboxes.
+  agentRuntimeServerCertName: sandbox-agent-runtime-server
+  agentRuntimeServerCertSecretName: sandbox-agent-runtime-server-certs
+  # -- SAN the gateway/controller/manager use to reach the runtime.
+  agentRuntimeServerSAN: agentruntime.sandbox.agents.kruise.io
+
+  # -- trust-manager Bundle that distributes the CA as a ca.crt ConfigMap.
+  bundle:
+    enabled: true
+    name: sandbox-ca-bundle
+    configMapKey: ca.crt
+    # -- Empty selects every namespace. Narrow it (e.g. a label selector) to
+    # limit where the CA ConfigMap is written.
+    namespaceSelector: {}
+
 # BEGIN GENERATED AGENTIO TRAFFIC PROXY VALUES - DO NOT EDIT
 agentio:
   trafficProxy:

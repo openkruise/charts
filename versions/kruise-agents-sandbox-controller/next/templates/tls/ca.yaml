@@ -1,0 +1,57 @@
+{{- if and .Values.enableTLS .Values.tls.createCA }}
+{{- $ns := include "sandbox-controller.namespace" . }}
+{{- $tls := .Values.tls }}
+# Shared root CA for the sandbox stack.
+#
+# The controller chart owns the CA so that a single trust anchor signs both the
+# controller's runtime client certificate and the sandbox agent-runtime server
+# certificate it injects. The sandbox-manager chart references the same Issuer
+# by name (see its tls.signingIssuerName value); both releases must therefore be
+# installed into this namespace.
+#
+# Hierarchy (mirrors docs/best-practices/cert-manager.yaml):
+#   selfSigned Issuer -> CA Certificate (sandbox-ca-key-pair) -> CA Issuer
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ $tls.selfSignedIssuerName }}
+  namespace: {{ $ns }}
+  labels:
+    {{- include "sandbox-controller.labels" . | nindent 4 }}
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $tls.caCertificateName }}
+  namespace: {{ $ns }}
+  labels:
+    {{- include "sandbox-controller.labels" . | nindent 4 }}
+spec:
+  isCA: true
+  duration: {{ $tls.caDuration | quote }}
+  secretName: {{ $tls.caSecretName }}
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: {{ $tls.selfSignedIssuerName }}
+    kind: Issuer
+    group: cert-manager.io
+  commonName: {{ $tls.caCommonName }}
+  subject:
+    organizations:
+      - {{ $tls.caOrganization }}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ $tls.signingIssuerName }}
+  namespace: {{ $ns }}
+  labels:
+    {{- include "sandbox-controller.labels" . | nindent 4 }}
+spec:
+  ca:
+    secretName: {{ $tls.caSecretName }}
+{{- end }}

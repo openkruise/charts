@@ -1,0 +1,34 @@
+{{- if and .Values.enableTLS .Values.tls.epe.enabled .Values.agentio.enabled (eq .Values.agentio.epe.mode "managed") }}
+{{- if ne .Values.agentio.epe.credentialProvider.mtls.source "files" }}
+{{- fail "tls.epe.enabled requires agentio.epe.credentialProvider.mtls.source=files" }}
+{{- end }}
+{{- $tls := .Values.tls.epe }}
+{{- $epeName := include "agentio.epe.fullname" . }}
+# Client certificate the traffic-extension (EPE) presents to the external
+# credential provider. cert-manager writes ca.crt/tls.crt/tls.key into the same
+# files Secret EPE already mounts at /etc/epe/credential-provider; the volume in
+# agentio/epe/deployment.yaml remaps tls.crt/tls.key to the client.crt/client.key
+# names the EPE loader reads. EPE runs in the agentio namespace, so issuerKind is
+# normally a ClusterIssuer. The credential provider must trust this CA.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $tls.certificateName | default (printf "%s-mtls-client-cert" $epeName) }}
+  namespace: {{ include "agentio.namespace" . }}
+  labels:
+    {{- include "agentio.epe.labels" . | nindent 4 }}
+spec:
+  secretName: {{ include "agentio.epe.mtlsSecretName" . }}
+  duration: {{ $tls.duration | quote }}
+  renewBefore: {{ $tls.renewBefore | quote }}
+  commonName: {{ $tls.commonName | default (printf "system:%s" $epeName) | quote }}
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  usages:
+    - client auth
+  issuerRef:
+    name: {{ $tls.issuerName }}
+    kind: {{ $tls.issuerKind }}
+    group: {{ $tls.issuerGroup }}
+{{- end }}
