@@ -368,6 +368,20 @@ data:
               "name": "ENVD_URL",
               "value": "http://127.0.0.1:49983"
             }
+{{- if .Values.enableTLS }},
+            {
+              "name": "ENABLE_TLS",
+              "value": "true"
+            },
+            {
+              "name": "ENABLE_HTTP",
+              "value": "false"
+            },
+            {
+              "name": "TLS_CERT_DIR",
+              "value": "/etc/agent-runtime/certs"
+            }
+{{- end }}
           ],
           "image": {{ include "sandbox-controller.image" (dict "root" $ "repository" .Values.agentRuntime.image.repository "tag" .Values.agentRuntime.image.tag) | quote }},
           "imagePullPolicy": {{ .Values.agentRuntime.image.pullPolicy | quote }},
@@ -386,6 +400,13 @@ data:
               "mountPath": "/var/run/agent-helper",
               "name": "agent-helper"
             }
+{{- if .Values.enableTLS }},
+            {
+              "mountPath": "/etc/agent-runtime/certs",
+              "name": "agent-runtime-server-cert-volume",
+              "readOnly": true
+            }
+{{- end }}
           ]
         }
       ],
@@ -402,5 +423,14 @@ data:
           "emptyDir": {},
           "name": "agent-helper"
         }
+{{- if .Values.enableTLS }},
+        {
+          "name": "agent-runtime-server-cert-volume",
+          "secret": {
+            "defaultMode": 256,
+            "secretName": {{ .Values.tls.agentRuntimeServerCertSecretName | quote }}
+          }
+        }
+{{- end }}
       ]
     }

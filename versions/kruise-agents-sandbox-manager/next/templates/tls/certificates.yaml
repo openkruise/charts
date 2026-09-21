@@ -1,0 +1,94 @@
+{{- if .Values.enableTLS }}
+{{- $tls := .Values.tls }}
+{{- $domains := concat (list .Values.e2b.domain) (default (list) .Values.e2b.extraDomains) | compact | uniq }}
+# Ingress server certificate. Secret name matches ingress.certSecretName, which
+# the Ingress already references in its spec.tls block.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $tls.ingressCertName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sandbox-manager.labels" . | nindent 4 }}
+spec:
+  secretName: {{ .Values.ingress.certSecretName }}
+  duration: {{ $tls.certDuration | quote }}
+  renewBefore: {{ $tls.certRenewBefore | quote }}
+  commonName: {{ $tls.caCommonName | quote }}
+  subject:
+    organizations:
+      - {{ $tls.caOrganization }}
+  isCA: false
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  dnsNames:
+    {{- range $domains }}
+    - {{ printf "api.%s" . | quote }}
+    - {{ printf "*.%s" . | quote }}
+    - {{ . | quote }}
+    {{- end }}
+  issuerRef:
+    name: {{ $tls.signingIssuerName }}
+    kind: {{ $tls.signingIssuerKind }}
+    group: cert-manager.io
+---
+# Client certificate the sandbox-manager presents to a TLS-capable agent-runtime
+# (--runtime-client-cert-secret). cert-manager writes ca.crt/tls.crt/tls.key.
+# NOTE: the runtime client loader currently reads ca.crt/client.crt/client.key;
+# it only picks up the client key pair once it accepts the cert-manager key
+# names (openkruise/agents#992). ca.crt is honored today, so the manager already
+# verifies the runtime server certificate.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $tls.managerRuntimeClientCertName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sandbox-manager.labels" . | nindent 4 }}
+spec:
+  secretName: {{ $tls.managerRuntimeClientCertSecretName }}
+  duration: {{ $tls.certDuration | quote }}
+  renewBefore: {{ $tls.certRenewBefore | quote }}
+  commonName: {{ $tls.managerRuntimeClientCommonName }}
+  subject:
+    organizations:
+      - {{ $tls.caOrganization }}
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  usages:
+    - client auth
+  issuerRef:
+    name: {{ $tls.signingIssuerName }}
+    kind: {{ $tls.signingIssuerKind }}
+    group: cert-manager.io
+---
+# Client certificate the sandbox-gateway (envoy) presents when it originates
+# mTLS to the sandbox agent-runtime. The gateway reads tls.crt/tls.key/ca.crt,
+# which are exactly the keys cert-manager writes, so this works as-is.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $tls.gatewayRuntimeClientCertName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sandbox-gateway.labels" . | nindent 4 }}
+spec:
+  secretName: {{ $tls.gatewayRuntimeClientCertSecretName }}
+  duration: {{ $tls.certDuration | quote }}
+  renewBefore: {{ $tls.certRenewBefore | quote }}
+  commonName: {{ $tls.gatewayRuntimeClientCommonName }}
+  subject:
+    organizations:
+      - {{ $tls.caOrganization }}
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  usages:
+    - client auth
+  issuerRef:
+    name: {{ $tls.signingIssuerName }}
+    kind: {{ $tls.signingIssuerKind }}
+    group: cert-manager.io
+{{- end }}

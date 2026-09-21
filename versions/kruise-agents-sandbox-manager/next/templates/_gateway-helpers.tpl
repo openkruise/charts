@@ -110,7 +110,7 @@ static_resources:
                           enable-jwt-auth: true
                           traffic-access-token-header: {{ .Values.gateway.envoy.pluginConfig.trafficAccessTokenHeader }}
                           {{- end }}
-                          enable-runtime-mtls: false
+                          enable-runtime-mtls: {{ .Values.enableTLS }}
                           enable-wake-on-traffic: true
                           wake-timeout-seconds: {{ int .Values.gateway.envoy.pluginConfig.wakeTimeoutSeconds }}
                   - name: envoy.filters.http.router
@@ -186,6 +186,26 @@ static_resources:
           keepalive_probes: {{ .Values.gateway.envoy.tcpKeepalive.keepaliveProbes }}
           keepalive_time: {{ .Values.gateway.envoy.tcpKeepalive.keepaliveTime }}
           keepalive_interval: {{ .Values.gateway.envoy.tcpKeepalive.keepaliveInterval }}
+      {{- end }}
+      {{- if .Values.enableTLS }}
+      # Originate mTLS to the sandbox agent-runtime. The gateway presents its
+      # client certificate and validates the runtime server cert (SNI/SAN
+      # agentruntime.sandbox.agents.kruise.io) against the shared CA.
+      transport_socket:
+        name: envoy.transport_sockets.tls
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+          sni: {{ .Values.tls.agentRuntimeServerSAN }}
+          auto_sni_san_validation: true
+          common_tls_context:
+            tls_certificates:
+              - certificate_chain:
+                  filename: {{ .Values.tls.gatewayRuntimeMtlsDir }}/tls.crt
+                private_key:
+                  filename: {{ .Values.tls.gatewayRuntimeMtlsDir }}/tls.key
+            validation_context:
+              trusted_ca:
+                filename: {{ .Values.tls.gatewayRuntimeMtlsDir }}/ca.crt
       {{- end }}
     - name: manager_cluster
       type: STRICT_DNS

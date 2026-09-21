@@ -219,6 +219,84 @@ gateway:
     annotations: { }
     labels: { }
 
+# -- Master switch for cert-manager/trust-manager based TLS. When true, the
+# chart issues the ingress server certificate, the manager's runtime client
+# certificate, and the gateway's runtime mTLS client certificate, and turns on
+# runtime mTLS in the gateway envoy config. The shared root CA (Issuer and CA
+# Certificate) is owned by the sandbox-controller chart and must be installed in
+# the same namespace; this chart only references the signing Issuer by name.
+enableTLS: false
+
+tls:
+  # -- Reference to the CA Issuer created by the sandbox-controller chart
+  # (same-namespace, one-Issuer topology). Not created here.
+  signingIssuerName: sandbox-signing-issuer
+  signingIssuerKind: Issuer
+  # -- Used as the ingress certificate commonName and as the subject
+  # organization on issued certificates. Mirrors the controller CA values.
+  caCommonName: sandbox-ca
+  caOrganization: openkruise
+  certDuration: 2160h
+  certRenewBefore: 360h
+  # -- Ingress server certificate. Its Secret name must match
+  # ingress.certSecretName so the Ingress spec.tls picks it up.
+  ingressCertName: sandbox-manager-ingress-cert
+  # -- Client certificate the manager presents to a TLS-capable agent-runtime.
+  managerRuntimeClientCertName: sandbox-manager-runtime-client
+  managerRuntimeClientCertSecretName: sandbox-manager-runtime-client-cert
+  managerRuntimeClientCommonName: system:sandbox-manager
+  # -- Client certificate the gateway (envoy) presents when originating runtime
+  # mTLS to the sandbox agent-runtime.
+  gatewayRuntimeClientCertName: sandbox-gateway-runtime-client
+  gatewayRuntimeClientCertSecretName: sandbox-gateway-runtime-client-cert
+  gatewayRuntimeClientCommonName: system:sandbox-gateway
+  # -- Directory where the gateway runtime mTLS Secret is mounted; referenced by
+  # the envoy transport_socket in the gateway config.
+  gatewayRuntimeMtlsDir: /var/run/sandbox-gateway/runtime-mtls
+  # -- SAN the agent-runtime server certificate carries. The gateway envoy uses
+  # this as SNI and validates it via auto_sni_san_validation. Must match the
+  # controller chart's tls.agentRuntimeServerSAN.
+  agentRuntimeServerSAN: agentruntime.sandbox.agents.kruise.io
+  # -- OIDC/JWT verification for the gateway. Only applied when
+  # gateway.envoy.pluginConfig.enableJwtAuth is also true. The verifier reads
+  # the CA from a ConfigMap through the API server (it is not mounted), so the
+  # ConfigMap must exist in this namespace. Defaults point at the trust-manager
+  # Bundle ConfigMap created by the controller chart.
+  oidc:
+    # -- Absolute HTTPS discovery URL of the token issuer. Required when JWT
+    # auth is enabled; the verifier fails to initialize while empty.
+    discoveryUrl: ""
+    # -- ConfigMap holding the CA used to verify the issuer's TLS certificate.
+    caConfigMapName: sandbox-ca-bundle
+    caConfigMapKey: ca.crt
+    # -- Optional token clock skew override (e.g. 1m). Empty uses the default.
+    clockSkew: ""
+  # -- Traffic-extension (EPE) credential-provider client certificate.
+  # Mesh workload certificates (egress gateway, traffic-proxy/ztunnel mTLS) are
+  # NOT issued here: agentiod/pilot issues them on demand as SPIFFE SVIDs and
+  # distributes the mesh root CA through the agentio-ca-certs ConfigMap, so
+  # cert-manager has no role in that path. This block only covers the EPE client
+  # certificate used for credential-provider mTLS.
+  epe:
+    # -- Opt-in. Requires agentio.epe.mode=managed and
+    # agentio.epe.credentialProvider.mtls.source=files. The certificate is
+    # written into the same files Secret EPE mounts, with keys remapped to the
+    # client.crt/client.key/ca.crt names EPE reads.
+    # WARNING: EPE runs in the agentio namespace, so issuerKind must be a
+    # ClusterIssuer (or the CA must also be installed in that namespace). The
+    # external credential provider must trust this CA, and the ca.crt written is
+    # this CA — correct only if the provider's server certificate chains to it.
+    enabled: false
+    # -- Certificate resource name. Empty defaults to <epe-fullname>-mtls-client-cert.
+    certificateName: ""
+    # -- Certificate commonName. Empty defaults to system:<epe-fullname>.
+    commonName: ""
+    issuerName: sandbox-signing-issuer
+    issuerKind: ClusterIssuer
+    issuerGroup: cert-manager.io
+    duration: 2160h
+    renewBefore: 360h
+
 # BEGIN GENERATED AGENTIO VALUES - DO NOT EDIT
 agentio:
   enabled: false

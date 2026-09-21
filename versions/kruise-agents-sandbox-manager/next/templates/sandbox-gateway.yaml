@@ -81,6 +81,20 @@ spec:
               value: "{{ .Release.Namespace }}"
             - name: PEER_LABEL_SELECTOR
               value: "agents.kruise.io/sandbox-manager-peer-finder={{ .Release.Name }}"
+            {{- if and .Values.enableTLS .Values.gateway.envoy.pluginConfig.enableJwtAuth }}
+            - name: OIDC_DISCOVERY_URL
+              value: {{ .Values.tls.oidc.discoveryUrl | quote }}
+            - name: OIDC_CA_CONFIGMAP_NAMESPACE
+              value: {{ .Release.Namespace | quote }}
+            - name: OIDC_CA_CONFIGMAP_NAME
+              value: {{ .Values.tls.oidc.caConfigMapName | quote }}
+            - name: OIDC_CA_CONFIGMAP_KEY
+              value: {{ .Values.tls.oidc.caConfigMapKey | quote }}
+            {{- with .Values.tls.oidc.clockSkew }}
+            - name: OIDC_CLOCK_SKEW
+              value: {{ . | quote }}
+            {{- end }}
+            {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.gateway.envoy.listener.port }}
@@ -115,10 +129,22 @@ spec:
               mountPath: /etc/envoy/envoy.yaml
               subPath: envoy.yaml
               readOnly: true
+            {{- if .Values.enableTLS }}
+            - name: runtime-mtls
+              mountPath: {{ .Values.tls.gatewayRuntimeMtlsDir }}
+              readOnly: true
+            {{- end }}
       volumes:
         - name: envoy-config
           configMap:
             name: envoy-config
+        {{- if .Values.enableTLS }}
+        # cert-manager writes tls.crt/tls.key/ca.crt, which are exactly the keys
+        # the envoy transport_socket reads, so the Secret is mounted as-is.
+        - name: runtime-mtls
+          secret:
+            secretName: {{ .Values.tls.gatewayRuntimeClientCertSecretName }}
+        {{- end }}
       {{- with .Values.gateway.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
