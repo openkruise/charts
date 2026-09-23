@@ -1,4 +1,4 @@
-# Agent Sandbox Manager v0.3.0
+# Agent Sandbox Manager v0.6.0-alpha3
 
 ## Configuration Parameters
 
@@ -9,7 +9,7 @@ The following table lists the configurable parameters of the agents-sandbox-mana
 | `replicaCount`                               | Number of sandbox-manager replicas            | `2`                                                                                                                                                           |
 | `image.registry`                             | Registry prepended to every image in this chart | `docker.io`                                                                                                                                                 |
 | `controller.repository`                      | sandbox-manager controller image repository   | `openkruise/sandbox-manager`                                                                                                                                  |
-| `controller.tag`                             | sandbox-manager controller image tag          | `v0.3.0`                                                                                                                                                      |
+| `controller.tag`                             | sandbox-manager controller image tag          | `v0.6.0-alpha3`                                                                                                                                                      |
 | `controller.pullPolicy`                      | Controller container image pull policy        | `IfNotPresent`                                                                                                                                                |
 | `controller.logLevel`                        | Controller log level                          | `5`                                                                                                                                                           |
 | `controller.infra`                           | Sandbox manager infrastructure type           | `sandbox-cr`                                                                                                                                                  |
@@ -46,7 +46,7 @@ The following table lists the configurable parameters of the agents-sandbox-mana
 | `affinity`                                   | Affinity for Pod scheduling                   | Preferred Pod anti-affinity                                                                                                                                   |
 | `gateway.replicaCount`                       | Number of sandbox-gateway replicas            | `2`                                                                                                                                                           |
 | `gateway.image.repository`                   | sandbox-gateway image repository              | `openkruise/sandbox-gateway`                                                                                                                                  |
-| `gateway.image.tag`                          | sandbox-gateway image tag                     | `v0.3.0`                                                                                                                                                      |
+| `gateway.image.tag`                          | sandbox-gateway image tag                     | `v0.6.0-alpha3`                                                                                                                                                      |
 | `gateway.image.pullPolicy`                   | sandbox-gateway image pull policy             | `IfNotPresent`                                                                                                                                                |
 | `gateway.resources.cpu`                      | sandbox-gateway container CPU resources       | `2`                                                                                                                                                           |
 | `gateway.resources.memory`                   | sandbox-gateway container memory resources    | `4Gi`                                                                                                                                                         |

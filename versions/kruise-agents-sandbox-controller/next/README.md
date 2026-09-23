@@ -1,4 +1,4 @@
-# Agents Sandbox Controller v0.3.0
+# Agents Sandbox Controller v0.6.0-alpha3
 
 ## Installation
 
@@ -33,7 +33,7 @@ The following table lists the configurable parameters of the agents-sandbox-cont
 | `replicaCount`               | Number of sandbox-controller replicas     | `2`                                                                                                                     |
 | `image.registry`             | Registry prepended to every image in this chart | `docker.io`                                                                                                       |
 | `image.repository`           | sandbox-controller image repository       | `openkruise/agent-sandbox-controller`                                                                                   |
-| `image.tag`                  | sandbox-controller image tag              | `v0.3.0`                                                                                                                |
+| `image.tag`                  | sandbox-controller image tag              | `v0.6.0-alpha3`                                                                                                                |
 | `image.pullPolicy`           | Controller image pull policy              | `IfNotPresent`                                                                                                          |
 | `webhook.port`               | Webhook service port                      | `9443`                                                                                                                  |
 | `metrics.port`               | Metrics service port                      | `8443`                                                                                                                  |
@@ -59,7 +59,7 @@ The following table lists the configurable parameters of the agents-sandbox-cont
 | `tolerations`                | Tolerations for Pod scheduling            | `[]`                                                                                                                    |
 | `affinity`                   | Affinity for Pod scheduling               | `{}`                                                                                                                    |
 | `agentRuntime.image.repository` | Injected agent-runtime sidecar image repository | `openkruise/agent-runtime` |
-| `agentRuntime.image.tag` | Injected agent-runtime sidecar image tag | `v0.2.0` |
+| `agentRuntime.image.tag` | Injected agent-runtime sidecar image tag | `v0.3.0` |
 | `agentRuntime.image.pullPolicy` | Injected agent-runtime sidecar image pull policy | `IfNotPresent` |
 | `commitJob.image.repository` | Image repository of the Commit job pods | `openkruise/commit-job` |
 | `commitJob.image.tag` | Image tag of the Commit job pods | `v0.3.0` |
@@ -120,7 +120,7 @@ When the runtime is declared, the controller injects:
 - A native sidecar container named `agent-runtime`, built from
   `agentRuntime.image.repository`, `agentRuntime.image.tag` and
   `agentRuntime.image.pullPolicy`. The default is the public image
-  `openkruise/agent-runtime:v0.2.0`. The sidecar carries its own `ENVD_DIR`
+  `openkruise/agent-runtime:v0.3.0`. The sidecar carries its own `ENVD_DIR`
   environment variable and mounts `envd-volume` at `/mnt/envd`.
 - `ENVD_DIR`, `GODEBUG` and `POD_UID` environment variables, the `envd-volume`
   (`/mnt/envd`) mount, and a `postStart` hook into the first business container.
