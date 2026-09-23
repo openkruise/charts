@@ -11,7 +11,7 @@ image:
   registry: docker.io
   repository: openkruise/agent-sandbox-controller
   pullPolicy: IfNotPresent
-  tag: v0.6.0-alpha2
+  tag: v0.6.0-alpha3
 
 # Webhook configuration
 webhook:
