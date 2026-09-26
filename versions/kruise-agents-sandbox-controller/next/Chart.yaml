@@ -22,5 +22,6 @@ annotations:
     - "[Added]: support injecting the agent-runtime native sidecar via the agent-runtime entry of the sandbox-injection-config ConfigMap"
     - "[Added]: configure the Commit job image through the AGENT_JOB_IMAGE environment variable of the controller"
     - "[Added]: make the sandboxupdateops, poolautoscaler and commit reconciler worker counts configurable"
+    - "[Added]: pass controller feature gates through the configurable --feature-gates argument"
     - "[Added]: resolve every image in the chart from the chart-wide image.registry plus each image's repository and tag"
     - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"

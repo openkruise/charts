@@ -47,6 +47,9 @@ controller:
   # Kubernetes API client rate limit
   clientQPS: 30000
   clientBurst: 60000
+  # Feature gates passed to --feature-gates, comma-separated key=value pairs
+  # (e.g. "Foo=true,Bar=false"). Empty means no --feature-gates flag is set.
+  featureGates: ""
 
 resources:
   limits:
