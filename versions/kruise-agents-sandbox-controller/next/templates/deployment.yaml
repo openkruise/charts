@@ -54,6 +54,8 @@ spec:
           env:
             - name: AGENT_JOB_IMAGE
               value: {{ include "sandbox-controller.image" (dict "root" $ "repository" .Values.commitJob.image.repository "tag" .Values.commitJob.image.tag) | quote }}
+            - name: SANDBOX_CONTROLLER_USERNAME
+              value: "system:sandbox-controller-manager"
           image: {{ include "sandbox-controller.image" (dict "root" $ "repository" .Values.image.repository "tag" .Values.image.tag) | quote }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           livenessProbe:
