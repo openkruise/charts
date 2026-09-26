@@ -46,6 +46,9 @@ spec:
             - --commit-workers={{ .Values.controller.workers.commitWorkers }}
             - --client-qps={{ .Values.controller.clientQPS }}
             - --client-burst={{ .Values.controller.clientBurst }}
+            {{- if .Values.controller.featureGates }}
+            - --feature-gates={{ .Values.controller.featureGates }}
+            {{- end }}
           command:
             - /manager
           env:
