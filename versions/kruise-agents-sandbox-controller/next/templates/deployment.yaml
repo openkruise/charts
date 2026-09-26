@@ -49,6 +49,9 @@ spec:
             {{- if .Values.controller.featureGates }}
             - --feature-gates={{ .Values.controller.featureGates }}
             {{- end }}
+            {{- if .Values.enableTLS }}
+            - --runtime-client-cert-dir={{ .Values.tls.runtimeClientCertDir }}
+            {{- end }}
           command:
             - /manager
           env:
@@ -82,6 +85,11 @@ spec:
           volumeMounts:
             - name: webhook-certs
               mountPath: /home/nonroot/sandbox-controller-webhook-certs
+            {{- if .Values.enableTLS }}
+            - name: runtime-client-cert
+              mountPath: {{ .Values.tls.runtimeClientCertDir }}
+              readOnly: true
+            {{- end }}
         {{- with .Values.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
@@ -94,6 +102,20 @@ spec:
       volumes:
         - name: webhook-certs
           emptyDir: { }
+        {{- if .Values.enableTLS }}
+        # cert-manager writes tls.crt/tls.key/ca.crt; the runtime client loader
+        # reads client.crt/client.key/ca.crt, so remap the keys at mount time.
+        - name: runtime-client-cert
+          secret:
+            secretName: {{ .Values.tls.runtimeClientCertSecretName }}
+            items:
+              - key: ca.crt
+                path: ca.crt
+              - key: tls.crt
+                path: client.crt
+              - key: tls.key
+                path: client.key
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

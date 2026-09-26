@@ -1,0 +1,31 @@
+{{- if and .Values.enableTLS .Values.tls.bundle.enabled }}
+{{- $tls := .Values.tls }}
+# trust-manager Bundle: publishes the shared root CA (from the cert-manager CA
+# Secret) as a ca.crt ConfigMap into every namespace selected below. Consumers
+# that only need to *verify* a peer (sandbox workload containers trusting the
+# gateway, the sandbox-gateway OIDC verifier trusting the identity provider)
+# mount this ConfigMap instead of the CA key-pair Secret.
+#
+# NOTE: trust-manager reads a Bundle's `secret` source from its own trust
+# namespace. Install trust-manager with --trust-namespace={{ include "sandbox-controller.namespace" . }}
+# (or otherwise make {{ $tls.caSecretName }} available there) so this Bundle can
+# resolve its source.
+apiVersion: trust.cert-manager.io/v1alpha1
+kind: Bundle
+metadata:
+  name: {{ $tls.bundle.name }}
+  labels:
+    {{- include "sandbox-controller.labels" . | nindent 4 }}
+spec:
+  sources:
+    - secret:
+        name: {{ $tls.caSecretName }}
+        key: tls.crt
+  target:
+    configMap:
+      key: {{ $tls.bundle.configMapKey }}
+    {{- with $tls.bundle.namespaceSelector }}
+    namespaceSelector:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+{{- end }}

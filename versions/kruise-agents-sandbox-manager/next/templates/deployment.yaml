@@ -70,6 +70,9 @@ spec:
             - --short-sandbox-id-prefix={{ . }}
             {{- end }}
             {{- end }}
+            {{- if .Values.enableTLS }}
+            - --runtime-client-cert-secret={{ .Release.Namespace }}/{{ .Values.tls.managerRuntimeClientCertSecretName }}
+            {{- end }}
           ports:
             - containerPort: 8080
               name: http-manager

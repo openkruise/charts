@@ -102,6 +102,17 @@ spec:
           secret:
             secretName: {{ include "agentio.epe.mtlsSecretName" . }}
             optional: true
+            {{- if and .Values.enableTLS .Values.tls.epe.enabled }}
+            # cert-manager writes tls.crt/tls.key/ca.crt; the EPE loader reads
+            # client.crt/client.key/ca.crt, so remap the key pair at mount time.
+            items:
+              - key: ca.crt
+                path: ca.crt
+              - key: tls.crt
+                path: client.crt
+              - key: tls.key
+                path: client.key
+            {{- end }}
       {{- end }}
       {{- with .Values.agentio.epe.nodeSelector }}
       nodeSelector:
