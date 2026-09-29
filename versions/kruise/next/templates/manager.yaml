@@ -72,7 +72,7 @@ spec:
           command:
             - /manager
           image: {{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag }}
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .Values.manager.image.pullPolicy }}
           securityContext:
             capabilities:
               drop:
@@ -226,7 +226,7 @@ spec:
         - --plugin-bin-dir=/credential-provider-plugin
 {{- end }}
         image: {{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag }}
-        imagePullPolicy: Always
+        imagePullPolicy: {{ .Values.manager.image.pullPolicy }}
         securityContext:
           capabilities:
             drop:

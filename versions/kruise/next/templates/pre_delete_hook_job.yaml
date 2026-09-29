@@ -73,12 +73,16 @@ spec:
         helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
         kruise: helm-finalizer
     spec:
+{{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{- toYaml . | nindent 6 }}
+{{- end }}
       restartPolicy: Never
       serviceAccountName: kruise-helm-hook
       containers:
         - name: pre-delete-job
           image: {{ .Values.helmHooks.image.repository }}:{{ .Values.helmHooks.image.tag }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: {{ .Values.helmHooks.image.pullPolicy }}
 ---
 # write a service account named kruise-helm-hook:
 apiVersion: v1
