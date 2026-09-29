@@ -33,10 +33,12 @@ webhooks:
           values:
             - aks
 {{- end }}
+        # Helm creates the installation namespace before the chart's Namespace template can apply its label, so exclude it by name too.
         - key: kubernetes.io/metadata.name
           operator: NotIn
           values:
             - kube-system
+            - {{ .Values.installation.namespace }}
     rules:
       - apiGroups:
           - ""
@@ -755,10 +757,12 @@ webhooks:
           values:
             - aks
 {{- end }}
+        # Helm creates the installation namespace before the chart's Namespace template can apply its label, so exclude it by name too.
         - key: kubernetes.io/metadata.name
           operator: NotIn
           values:
             - kube-system
+            - {{ .Values.installation.namespace }}
     rules:
       - apiGroups:
           - ""
@@ -794,10 +798,12 @@ webhooks:
           values:
             - aks
 {{- end }}
+        # Helm creates the installation namespace before the chart's Namespace template can apply its label, so exclude it by name too.
         - key: kubernetes.io/metadata.name
           operator: NotIn
           values:
             - kube-system
+            - {{ .Values.installation.namespace }}
     rules:
       - apiGroups:
           - ""
