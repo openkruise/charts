@@ -1,0 +1,62 @@
+{{- if .Values.enableTLS }}
+{{- $ns := include "sandbox-controller.namespace" . }}
+{{- $tls := .Values.tls }}
+# Client certificate the controller presents when it calls a TLS-capable
+# agent-runtime over HTTPS (--runtime-client-cert-dir). cert-manager writes the
+# Secret with keys tls.crt/tls.key/ca.crt; the Deployment volume remaps them to
+# the client.crt/client.key/ca.crt filenames the runtime TLS loader reads.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $tls.runtimeClientCertName }}
+  namespace: {{ $ns }}
+  labels:
+    {{- include "sandbox-controller.labels" . | nindent 4 }}
+spec:
+  secretName: {{ $tls.runtimeClientCertSecretName }}
+  duration: {{ $tls.certDuration | quote }}
+  renewBefore: {{ $tls.certRenewBefore | quote }}
+  commonName: {{ $tls.runtimeClientCommonName }}
+  subject:
+    organizations:
+      - {{ $tls.caOrganization }}
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  usages:
+    - client auth
+  issuerRef:
+    name: {{ $tls.signingIssuerName }}
+    kind: Issuer
+    group: cert-manager.io
+---
+# Server certificate injected into every sandbox's agent-runtime sidecar
+# (TLS_CERT_DIR). The gateway and the controller/manager reach the runtime with
+# SNI agentruntime.sandbox.agents.kruise.io, so that name must be in the SANs.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $tls.agentRuntimeServerCertName }}
+  namespace: {{ $ns }}
+  labels:
+    {{- include "sandbox-controller.labels" . | nindent 4 }}
+spec:
+  secretName: {{ $tls.agentRuntimeServerCertSecretName }}
+  duration: {{ $tls.certDuration | quote }}
+  renewBefore: {{ $tls.certRenewBefore | quote }}
+  commonName: {{ $tls.agentRuntimeServerSAN }}
+  dnsNames:
+    - {{ $tls.agentRuntimeServerSAN }}
+  subject:
+    organizations:
+      - {{ $tls.caOrganization }}
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  usages:
+    - server auth
+  issuerRef:
+    name: {{ $tls.signingIssuerName }}
+    kind: Issuer
+    group: cert-manager.io
+{{- end }}
