@@ -23,7 +23,7 @@ The following table lists the configurable parameters of the kruise chart and th
 | `manager.replicas`                  | Replicas of kruise-controller-manager deployment               | `2`                         |
 | `manager.image.repository`          | Repository for kruise-manager image                            | `openkruise/kruise-manager` |
 | `manager.image.tag`                 | Tag for kruise-manager image                                   | `v1.9.0`                    |
-| `manager.resources.limits.cpu`      | CPU resource limit of kruise-manager container                 | `200m`                      |
+| `manager.image.pullPolicy`          | Image pull policy for kruise-manager and kruise-daemon         | `Always`                    |
 | `manager.resources.limits.memory`   | Memory resource limit of kruise-manager container              | `512Mi`                     |
 | `manager.resources.requests.cpu`    | CPU resource request of kruise-manager container               | `100m`                      |
 | `manager.resources.requests.memory` | Memory resource request of kruise-manager container            | `256Mi`                     |
@@ -34,6 +34,8 @@ The following table lists the configurable parameters of the kruise chart and th
 | `manager.nodeSelector`              | Node labels for kruise-manager pod                             | `{}`                        |
 | `manager.tolerations`               | Tolerations for kruise-manager pod                             | `[]`                        |
 | `manager.resyncPeriod`              | Resync period of informer kruise-manager, defaults no resync   | `0`                         |
+| `manager.restConfig.qps`            | QPS of kruise-manager client to kube-apiserver                 | `30`                        |
+| `manager.restConfig.burst`          | Burst of kruise-manager client to kube-apiserver               | `50`                        |
 | `manager.hostNetwork`               | Whether kruise-manager pod should run with hostnetwork         | `false`                     |
 | `manager.loggingFormat`             | Logging format, valid formats includes ` `(plain text), `json` | ` `                         |
 
@@ -45,7 +47,6 @@ The following table lists the configurable parameters of the kruise chart and th
 | `daemon.log.level`                            | Log level that kruise-daemon printed                                                                  | `4`                          |
 | `daemon.port`                                 | Port of metrics and healthz that kruise-daemon served                                                 | `10221`                      |
 | `daemon.pprofAddr`                            | Address of pprof served                                                                               | `localhost:10222`            |
-| `daemon.resources.limits.cpu`                 | CPU resource limit of kruise-daemon container                                                         | `50m`                        |
 | `daemon.resources.limits.memory`              | Memory resource limit of kruise-daemon container                                                      | `128Mi`                      |
 | `daemon.resources.requests.cpu`               | CPU resource request of kruise-daemon container                                                       | `0`                          |
 | `daemon.resources.requests.memory`            | Memory resource request of kruise-daemon container                                                    | `0`                          |

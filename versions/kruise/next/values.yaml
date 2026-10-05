@@ -33,6 +33,8 @@ manager:
   image:
     repository: openkruise/kruise-manager
     tag: v1.9.0
+    # imagePullPolicy for kruise-manager and kruise-daemon containers
+    pullPolicy: Always
   webhook:
     port: 9876
   metrics:
@@ -43,12 +45,18 @@ manager:
 
   resyncPeriod: "0"
 
+  # client-side rate limits of kruise-manager towards kube-apiserver
+  # (--rest-config-qps / --rest-config-burst). Raise them for large clusters.
+  restConfig:
+    qps: 30
+    burst: 50
+
   loggingFormat: ""
 
   # resources of kruise-manager container
+  # no CPU limit by default to avoid CFS throttling of the controller
   resources:
     limits:
-      cpu: 200m
       memory: 512Mi
     requests:
       cpu: 100m
@@ -90,7 +98,6 @@ daemon:
             - virtual-kubelet
   resources:
     limits:
-      cpu: 50m
       memory: 128Mi
     requests:
       cpu: "0"
