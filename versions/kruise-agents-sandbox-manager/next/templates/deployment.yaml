@@ -70,8 +70,20 @@ spec:
             - --short-sandbox-id-prefix={{ . }}
             {{- end }}
             {{- end }}
-            {{- if .Values.enableTLS }}
+            {{- if and .Values.enableTLS .Values.tls.runtime.enabled }}
             - --runtime-client-cert-secret={{ .Release.Namespace }}/{{ .Values.tls.managerRuntimeClientCertSecretName }}
+            {{- end }}
+            {{- if and .Values.enableTLS .Values.tls.peer.enabled }}
+            # Peer mTLS for the Manager<->Gateway cluster (openkruise/agents#967).
+            # Requires an image that includes #967; see tls.peer in values.yaml.
+            - --peer-tls-server-secret={{ .Release.Namespace }}/{{ .Values.tls.peer.serverCertSecretName }}
+            - --peer-tls-client-secret={{ .Release.Namespace }}/{{ .Values.tls.peer.managerClientCertSecretName }}
+            {{- with .Values.tls.peer.keySecretName }}
+            - --peer-key-secret={{ $.Release.Namespace }}/{{ . }}
+            {{- end }}
+            {{- with .Values.tls.peer.allowedClientCNs }}
+            - --peer-allowed-client-cns={{ . }}
+            {{- end }}
             {{- end }}
           ports:
             - containerPort: 8080

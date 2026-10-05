@@ -81,6 +81,22 @@ spec:
               value: "{{ .Release.Namespace }}"
             - name: PEER_LABEL_SELECTOR
               value: "agents.kruise.io/sandbox-manager-peer-finder={{ .Release.Name }}"
+            {{- if and .Values.enableTLS .Values.tls.peer.enabled }}
+            # Peer mTLS for the Manager<->Gateway cluster (openkruise/agents#967),
+            # read by the in-process Go peer server. Requires an image with #967.
+            - name: PEER_TLS_SERVER_SECRET
+              value: "{{ .Release.Namespace }}/{{ .Values.tls.peer.serverCertSecretName }}"
+            - name: PEER_TLS_CLIENT_SECRET
+              value: "{{ .Release.Namespace }}/{{ .Values.tls.peer.gatewayClientCertSecretName }}"
+            {{- with .Values.tls.peer.keySecretName }}
+            - name: PEER_KEY_SECRET
+              value: "{{ $.Release.Namespace }}/{{ . }}"
+            {{- end }}
+            {{- with .Values.tls.peer.allowedClientCNs }}
+            - name: PEER_ALLOWED_CLIENT_CNS
+              value: {{ . | quote }}
+            {{- end }}
+            {{- end }}
             {{- if and .Values.enableTLS .Values.gateway.envoy.pluginConfig.enableJwtAuth }}
             - name: OIDC_DISCOVERY_URL
               value: {{ .Values.tls.oidc.discoveryUrl | quote }}
@@ -129,7 +145,7 @@ spec:
               mountPath: /etc/envoy/envoy.yaml
               subPath: envoy.yaml
               readOnly: true
-            {{- if .Values.enableTLS }}
+            {{- if and .Values.enableTLS .Values.tls.runtime.enabled }}
             - name: runtime-mtls
               mountPath: {{ .Values.tls.gatewayRuntimeMtlsDir }}
               readOnly: true
@@ -138,7 +154,7 @@ spec:
         - name: envoy-config
           configMap:
             name: envoy-config
-        {{- if .Values.enableTLS }}
+        {{- if and .Values.enableTLS .Values.tls.runtime.enabled }}
         # cert-manager writes tls.crt/tls.key/ca.crt, which are exactly the keys
         # the envoy transport_socket reads, so the Secret is mounted as-is.
         - name: runtime-mtls

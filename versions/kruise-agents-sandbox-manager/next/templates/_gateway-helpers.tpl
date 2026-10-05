@@ -110,7 +110,7 @@ static_resources:
                           enable-jwt-auth: true
                           traffic-access-token-header: {{ .Values.gateway.envoy.pluginConfig.trafficAccessTokenHeader }}
                           {{- end }}
-                          enable-runtime-mtls: {{ .Values.enableTLS }}
+                          enable-runtime-mtls: {{ and .Values.enableTLS .Values.tls.runtime.enabled }}
                           enable-wake-on-traffic: true
                           wake-timeout-seconds: {{ int .Values.gateway.envoy.pluginConfig.wakeTimeoutSeconds }}
                   - name: envoy.filters.http.router
@@ -187,7 +187,7 @@ static_resources:
           keepalive_time: {{ .Values.gateway.envoy.tcpKeepalive.keepaliveTime }}
           keepalive_interval: {{ .Values.gateway.envoy.tcpKeepalive.keepaliveInterval }}
       {{- end }}
-      {{- if .Values.enableTLS }}
+      {{- if and .Values.enableTLS .Values.tls.runtime.enabled }}
       # Originate mTLS to the sandbox agent-runtime. The gateway presents its
       # client certificate and validates the runtime server cert (SNI/SAN
       # agentruntime.sandbox.agents.kruise.io) against the shared CA.

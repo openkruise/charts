@@ -368,7 +368,7 @@ data:
               "name": "ENVD_URL",
               "value": "http://127.0.0.1:49983"
             }
-{{- if .Values.enableTLS }},
+{{- if and .Values.enableTLS .Values.tls.runtime.enabled }},
             {
               "name": "ENABLE_TLS",
               "value": "true"
@@ -400,7 +400,7 @@ data:
               "mountPath": "/var/run/agent-helper",
               "name": "agent-helper"
             }
-{{- if .Values.enableTLS }},
+{{- if and .Values.enableTLS .Values.tls.runtime.enabled }},
             {
               "mountPath": "/etc/agent-runtime/certs",
               "name": "agent-runtime-server-cert-volume",
@@ -423,7 +423,7 @@ data:
           "emptyDir": {},
           "name": "agent-helper"
         }
-{{- if .Values.enableTLS }},
+{{- if and .Values.enableTLS .Values.tls.runtime.enabled }},
         {
           "name": "agent-runtime-server-cert-volume",
           "secret": {

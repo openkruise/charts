@@ -1,4 +1,4 @@
-{{- if .Values.enableTLS }}
+{{- if and .Values.enableTLS .Values.tls.runtime.enabled }}
 {{- $ns := include "sandbox-controller.namespace" . }}
 {{- $tls := .Values.tls }}
 # Client certificate the controller presents when it calls a TLS-capable

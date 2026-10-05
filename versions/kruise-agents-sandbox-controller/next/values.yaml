@@ -141,6 +141,19 @@ tls:
   certDuration: 2160h # 90 days
   certRenewBefore: 360h # 15 days
 
+  # -- Runtime mTLS between the control plane and the sandbox agent-runtime.
+  # OFF by default. enableTLS alone only provisions the shared CA, the
+  # trust-manager Bundle and (in the manager chart) the ingress certificate, all
+  # of which are inert against a plaintext runtime. Turning this on additionally
+  # issues the runtime client/server certificates AND activates the client-side
+  # TLS paths (--runtime-client-cert-dir here, the agent-runtime sidecar TLS env,
+  # and in the manager chart --runtime-client-cert-secret plus the gateway
+  # enable-runtime-mtls/transport_socket). Those paths fail against an
+  # agent-runtime that does not yet serve TLS, so enable this only once the
+  # agent-runtime image supports runtime TLS. Requires enableTLS.
+  runtime:
+    enabled: false
+
   # -- Controller -> agent-runtime client certificate.
   runtimeClientCertName: sandbox-controller-runtime-client
   runtimeClientCertSecretName: sandbox-controller-runtime-client-cert

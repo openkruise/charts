@@ -239,8 +239,22 @@ tls:
   certDuration: 2160h
   certRenewBefore: 360h
   # -- Ingress server certificate. Its Secret name must match
-  # ingress.certSecretName so the Ingress spec.tls picks it up.
+  # ingress.certSecretName so the Ingress spec.tls picks it up. Provisioned by
+  # enableTLS alone: external client -> ingress HTTPS is independent of the
+  # agent-runtime, so this is safe and effective today.
   ingressCertName: sandbox-manager-ingress-cert
+  # -- Runtime mTLS between the control plane (manager/gateway) and the sandbox
+  # agent-runtime. OFF by default. enableTLS alone only provisions the ingress
+  # certificate here (the shared CA and trust-manager Bundle live in the
+  # controller chart), all inert against a plaintext runtime. Turning this on
+  # additionally issues the manager/gateway runtime client certificates below AND
+  # activates --runtime-client-cert-secret plus the gateway enable-runtime-mtls /
+  # transport_socket. Those client paths fail against an agent-runtime that does
+  # not yet serve TLS, so enable only once the agent-runtime image supports
+  # runtime TLS. Requires enableTLS. Mirrors the controller chart's
+  # tls.runtime.enabled; both must be set together for the full runtime path.
+  runtime:
+    enabled: false
   # -- Client certificate the manager presents to a TLS-capable agent-runtime.
   managerRuntimeClientCertName: sandbox-manager-runtime-client
   managerRuntimeClientCertSecretName: sandbox-manager-runtime-client-cert
@@ -257,6 +271,41 @@ tls:
   # this as SNI and validates it via auto_sni_san_validation. Must match the
   # controller chart's tls.agentRuntimeServerSAN.
   agentRuntimeServerSAN: agentruntime.sandbox.agents.kruise.io
+  # -- Peer mTLS + memberlist gossip encryption for the Manager<->Gateway
+  # control-plane cluster (openkruise/agents#967). This secures the route-sync /
+  # gossip channel BETWEEN control-plane instances; it is independent of the
+  # agent-runtime data path and safe to enable on its own. Requires enableTLS
+  # (it reuses the shared CA and the tls.agentRuntimeServerSAN name).
+  # IMPORTANT: requires manager/gateway images that include #967. v0.6.0-alpha3
+  # predates it: an older sandbox-manager crashes on the unknown --peer-* flags
+  # (the gateway merely ignores unknown PEER_* env). Verify the image before
+  # enabling. cert-manager issues the peer certificates below, but the memberlist
+  # key Secret (keySecretName) must be created out-of-band because cert-manager
+  # does not issue raw symmetric keys.
+  peer:
+    enabled: false
+    # -- Peer TLS server certificate, shared by the manager and the gateway. Its
+    # SAN must be the fixed name the peer verifier expects
+    # (tls.agentRuntimeServerSAN) and it carries server auth only.
+    serverCertName: sandbox-peer-server
+    serverCertSecretName: sandbox-peer-server-cert
+    # -- Per-component peer TLS client certificates (client auth only). Each CN is
+    # what an optional allowedClientCNs allow-list matches against.
+    managerClientCertName: sandbox-peer-manager-client
+    managerClientCertSecretName: sandbox-peer-manager-client-cert
+    managerClientCommonName: system:sandbox-manager
+    gatewayClientCertName: sandbox-peer-gateway-client
+    gatewayClientCertSecretName: sandbox-peer-gateway-client-cert
+    gatewayClientCommonName: system:sandbox-gateway
+    # -- Optional memberlist gossip encryption: name of an existing Secret whose
+    # data key "key" holds exactly 32 bytes. Empty disables gossip encryption
+    # (peer TLS still applies). Both manager and gateway must reference the same
+    # Secret. cert-manager cannot create it; provide it out-of-band.
+    keySecretName: ""
+    # -- Optional comma-separated inbound client-identity allow-list matched
+    # against the client certificate CN or its DNS SANs. Empty accepts any client
+    # trusted by the peer server CA. Requires peer TLS.
+    allowedClientCNs: ""
   # -- OIDC/JWT verification for the gateway. Only applied when
   # gateway.envoy.pluginConfig.enableJwtAuth is also true. The verifier reads
   # the CA from a ConfigMap through the API server (it is not mounted), so the
