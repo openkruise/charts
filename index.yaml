@@ -3,6 +3,33 @@ entries:
   agents-sandbox-controller:
   - annotations:
       artifacthub.io/changes: |
+        - "[Changed]: default the Agentio control plane and traffic-proxy connection to sandbox-system"
+        - "[Changed]: sync the Agentio 0.2.0 traffic-proxy runtime with fixed 0.2.0 image tags and chart-wide image.registry overrides"
+        - "[Added]: support injecting the agent-runtime native sidecar via the agent-runtime entry of the sandbox-injection-config ConfigMap"
+        - "[Added]: configure the Commit job image through the AGENT_JOB_IMAGE environment variable of the controller"
+        - "[Added]: make the sandboxupdateops, poolautoscaler and commit reconciler worker counts configurable"
+        - "[Added]: pass controller feature gates through the configurable --feature-gates argument"
+        - "[Added]: resolve every image in the chart from the chart-wide image.registry plus each image's repository and tag"
+        - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"
+    apiVersion: v2
+    appVersion: v0.6.0-alpha4
+    created: "2026-10-07T09:28:15.655723004Z"
+    description: The Helm chart for Agents Sandbox Controller
+    digest: e6bd46b883f4691f33b24d2d4f11f806ea5dc5819541cbdc6214c578223bc334
+    keywords:
+    - agent
+    - sandbox
+    - controller
+    - kruise
+    - kubernetes
+    - openkruise
+    name: agents-sandbox-controller
+    type: application
+    urls:
+    - https://github.com/openkruise/charts/releases/download/agents-sandbox-controller-0.6.0-rc1/agents-sandbox-controller-0.6.0-rc1.tgz
+    version: 0.6.0-rc1
+  - annotations:
+      artifacthub.io/changes: |
         - "[Added]: support injecting the agent-runtime native sidecar via the agent-runtime entry of the sandbox-injection-config ConfigMap"
         - "[Added]: configure the Commit job image through the AGENT_JOB_IMAGE environment variable of the controller"
         - "[Added]: make the sandboxupdateops, poolautoscaler and commit reconciler worker counts configurable"
@@ -102,6 +129,36 @@ entries:
     - https://github.com/openkruise/charts/releases/download/agents-sandbox-controller-v0.1.0/agents-sandbox-controller-v0.1.0.tgz
     version: v0.1.0
   agents-sandbox-manager:
+  - annotations:
+      artifacthub.io/changes: |
+        - "[Changed]: enable the Agentio egress gateway and EPE by default with a catch-all gateway route"
+        - "[Changed]: default the Agentio control plane and traffic-proxy connection to sandbox-system"
+        - "[Changed]: embed Agentio 0.2.0 with fixed 0.2.0 image tags while preserving chart-wide image.registry overrides"
+        - "[Added]: resolve every image in the chart from the chart-wide image.registry plus each image's repository and tag"
+        - "[Removed]: drop the envoy-proxy sidecar container and its envoy-config ConfigMap from the sandbox-manager deployment; the data plane is now served by sandbox-gateway"
+        - "[Added]: support short sandbox IDs via controller.enableShortSandboxId and controller.shortSandboxIdPrefix"
+        - "[Changed]: pin the sandbox-manager control-plane Service name to sandbox-manager and expose only the manager HTTP port (8080)"
+        - "[Changed]: extract the sandbox-gateway envoy config into a checksummed named template so config changes restart the gateway"
+        - "[Added]: make the sandbox-gateway envoy streamIdleTimeout and wakeTimeoutSeconds configurable"
+        - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"
+    apiVersion: v2
+    appVersion: v0.6.0-alpha4
+    created: "2026-10-07T09:28:15.851369689Z"
+    description: The Helm chart for Agent Sandbox Manager
+    digest: 093fe9dcf554c062fbd08541e96bb92f23e566c14eb4c5da76543039c2b1d87e
+    keywords:
+    - agent
+    - sandbox
+    - apiserver
+    - proxy
+    - rl
+    - e2b
+    - console-visibility:false
+    name: agents-sandbox-manager
+    type: application
+    urls:
+    - https://github.com/openkruise/charts/releases/download/agents-sandbox-manager-0.6.0-rc1/agents-sandbox-manager-0.6.0-rc1.tgz
+    version: 0.6.0-rc1
   - annotations:
       artifacthub.io/changes: |
         - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"
@@ -1750,4 +1807,4 @@ entries:
     urls:
     - https://github.com/openkruise/charts/releases/download/kruise-state-metrics-0.1.0/kruise-state-metrics-0.1.0.tgz
     version: 0.1.0
-generated: "2026-09-11T15:00:14.854591106Z"
+generated: "2026-10-07T09:28:15.851662979Z"
