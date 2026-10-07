@@ -46,6 +46,7 @@ The following tables list the configurable parameters of the agents-sandbox-cont
 | `webhook.port` | Webhook service port | `9443` |
 | `metrics.port` | Metrics service port (HTTPS with authn/authz delegation to kube-apiserver) | `8443` |
 | `healthProbe.port` | Health probe port | `8081` |
+| `controller.featureGates` | Comma-separated `--feature-gates` key=value pairs (e.g. `Foo=true,Bar=false`); empty sets no flag | `""` |
 
 ### Advanced Parameters
 
@@ -61,7 +62,6 @@ All remaining parameters are optional. Sensible defaults apply and most installs
 | `controller.workers.commitWorkers` | Concurrent workers for the Commit reconciler | `5` |
 | `controller.clientQPS` | Kubernetes API client QPS rate limit | `30000` |
 | `controller.clientBurst` | Kubernetes API client burst limit | `60000` |
-| `controller.featureGates` | Comma-separated `--feature-gates` key=value pairs (e.g. `Foo=true,Bar=false`); empty sets no flag | `""` |
 | `metrics.rbac.create` | Create a ClusterRole granting `get` on the `/metrics` nonResourceURL; bind it to your Prometheus / ARMS scraper ServiceAccount | `true` |
 | `nameOverride` | Override Chart name | `""` |
 | `fullnameOverride` | Override full name | `""` |
