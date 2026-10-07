@@ -60,7 +60,7 @@ spec:
             - --e2b-key-storage-disable-schema-auto-update
             - --quota-redis-addr={{ ternary .Values.quota.redis.addr "" .Values.quota.enabled }}
             - --quota-redis-db={{ int .Values.quota.redis.db }}
-            - --secret-config={{ include "sandbox-manager.fullname" . }}-runtime-config
+            - --secret-config={{ .Release.Namespace }}/{{ include "sandbox-manager.fullname" . }}-runtime-config
             - --max-claim-workers={{ int .Values.controller.maxClaimWorkers }}
             - --max-create-qps={{ int .Values.controller.maxCreateQPS }}
             - --ext-proc-max-concurrency={{ int .Values.controller.extProcMaxConcurrency }}
