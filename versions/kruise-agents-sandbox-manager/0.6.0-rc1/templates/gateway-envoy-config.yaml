@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: envoy-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sandbox-gateway.labels" . | nindent 4 }}
+data:
+  envoy.yaml: |
+    {{- include "sandbox-gateway.envoyConfig" . | nindent 4 }}

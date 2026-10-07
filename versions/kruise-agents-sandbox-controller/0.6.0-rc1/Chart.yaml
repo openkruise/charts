@@ -1,0 +1,27 @@
+apiVersion: v2
+name: agents-sandbox-controller
+description: The Helm chart for Agents Sandbox Controller
+
+type: application
+
+version: 0.6.0-rc1
+
+appVersion: "v0.6.0-alpha4"
+
+keywords:
+  - agent
+  - sandbox
+  - controller
+  - kruise
+  - kubernetes
+  - openkruise
+annotations:
+  artifacthub.io/changes: |
+    - "[Changed]: default the Agentio control plane and traffic-proxy connection to sandbox-system"
+    - "[Changed]: sync the Agentio 0.2.0 traffic-proxy runtime with fixed 0.2.0 image tags and chart-wide image.registry overrides"
+    - "[Added]: support injecting the agent-runtime native sidecar via the agent-runtime entry of the sandbox-injection-config ConfigMap"
+    - "[Added]: configure the Commit job image through the AGENT_JOB_IMAGE environment variable of the controller"
+    - "[Added]: make the sandboxupdateops, poolautoscaler and commit reconciler worker counts configurable"
+    - "[Added]: pass controller feature gates through the configurable --feature-gates argument"
+    - "[Added]: resolve every image in the chart from the chart-wide image.registry plus each image's repository and tag"
+    - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"
