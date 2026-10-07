@@ -106,10 +106,8 @@ static_resources:
                           sandbox-port-header: {{ .Values.gateway.envoy.pluginConfig.sandboxPortHeader }}
                           default-port: "{{ .Values.gateway.envoy.pluginConfig.defaultPort }}"
                           enable-auth: {{ .Values.gateway.envoy.pluginConfig.enableAuth }}
-                          {{- if and .Values.gateway.envoy.pluginConfig.enableAuth .Values.gateway.envoy.pluginConfig.enableJwtAuth }}
-                          enable-jwt-auth: true
+                          enable-jwt-auth: {{ .Values.gateway.envoy.pluginConfig.enableJwtAuth }}
                           traffic-access-token-header: {{ .Values.gateway.envoy.pluginConfig.trafficAccessTokenHeader }}
-                          {{- end }}
                           enable-runtime-mtls: {{ and .Values.enableTLS .Values.tls.runtime.enabled }}
                           enable-wake-on-traffic: true
                           wake-timeout-seconds: {{ int .Values.gateway.envoy.pluginConfig.wakeTimeoutSeconds }}

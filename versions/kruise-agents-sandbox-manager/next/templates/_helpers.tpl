@@ -46,9 +46,9 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 Selector labels
 */}}
 {{- define "sandbox-manager.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "sandbox-manager.name" . }}
+app.kubernetes.io/name: sandbox-manager
 app.kubernetes.io/instance: {{ .Release.Name }}
-component: {{ include "sandbox-manager.name" . }}
+component: sandbox-manager
 {{- end }}
 
 {{- define "sandbox-manager.peerLabels" -}}
