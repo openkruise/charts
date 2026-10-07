@@ -36,7 +36,7 @@ quota:
 
 controller:
   repository: openkruise/sandbox-manager
-  tag: v0.6.0-alpha3
+  tag: v0.6.0-alpha4
   pullPolicy: IfNotPresent
   logLevel: 5
   infra: sandbox-cr
@@ -117,7 +117,7 @@ gateway:
   image:
     repository: openkruise/sandbox-gateway
     pullPolicy: IfNotPresent
-    tag: "v0.6.0-alpha3"
+    tag: "v0.6.0-alpha4"
   imagePullSecrets: [ ]
   nameOverride: ""
   serviceAccount:
@@ -276,12 +276,12 @@ tls:
   # gossip channel BETWEEN control-plane instances; it is independent of the
   # agent-runtime data path and safe to enable on its own. Requires enableTLS
   # (it reuses the shared CA and the tls.agentRuntimeServerSAN name).
-  # IMPORTANT: requires manager/gateway images that include #967. v0.6.0-alpha3
-  # predates it: an older sandbox-manager crashes on the unknown --peer-* flags
-  # (the gateway merely ignores unknown PEER_* env). Verify the image before
-  # enabling. cert-manager issues the peer certificates below, but the memberlist
-  # key Secret (keySecretName) must be created out-of-band because cert-manager
-  # does not issue raw symmetric keys.
+  # IMPORTANT: requires manager/gateway images that include #967, which landed
+  # after v0.6.0-alpha3, so older images lack it: an older sandbox-manager
+  # crashes on the unknown --peer-* flags (the gateway merely ignores unknown
+  # PEER_* env). Verify the image before enabling. cert-manager issues the peer
+  # certificates below, but the memberlist key Secret (keySecretName) must be
+  # created out-of-band because cert-manager does not issue raw symmetric keys.
   peer:
     enabled: false
     # -- Peer TLS server certificate, shared by the manager and the gateway. Its

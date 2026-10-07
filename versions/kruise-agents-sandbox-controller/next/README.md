@@ -1,4 +1,4 @@
-# Agents Sandbox Controller v0.6.0-alpha3
+# Agents Sandbox Controller v0.6.0-alpha4
 
 ## Installation
 
@@ -33,7 +33,7 @@ The following table lists the configurable parameters of the agents-sandbox-cont
 | `replicaCount`               | Number of sandbox-controller replicas     | `2`                                                                                                                     |
 | `image.registry`             | Registry prepended to every image in this chart | `docker.io`                                                                                                       |
 | `image.repository`           | sandbox-controller image repository       | `openkruise/agent-sandbox-controller`                                                                                   |
-| `image.tag`                  | sandbox-controller image tag              | `v0.6.0-alpha3`                                                                                                                |
+| `image.tag`                  | sandbox-controller image tag              | `v0.6.0-alpha4`                                                                                                                |
 | `image.pullPolicy`           | Controller image pull policy              | `IfNotPresent`                                                                                                          |
 | `webhook.port`               | Webhook service port                      | `9443`                                                                                                                  |
 | `metrics.port`               | Metrics service port                      | `8443`                                                                                                                  |
