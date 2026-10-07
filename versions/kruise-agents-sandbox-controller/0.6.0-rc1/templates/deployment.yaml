@@ -1,0 +1,143 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sandbox-controller.fullname" . }}
+  namespace: {{ include "sandbox-controller.namespace" . }}
+  labels:
+    {{- include "sandbox-controller.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "sandbox-controller.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: manager
+      {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "sandbox-controller.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "sandbox-controller.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - args:
+            - --metrics-bind-address=:{{ .Values.metrics.port }}
+            - --leader-elect
+            - --health-probe-bind-address=:{{ .Values.healthProbe.port }}
+            - --webhook-cert-path=/home/nonroot/sandbox-controller-webhook-certs
+            - --sandbox-workers={{ .Values.controller.workers.sandboxWorkers }}
+            - --sandboxset-workers={{ .Values.controller.workers.sandboxsetWorkers }}
+            - --sandboxclaim-workers={{ .Values.controller.workers.sandboxclaimWorkers }}
+            - --sandboxupdateops-workers={{ .Values.controller.workers.sandboxupdateopsWorkers }}
+            - --poolautoscaler-workers={{ .Values.controller.workers.poolautoscalerWorkers }}
+            - --commit-workers={{ .Values.controller.workers.commitWorkers }}
+            - --client-qps={{ .Values.controller.clientQPS }}
+            - --client-burst={{ .Values.controller.clientBurst }}
+            {{- if .Values.controller.featureGates }}
+            - --feature-gates={{ .Values.controller.featureGates }}
+            {{- end }}
+            {{- if and .Values.enableTLS .Values.tls.runtime.enabled }}
+            - --runtime-client-cert-dir={{ .Values.tls.runtimeClientCertDir }}
+            {{- end }}
+          command:
+            - /manager
+          env:
+            - name: AGENT_JOB_IMAGE
+              value: {{ include "sandbox-controller.image" (dict "root" $ "repository" .Values.commitJob.image.repository "tag" .Values.commitJob.image.tag) | quote }}
+            - name: SANDBOX_CONTROLLER_USERNAME
+              value: "system:serviceaccount:sandbox-system:agents-sandbox-controller"
+          image: {{ include "sandbox-controller.image" (dict "root" $ "repository" .Values.image.repository "tag" .Values.image.tag) | quote }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.healthProbe.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          name: manager
+          ports:
+            - name: https-metrics
+              containerPort: {{ .Values.metrics.port }}
+              protocol: TCP
+            - name: https-webhook
+              containerPort: {{ .Values.webhook.port }}
+              protocol: TCP
+            - name: health
+              containerPort: {{ .Values.healthProbe.port }}
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: {{ .Values.healthProbe.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          volumeMounts:
+            - name: webhook-certs
+              mountPath: /home/nonroot/sandbox-controller-webhook-certs
+            {{- if and .Values.enableTLS .Values.tls.runtime.enabled }}
+            - name: runtime-client-cert
+              mountPath: {{ .Values.tls.runtimeClientCertDir }}
+              readOnly: true
+            {{- end }}
+        {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+        {{- end }}
+      terminationGracePeriodSeconds: 10
+      volumes:
+        - name: webhook-certs
+          emptyDir: { }
+        {{- if and .Values.enableTLS .Values.tls.runtime.enabled }}
+        # cert-manager writes tls.crt/tls.key/ca.crt; the runtime client loader
+        # reads client.crt/client.key/ca.crt, so remap the keys at mount time.
+        - name: runtime-client-cert
+          secret:
+            secretName: {{ .Values.tls.runtimeClientCertSecretName }}
+            items:
+              - key: ca.crt
+                path: ca.crt
+              - key: tls.crt
+                path: client.crt
+              - key: tls.key
+                path: client.key
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      topologySpreadConstraints:
+        - labelSelector:
+            matchLabels:
+              control-plane: {{ include "sandbox-controller.name" . }}
+{{- if and ( eq (int .Capabilities.KubeVersion.Major) 1) ( gt (int .Capabilities.KubeVersion.Minor) 26 ) }}
+          matchLabelKeys:
+            - pod-template-hash
+{{- end }}
+          maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

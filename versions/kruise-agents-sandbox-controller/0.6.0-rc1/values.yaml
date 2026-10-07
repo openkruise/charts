@@ -1,0 +1,226 @@
+# Default values for agents-sandbox-controller.
+# This is a YAML-formatted file.
+
+replicaCount: 2
+
+image:
+  # Registry prepended to every image configured in this chart. An image that
+  # sets its own registry overrides this one, and an empty registry inherits it.
+  # The prefix is skipped for a repository whose first path segment already
+  # names a host, so myreg.io/openkruise/commit-job still works as-is.
+  registry: docker.io
+  repository: openkruise/agent-sandbox-controller
+  pullPolicy: IfNotPresent
+  tag: v0.6.0-alpha4
+
+# Webhook configuration
+webhook:
+  port: 9443
+
+# Metrics configuration
+metrics:
+  # Port the controller binds for the Prometheus /metrics endpoint.
+  # Served over HTTPS with authn/authz delegation to kube-apiserver
+  # (controller-runtime's --metrics-secure=true default).
+  port: 8443
+  rbac:
+    # Create a ClusterRole that grants `get` on the /metrics nonResourceURL.
+    # Bind it to your Prometheus / ARMS scraper ServiceAccount to allow
+    # scraping the HTTPS endpoint. Disable if you manage metrics RBAC
+    # outside this chart.
+    create: true
+
+# Health probe configuration
+healthProbe:
+  port: 8081
+
+# Controller runtime configuration
+controller:
+  # Number of concurrent workers for each reconciler
+  workers:
+    sandboxWorkers: 200
+    sandboxsetWorkers: 10
+    sandboxclaimWorkers: 200
+    sandboxupdateopsWorkers: 5
+    poolautoscalerWorkers: 3
+    commitWorkers: 5
+  # Kubernetes API client rate limit
+  clientQPS: 30000
+  clientBurst: 60000
+  # Feature gates passed to --feature-gates, comma-separated key=value pairs
+  # (e.g. "Foo=true,Bar=false"). Empty means no --feature-gates flag is set.
+  featureGates: ""
+
+resources:
+  limits:
+    cpu: "2"
+    memory: 4Gi
+  requests:
+    cpu: "2"
+    memory: 4Gi
+
+# Namespace configuration
+namespace:
+  name: sandbox-system
+
+# ServiceAccount configuration
+serviceAccount:
+  create: true
+  automount: true
+  annotations: { }
+  name: ""
+
+# RBAC configuration
+rbac:
+  create: true
+
+imagePullSecrets: [ ]
+nameOverride: ""
+fullnameOverride: ""
+
+podAnnotations: { }
+podLabels: { }
+
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+    add:
+      - NET_BIND_SERVICE
+  readOnlyRootFilesystem: true
+
+nodeSelector: { }
+
+tolerations: [ ]
+
+affinity: { }
+
+# Agent runtime injection configuration.
+# Used by the `agent-runtime` entry of the sandbox-injection-config ConfigMap,
+# which is injected when a Sandbox declares the `agent-runtime` runtime.
+agentRuntime:
+  image:
+    repository: openkruise/agent-runtime
+    tag: v0.3.0
+    pullPolicy: IfNotPresent
+
+# Image used by the Job pods the controller creates for Commit CRs.
+# Rendered into the controller's AGENT_JOB_IMAGE environment variable.
+commitJob:
+  image:
+    repository: openkruise/commit-job
+    tag: v0.3.0
+
+# -- Master switch for the cert-manager / trust-manager based TLS provisioning.
+# When false (default) none of the templates under templates/tls/ render and the
+# controller keeps its current plaintext runtime behavior. Requires cert-manager
+# and (for the CA Bundle) trust-manager to be installed in the cluster.
+enableTLS: false
+
+tls:
+  # -- Create the shared root CA (selfSigned Issuer -> CA Certificate -> CA
+  # Issuer). The controller chart owns the CA; the sandbox-manager chart sets
+  # this to false and references the same Issuer by name.
+  createCA: true
+  selfSignedIssuerName: sandbox-selfsigned-issuer
+  caCertificateName: sandbox-ca
+  # -- Secret holding the CA key pair (tls.crt/tls.key). Also the trust-manager
+  # Bundle source and the CA Issuer's signing material.
+  caSecretName: sandbox-ca-key-pair
+  signingIssuerName: sandbox-signing-issuer
+  caCommonName: sandbox-ca
+  caOrganization: openkruise
+  caDuration: 87600h # 10 years
+  # -- Leaf certificate lifetime (matches docs/best-practices/cert-manager.yaml).
+  certDuration: 2160h # 90 days
+  certRenewBefore: 360h # 15 days
+
+  # -- Runtime mTLS between the control plane and the sandbox agent-runtime.
+  # OFF by default. enableTLS alone only provisions the shared CA, the
+  # trust-manager Bundle and (in the manager chart) the ingress certificate, all
+  # of which are inert against a plaintext runtime. Turning this on additionally
+  # issues the runtime client/server certificates AND activates the client-side
+  # TLS paths (--runtime-client-cert-dir here, the agent-runtime sidecar TLS env,
+  # and in the manager chart --runtime-client-cert-secret plus the gateway
+  # enable-runtime-mtls/transport_socket). Those paths fail against an
+  # agent-runtime that does not yet serve TLS, so enable this only once the
+  # agent-runtime image supports runtime TLS. Requires enableTLS.
+  runtime:
+    enabled: false
+
+  # -- Controller -> agent-runtime client certificate.
+  runtimeClientCertName: sandbox-controller-runtime-client
+  runtimeClientCertSecretName: sandbox-controller-runtime-client-cert
+  runtimeClientCommonName: system:sandbox-controller-manager
+  # -- Mount point for --runtime-client-cert-dir; the volume remaps the
+  # cert-manager tls.crt/tls.key/ca.crt keys to client.crt/client.key/ca.crt.
+  runtimeClientCertDir: /etc/agent-runtime-client/certs
+
+  # -- agent-runtime server certificate injected into sandboxes.
+  agentRuntimeServerCertName: sandbox-agent-runtime-server
+  agentRuntimeServerCertSecretName: sandbox-agent-runtime-server-certs
+  # -- SAN the gateway/controller/manager use to reach the runtime.
+  agentRuntimeServerSAN: agentruntime.sandbox.agents.kruise.io
+
+  # -- trust-manager Bundle that distributes the CA as a ca.crt ConfigMap.
+  bundle:
+    enabled: true
+    name: sandbox-ca-bundle
+    configMapKey: ca.crt
+    # -- Empty selects every namespace. Narrow it (e.g. a label selector) to
+    # limit where the CA ConfigMap is written.
+    namespaceSelector: {}
+
+# BEGIN GENERATED AGENTIO TRAFFIC PROXY VALUES - DO NOT EDIT
+agentio:
+  trafficProxy:
+    caAddress: ""
+    caCertConfigMap: agentio-ca-root-cert
+    clusterDomain: cluster.local
+    clusterId: Kubernetes
+    controlPlaneNamespace: sandbox-system
+    controlPlaneService: agentiod
+    dnsCapture: true
+    enableFirewallRules: true
+    excludeInboundPorts: ""
+    excludeOutboundIPRanges: ""
+    excludeOutboundPorts: ""
+    firewallBackend: auto
+    healthProbeRewrite: true
+    image:
+      digest: ""
+      registry: ""
+      repository: openkruise/ztunnel
+      tag: 0.2.0
+    imagePullPolicy: IfNotPresent
+    includeInboundPorts: '*'
+    includeOutboundIPRanges: '*'
+    includeOutboundPorts: ""
+    initImage:
+      digest: ""
+      registry: ""
+      repository: openkruise/proxy-init
+      tag: 0.2.0
+    initResources:
+      limits:
+        cpu: "1"
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    resources:
+      limits:
+        cpu: 200m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 64Mi
+    tokenAudience: agentio-ca
+    xdsAddress: ""
+# END GENERATED AGENTIO TRAFFIC PROXY VALUES
