@@ -125,7 +125,6 @@ rules:
   - apiGroups:
       - agents.kruise.io
     resources:
-      - checkpoints
       - sandboxtemplates
     verbs:
       - create
@@ -136,6 +135,7 @@ rules:
   - apiGroups:
       - agents.kruise.io
     resources:
+      - checkpoints
       - commits
       - poolautoscalers
       - sandboxes
@@ -152,6 +152,7 @@ rules:
   - apiGroups:
       - agents.kruise.io
     resources:
+      - checkpoints/finalizers
       - commits/finalizers
       - sandboxes/finalizers
       - sandboxsets/finalizers
@@ -160,6 +161,7 @@ rules:
   - apiGroups:
       - agents.kruise.io
     resources:
+      - checkpoints/status
       - commits/status
       - poolautoscalers/status
       - sandboxclaims/status

@@ -63,6 +63,44 @@ spec:
               podName:
                 description: PodName is checkpoint podName.
                 type: string
+              repository:
+                description: Repository is checkpoint repository.
+                properties:
+                  authSecret:
+                    description: PushSecret is a reference to secret in the same namespace
+                      to use for pushing Template.
+                    properties:
+                      name:
+                        default: ""
+                        description: |-
+                          Name of the referent.
+                          This field is effectively required, but due to backwards compatibility is
+                          allowed to be empty. Instances of this type with an empty value here are
+                          almost certainly wrong.
+                          More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                        type: string
+                    type: object
+                    x-kubernetes-map-type: atomic
+                  distributed:
+                    default: true
+                    description: |-
+                      Distributed indicates whether the template is uploaded to remote repository
+
+                      NOTE(current-implementation): In the initial phase, all Templates are considered
+                      distributed (i.e., this field will default to true, see the marker below).
+                      This state will change once we implement cluster-side metadata management
+                      capabilities for Templates, allowing for non-distributed(pending upload or creation) states.
+                    type: boolean
+                  repository:
+                    description: Name defines the name of the template repository
+                    type: string
+                  type:
+                    description: Type defines the type of the template repository
+                    type: string
+                required:
+                - repository
+                - type
+                type: object
               sandboxName:
                 description: SandboxName is checkpoint sandboxName.
                 type: string
