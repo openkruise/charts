@@ -1,0 +1,95 @@
+{{- if and .Values.enableTLS .Values.tls.peer.enabled }}
+{{- $tls := .Values.tls }}
+{{- $peer := .Values.tls.peer }}
+# Peer mTLS certificates for the Manager<->Gateway control-plane cluster
+# (openkruise/agents#967). This secures the route-sync / gossip channel between
+# control-plane instances and is independent of the agent-runtime data path.
+#
+# The peer verifier hard-codes the server name tls.agentRuntimeServerSAN, so the
+# shared server certificate carries that SAN and server auth ONLY (a server cert
+# that also allowed client auth is rejected). Each component presents its own
+# client-auth certificate. cert-manager writes ca.crt/tls.crt/tls.key, which the
+# peer loader reads directly (it prefers tls.crt/tls.key over client.crt/client.key).
+#
+# Requires manager/gateway images that include #967; see tls.peer in values.yaml.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $peer.serverCertName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sandbox-manager.labels" . | nindent 4 }}
+spec:
+  secretName: {{ $peer.serverCertSecretName }}
+  duration: {{ $tls.certDuration | quote }}
+  renewBefore: {{ $tls.certRenewBefore | quote }}
+  commonName: {{ $tls.agentRuntimeServerSAN | quote }}
+  dnsNames:
+    - {{ $tls.agentRuntimeServerSAN | quote }}
+  subject:
+    organizations:
+      - {{ $tls.caOrganization }}
+  isCA: false
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  usages:
+    - server auth
+  issuerRef:
+    name: {{ $tls.signingIssuerName }}
+    kind: {{ $tls.signingIssuerKind }}
+    group: cert-manager.io
+---
+# Manager peer client certificate (CN matches tls.peer.managerClientCommonName,
+# the identity an optional allowedClientCNs allow-list matches against).
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $peer.managerClientCertName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sandbox-manager.labels" . | nindent 4 }}
+spec:
+  secretName: {{ $peer.managerClientCertSecretName }}
+  duration: {{ $tls.certDuration | quote }}
+  renewBefore: {{ $tls.certRenewBefore | quote }}
+  commonName: {{ $peer.managerClientCommonName | quote }}
+  subject:
+    organizations:
+      - {{ $tls.caOrganization }}
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  usages:
+    - client auth
+  issuerRef:
+    name: {{ $tls.signingIssuerName }}
+    kind: {{ $tls.signingIssuerKind }}
+    group: cert-manager.io
+---
+# Gateway peer client certificate.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $peer.gatewayClientCertName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sandbox-gateway.labels" . | nindent 4 }}
+spec:
+  secretName: {{ $peer.gatewayClientCertSecretName }}
+  duration: {{ $tls.certDuration | quote }}
+  renewBefore: {{ $tls.certRenewBefore | quote }}
+  commonName: {{ $peer.gatewayClientCommonName | quote }}
+  subject:
+    organizations:
+      - {{ $tls.caOrganization }}
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  usages:
+    - client auth
+  issuerRef:
+    name: {{ $tls.signingIssuerName }}
+    kind: {{ $tls.signingIssuerKind }}
+    group: cert-manager.io
+{{- end }}

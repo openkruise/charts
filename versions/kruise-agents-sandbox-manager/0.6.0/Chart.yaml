@@ -1,0 +1,45 @@
+apiVersion: v2
+name: agents-sandbox-manager
+description: The Helm chart for Agent Sandbox Manager
+
+# A chart can be either an 'application' or a 'library' chart.
+#
+# Application charts are a collection of templates that can be packaged into versioned archives
+# to be deployed.
+#
+# Library charts provide useful utilities or functions for the chart developer. They're included as
+# a dependency of application charts to inject those utilities and functions into the rendering
+# pipeline. Library charts do not define any templates and therefore cannot be deployed.
+type: application
+
+# This is the chart version. This version number should be incremented each time you make changes
+# to the chart and its templates, including the app version.
+# Versions are expected to follow Semantic Versioning (https://semver.org/)
+version: 0.6.0
+
+# This is the version number of the application being deployed. This version number should be
+# incremented each time you make changes to the application. Versions are not expected to
+# follow Semantic Versioning. They should reflect the version the application is using.
+# It is recommended to use it with quotes.
+appVersion: "v0.6.0"
+
+keywords:
+  - agent
+  - sandbox
+  - apiserver
+  - proxy
+  - rl
+  - e2b
+  - console-visibility:false
+annotations:
+  artifacthub.io/changes: |
+    - "[Changed]: enable the Agentio egress gateway and EPE by default with a catch-all gateway route"
+    - "[Changed]: default the Agentio control plane and traffic-proxy connection to sandbox-system"
+    - "[Changed]: embed Agentio 0.2.0 with fixed 0.2.0 image tags while preserving chart-wide image.registry overrides"
+    - "[Added]: resolve every image in the chart from the chart-wide image.registry plus each image's repository and tag"
+    - "[Removed]: drop the envoy-proxy sidecar container and its envoy-config ConfigMap from the sandbox-manager deployment; the data plane is now served by sandbox-gateway"
+    - "[Added]: support short sandbox IDs via controller.enableShortSandboxId and controller.shortSandboxIdPrefix"
+    - "[Changed]: pin the sandbox-manager control-plane Service name to sandbox-manager and expose only the manager HTTP port (8080)"
+    - "[Changed]: extract the sandbox-gateway envoy config into a checksummed named template so config changes restart the gateway"
+    - "[Added]: make the sandbox-gateway envoy streamIdleTimeout and wakeTimeoutSeconds configurable"
+    - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"
