@@ -33,6 +33,7 @@ The following table lists the configurable parameters of the kruise chart and th
 | `manager.nodeAffinity`              | Node affinity policy for kruise-manager pod                    | `{}`                        |
 | `manager.nodeSelector`              | Node labels for kruise-manager pod                             | `{}`                        |
 | `manager.tolerations`               | Tolerations for kruise-manager pod                             | `[]`                        |
+| `manager.priorityClassName`         | PriorityClassName for kruise-manager pod                       | `""`                        |
 | `manager.resyncPeriod`              | Resync period of informer kruise-manager, defaults no resync   | `0`                         |
 | `manager.hostNetwork`               | Whether kruise-manager pod should run with hostnetwork         | `false`                     |
 | `manager.loggingFormat`             | Logging format, valid formats includes ` `(plain text), `json` | ` `                         |
@@ -50,6 +51,7 @@ The following table lists the configurable parameters of the kruise chart and th
 | `daemon.resources.requests.cpu`               | CPU resource request of kruise-daemon container                                                       | `0`                          |
 | `daemon.resources.requests.memory`            | Memory resource request of kruise-daemon container                                                    | `0`                          |
 | `daemon.affinity`                             | Affinity policy for kruise-daemon pod                                                                 | `{}`                         |
+| `daemon.priorityClassName`                    | PriorityClassName for kruise-daemon pod                                                               | `""`                         |
 | `daemon.socketLocation`                       | Location of the container manager control socket                                                      | `/var/run`                   |
 | `daemon.socketFile`                           | Specify the socket file name in `socketLocation` (if you are not using containerd/docker/pouch/cri-o) | ` `                          |
 | `daemon.credentialProvider.enable`            | Whether to enable credential provider for image pull job                                              | `false`                      |
