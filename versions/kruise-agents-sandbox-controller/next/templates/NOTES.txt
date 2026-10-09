@@ -9,10 +9,10 @@
 The agents-sandbox-controller has been installed successfully!
 
 1. Check the controller status:
-   kubectl get pods -n {{ include "sandbox-controller.namespace" . }} -l "app.kubernetes.io/name={{ include "sandbox-controller.name" . }},control-plane={{ include "sandbox-controller.name" . }}"
+   kubectl get pods -n {{ include "sandbox-controller.namespace" . }} -l "app.kubernetes.io/instance={{ .Release.Name }}"
 
 2. View controller logs:
-   kubectl logs -n {{ include "sandbox-controller.namespace" . }} -l "app.kubernetes.io/name={{ include "sandbox-controller.name" . }},control-plane={{ include "sandbox-controller.name" . }}" -f
+   kubectl logs -n {{ include "sandbox-controller.namespace" . }} -l "app.kubernetes.io/instance={{ .Release.Name }}" -f
 
 3. Check the CRDs:
    kubectl get crd | grep agents.kruise.io
