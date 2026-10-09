@@ -98,8 +98,9 @@ spec:
             timeoutSeconds: 5
             failureThreshold: 3
           readinessProbe:
-            tcpSocket:
-              port: 7789
+            httpGet:
+              path: /health
+              port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
             timeoutSeconds: 3
