@@ -36,7 +36,7 @@ quota:
 
 controller:
   repository: openkruise/sandbox-manager
-  tag: v0.6.0-alpha4
+  tag: v0.6.0-rc1
   pullPolicy: IfNotPresent
   logLevel: 5
   infra: sandbox-cr
@@ -117,7 +117,7 @@ gateway:
   image:
     repository: openkruise/sandbox-gateway
     pullPolicy: IfNotPresent
-    tag: "v0.6.0-alpha4"
+    tag: "v0.6.0-rc1"
   imagePullSecrets: [ ]
   nameOverride: ""
   serviceAccount:

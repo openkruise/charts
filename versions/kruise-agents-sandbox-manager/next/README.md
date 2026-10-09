@@ -1,4 +1,4 @@
-# Agent Sandbox Manager v0.6.0-alpha4
+# Agent Sandbox Manager v0.6.0-rc1
 
 ## Configuration Parameters
 
@@ -12,7 +12,7 @@ The following tables list the configurable parameters of the agents-sandbox-mana
 | `image.registry` | Registry prepended to every image in this chart | `docker.io` |
 | `imagePullSecrets` | Image pull secrets list | `{}` |
 | `controller.repository` | sandbox-manager controller image repository | `openkruise/sandbox-manager` |
-| `controller.tag` | sandbox-manager controller image tag | `v0.6.0-alpha4` |
+| `controller.tag` | sandbox-manager controller image tag | `v0.6.0-rc1` |
 | `controller.pullPolicy` | Controller container image pull policy | `IfNotPresent` |
 | `controller.resources.cpu` | Controller container CPU resource | `2` |
 | `controller.resources.memory` | Controller container memory resource | `4Gi` |
@@ -25,7 +25,7 @@ The following tables list the configurable parameters of the agents-sandbox-mana
 | `prometheus.enabled` | Create a ServiceMonitor for manager and gateway metrics | `false` |
 | `gateway.replicaCount` | Number of sandbox-gateway replicas | `2` |
 | `gateway.image.repository` | sandbox-gateway image repository | `openkruise/sandbox-gateway` |
-| `gateway.image.tag` | sandbox-gateway image tag | `v0.6.0-alpha4` |
+| `gateway.image.tag` | sandbox-gateway image tag | `v0.6.0-rc1` |
 | `gateway.image.pullPolicy` | sandbox-gateway image pull policy | `IfNotPresent` |
 | `gateway.resources.cpu` | sandbox-gateway container CPU resources | `2` |
 | `gateway.resources.memory` | sandbox-gateway container memory resources | `4Gi` |
