@@ -12,6 +12,33 @@ entries:
         - "[Added]: resolve every image in the chart from the chart-wide image.registry plus each image's repository and tag"
         - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"
     apiVersion: v2
+    appVersion: v0.6.0
+    created: "2026-10-09T07:12:58.404795022Z"
+    description: The Helm chart for Agents Sandbox Controller
+    digest: 974660fa77ac41043c0349d1bfde645c0936533ef0fd31db1dd5a7b800f82adb
+    keywords:
+    - agent
+    - sandbox
+    - controller
+    - kruise
+    - kubernetes
+    - openkruise
+    name: agents-sandbox-controller
+    type: application
+    urls:
+    - https://github.com/openkruise/charts/releases/download/agents-sandbox-controller-0.6.0/agents-sandbox-controller-0.6.0.tgz
+    version: 0.6.0
+  - annotations:
+      artifacthub.io/changes: |
+        - "[Changed]: default the Agentio control plane and traffic-proxy connection to sandbox-system"
+        - "[Changed]: sync the Agentio 0.2.0 traffic-proxy runtime with fixed 0.2.0 image tags and chart-wide image.registry overrides"
+        - "[Added]: support injecting the agent-runtime native sidecar via the agent-runtime entry of the sandbox-injection-config ConfigMap"
+        - "[Added]: configure the Commit job image through the AGENT_JOB_IMAGE environment variable of the controller"
+        - "[Added]: make the sandboxupdateops, poolautoscaler and commit reconciler worker counts configurable"
+        - "[Added]: pass controller feature gates through the configurable --feature-gates argument"
+        - "[Added]: resolve every image in the chart from the chart-wide image.registry plus each image's repository and tag"
+        - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"
+    apiVersion: v2
     appVersion: v0.6.0-alpha4
     created: "2026-10-07T09:28:15.655723004Z"
     description: The Helm chart for Agents Sandbox Controller
@@ -129,6 +156,36 @@ entries:
     - https://github.com/openkruise/charts/releases/download/agents-sandbox-controller-v0.1.0/agents-sandbox-controller-v0.1.0.tgz
     version: v0.1.0
   agents-sandbox-manager:
+  - annotations:
+      artifacthub.io/changes: |
+        - "[Changed]: enable the Agentio egress gateway and EPE by default with a catch-all gateway route"
+        - "[Changed]: default the Agentio control plane and traffic-proxy connection to sandbox-system"
+        - "[Changed]: embed Agentio 0.2.0 with fixed 0.2.0 image tags while preserving chart-wide image.registry overrides"
+        - "[Added]: resolve every image in the chart from the chart-wide image.registry plus each image's repository and tag"
+        - "[Removed]: drop the envoy-proxy sidecar container and its envoy-config ConfigMap from the sandbox-manager deployment; the data plane is now served by sandbox-gateway"
+        - "[Added]: support short sandbox IDs via controller.enableShortSandboxId and controller.shortSandboxIdPrefix"
+        - "[Changed]: pin the sandbox-manager control-plane Service name to sandbox-manager and expose only the manager HTTP port (8080)"
+        - "[Changed]: extract the sandbox-gateway envoy config into a checksummed named template so config changes restart the gateway"
+        - "[Added]: make the sandbox-gateway envoy streamIdleTimeout and wakeTimeoutSeconds configurable"
+        - "[Changed]: https://github.com/openkruise/agents/blob/master/CHANGELOG.md"
+    apiVersion: v2
+    appVersion: v0.6.0
+    created: "2026-10-09T07:12:58.580712308Z"
+    description: The Helm chart for Agent Sandbox Manager
+    digest: 9032331af4dac12f877049ea2a3d3fa1f87fca92b049738d3d4e58a40006a440
+    keywords:
+    - agent
+    - sandbox
+    - apiserver
+    - proxy
+    - rl
+    - e2b
+    - console-visibility:false
+    name: agents-sandbox-manager
+    type: application
+    urls:
+    - https://github.com/openkruise/charts/releases/download/agents-sandbox-manager-0.6.0/agents-sandbox-manager-0.6.0.tgz
+    version: 0.6.0
   - annotations:
       artifacthub.io/changes: |
         - "[Changed]: enable the Agentio egress gateway and EPE by default with a catch-all gateway route"
@@ -1807,4 +1864,4 @@ entries:
     urls:
     - https://github.com/openkruise/charts/releases/download/kruise-state-metrics-0.1.0/kruise-state-metrics-0.1.0.tgz
     version: 0.1.0
-generated: "2026-10-07T09:28:15.851662979Z"
+generated: "2026-10-09T07:12:58.581165279Z"
