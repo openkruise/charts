@@ -5,6 +5,14 @@
 
 ************************************************************
 
+The sandbox-manager has been installed successfully!
+
+1. Check the manager status:
+   kubectl get pods -n {{ .Release.Namespace }} -l "app.kubernetes.io/instance={{ .Release.Name }}"
+
+2. View manager logs:
+   kubectl logs -n {{ .Release.Namespace }} -l "app.kubernetes.io/instance={{ .Release.Name }}" -f
+
 This version supports the sandbox protocols as follows:
 - E2B
 
@@ -14,10 +22,18 @@ For E2B Users:
     ```
     kubectl get ingress sandbox-manager -n {{ .Release.Namespace }} -o jsonpath='{range .status.loadBalancer.ingress[*]}{.hostname}{.ip}{"\n"}{end}'
     ```
-3. For HTTPS is required in E2B sdk, please issue a TLS certificate for the wildcard domain *.{{ .Values.e2b.domain }} and add it to the cluster using the following command:
+3. Create a regular API key by calling the manager API with the admin key. The admin key
+   is set via e2b.adminApiKey and stored as E2B_ADMIN_KEY in the
+   {{ include "sandbox-manager.fullname" . }}-runtime-config Secret. The plaintext key is
+   returned only once, so persist it. Pass an optional "teamName" in the body to scope the
+   key to a team (that team's Namespace must already exist):
     ```
-    kubectl create secret tls {{ .Values.ingress.certSecretName }} \
-          --cert=your-cert.pem \ # your cert file
-          --key=your-key.pem \    # your key file
-          --namespace={{ .Release.Namespace }} # istio-system if you use istio-gateway
+    export E2B_API_KEY=$(kubectl get secret {{ include "sandbox-manager.fullname" . }}-runtime-config \
+          -n {{ .Release.Namespace }} -o jsonpath='{.data.E2B_ADMIN_KEY}' | base64 -d)
+    curl -sS -X POST \
+          -H "X-API-KEY: ${E2B_API_KEY}" \
+          -H "Content-Type: application/json" \
+          -d '{"name": "my-key"}' \
+          "https://api.{{ .Values.e2b.domain }}/api-keys"
     ```
+   See https://openkruise.io/kruiseagents/user-manuals/api-keys-and-teams#create-api-key for details.

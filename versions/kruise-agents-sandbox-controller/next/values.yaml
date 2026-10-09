@@ -11,7 +11,7 @@ image:
   registry: docker.io
   repository: openkruise/agent-sandbox-controller
   pullPolicy: IfNotPresent
-  tag: v0.6.0-rc1
+  tag: v0.6.0
 
 # Webhook configuration
 webhook:
@@ -115,7 +115,7 @@ agentRuntime:
 commitJob:
   image:
     repository: openkruise/commit-job
-    tag: v0.3.0
+    tag: v0.6.0
 
 # -- Master switch for the cert-manager / trust-manager based TLS provisioning.
 # When false (default) none of the templates under templates/tls/ render and the

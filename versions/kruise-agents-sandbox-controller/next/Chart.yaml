@@ -6,7 +6,7 @@ type: application
 
 version: 0.6.0
 
-appVersion: "v0.6.0-rc1"
+appVersion: "v0.6.0"
 
 keywords:
   - agent
