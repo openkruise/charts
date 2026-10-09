@@ -1,0 +1,561 @@
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 2
+
+# Registry prepended to every image configured in this chart. Each component
+# keeps its own repository/tag keys (controller, proxy, gateway, agentio); an
+# image that sets its own registry overrides this one, and an empty registry
+# inherits it. The prefix is skipped for a repository whose first path segment
+# already names a host, so myreg.io/openkruise/sandbox-manager still works.
+image:
+  registry: docker.io
+
+e2b:
+  domain: "your.domain.com"
+  extraDomains: []
+  enableAuth: true
+  adminApiKey: ""
+  maxTimeout: 2592000
+  keyStorage:
+    # "secret" stores E2B API keys in the e2b-key-store Secret. "mysql" is also
+    # supported, but requires a non-empty dsn and hashPepper: the manager
+    # validates them at startup and exits if either is blank.
+    mode: secret
+    mysql:
+      dsn: ""
+      hashPepper: ""
+
+quota:
+  enabled: false
+  redis:
+    addr: ""
+    db: 0
+    username: ""
+    password: ""
+
+controller:
+  repository: openkruise/sandbox-manager
+  tag: v0.6.0
+  pullPolicy: IfNotPresent
+  logLevel: 5
+  infra: sandbox-cr
+  resources:
+    cpu: "2"
+    memory: 4Gi
+  hostNetwork: false
+  maxClaimWorkers: 100
+  maxCreateQPS: 200
+  extProcMaxConcurrency: 10000
+  # enableShortSandboxId turns on short, human-friendly sandbox identifiers.
+  # shortSandboxIdPrefix is optional and only applied when non-empty.
+  enableShortSandboxId: true
+  shortSandboxIdPrefix: ""
+
+service:
+  type: ClusterIP
+  port: 7788
+
+ingress:
+  className: ""
+  annotations: { }
+  certSecretName: sandbox-manager-tls
+  dataplaneService: sandbox-gateway
+
+prometheus:
+  enabled: false
+
+imagePullSecrets: { }
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  automount: true
+  annotations: { }
+  name: ""
+
+podAnnotations: { }
+podLabels: { }
+
+podSecurityContext:
+  fsGroup: 2000
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+    add:
+      - NET_BIND_SERVICE
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  runAsNonRoot: true
+  runAsUser: 65532
+
+nodeSelector: { }
+
+tolerations: [ ]
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: agents-sandbox-manager
+              app.kubernetes.io/instance: agents-sandbox-manager
+              component: agents-sandbox-manager
+          topologyKey: kubernetes.io/hostname
+
+gracefulShutdown:
+  preStopSleepSeconds: 0
+
+gateway:
+  replicaCount: 2
+  image:
+    repository: openkruise/sandbox-gateway
+    pullPolicy: IfNotPresent
+    tag: "v0.6.0"
+  imagePullSecrets: [ ]
+  nameOverride: ""
+  serviceAccount:
+    annotations: { }
+    name: ""
+  podAnnotations: { }
+  podSecurityContext: { }
+  securityContext: { }
+  resources:
+    cpu: "2"
+    memory: 4Gi
+  nodeSelector: { }
+  initContainer:
+    enabled: false
+    image:
+      repository: busybox
+      tag: 1.36.1
+      pullPolicy: IfNotPresent
+    securityContext:
+      capabilities:
+        drop:
+          - ALL
+        add:
+          - SYS_ADMIN
+
+  tolerations: [ ]
+
+  affinity: { }
+
+  podAntiAffinity:
+    type: "soft"
+    weight: 100
+    topologyKey: "kubernetes.io/hostname"
+
+  livenessProbe:
+    tcpSocket:
+      port: 7788
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readinessProbe:
+    tcpSocket:
+      port: 7788
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+  envoy:
+    admin:
+      address: 127.0.0.1
+      port: 9901
+    # -- Prometheus metrics endpoint (exposed externally; proxies to admin /stats/prometheus)
+    prometheus:
+      enabled: false
+      address: 0.0.0.0
+      port: 9902
+      path: /metrics
+    listener:
+      address: 0.0.0.0
+      port: 7788
+    logLevel: warn
+    golangFilter:
+      libraryId: sandbox-gateway
+      libraryPath: /etc/envoy/sandbox-gateway.so
+      pluginName: sandbox-gateway
+    circuitBreakers:
+      enabled: true
+      maxConnections: 80000
+      maxPendingRequests: 32768
+      maxRequests: 80000
+      maxRetries: 5
+    concurrency: ""
+    drainTimeSeconds: 30
+    streamIdleTimeout: "600s"
+    connectTimeout: "5s"
+    useDownstreamProtocolConfig: false
+    perConnectionBufferLimitBytes: 1048576
+    tcpKeepalive:
+      enabled: false
+      keepaliveProbes: 3
+      keepaliveTime: 60
+      keepaliveInterval: 10
+    pluginConfig:
+      hostHeaderName: Host
+      sandboxHeaderName: e2b-sandbox-id
+      sandboxPortHeader: e2b-sandbox-port
+      defaultPort: "49983"
+      enableAuth: true
+      trafficAccessTokenHeader: e2b-traffic-access-token
+      enableJwtAuth: false
+      wakeTimeoutSeconds: 60
+  service:
+    type: ClusterIP
+    port: 7788
+    targetPort: 7788
+    annotations: { }
+    labels: { }
+
+# -- Master switch for cert-manager/trust-manager based TLS. When true, the
+# chart issues the ingress server certificate, the manager's runtime client
+# certificate, and the gateway's runtime mTLS client certificate, and turns on
+# runtime mTLS in the gateway envoy config. The shared root CA (Issuer and CA
+# Certificate) is owned by the sandbox-controller chart and must be installed in
+# the same namespace; this chart only references the signing Issuer by name.
+enableTLS: false
+
+tls:
+  # -- Reference to the CA Issuer created by the sandbox-controller chart
+  # (same-namespace, one-Issuer topology). Not created here.
+  signingIssuerName: sandbox-signing-issuer
+  signingIssuerKind: Issuer
+  # -- Used as the ingress certificate commonName and as the subject
+  # organization on issued certificates. Mirrors the controller CA values.
+  caCommonName: sandbox-ca
+  caOrganization: openkruise
+  certDuration: 2160h
+  certRenewBefore: 360h
+  # -- Ingress server certificate. Its Secret name must match
+  # ingress.certSecretName so the Ingress spec.tls picks it up. Provisioned by
+  # enableTLS alone: external client -> ingress HTTPS is independent of the
+  # agent-runtime, so this is safe and effective today.
+  ingressCertName: sandbox-manager-ingress-cert
+  # -- Runtime mTLS between the control plane (manager/gateway) and the sandbox
+  # agent-runtime. OFF by default. enableTLS alone only provisions the ingress
+  # certificate here (the shared CA and trust-manager Bundle live in the
+  # controller chart), all inert against a plaintext runtime. Turning this on
+  # additionally issues the manager/gateway runtime client certificates below AND
+  # activates --runtime-client-cert-secret plus the gateway enable-runtime-mtls /
+  # transport_socket. Those client paths fail against an agent-runtime that does
+  # not yet serve TLS, so enable only once the agent-runtime image supports
+  # runtime TLS. Requires enableTLS. Mirrors the controller chart's
+  # tls.runtime.enabled; both must be set together for the full runtime path.
+  runtime:
+    enabled: false
+  # -- Client certificate the manager presents to a TLS-capable agent-runtime.
+  managerRuntimeClientCertName: sandbox-manager-runtime-client
+  managerRuntimeClientCertSecretName: sandbox-manager-runtime-client-cert
+  managerRuntimeClientCommonName: system:sandbox-manager
+  # -- Client certificate the gateway (envoy) presents when originating runtime
+  # mTLS to the sandbox agent-runtime.
+  gatewayRuntimeClientCertName: sandbox-gateway-runtime-client
+  gatewayRuntimeClientCertSecretName: sandbox-gateway-runtime-client-cert
+  gatewayRuntimeClientCommonName: system:sandbox-gateway
+  # -- Directory where the gateway runtime mTLS Secret is mounted; referenced by
+  # the envoy transport_socket in the gateway config.
+  gatewayRuntimeMtlsDir: /var/run/sandbox-gateway/runtime-mtls
+  # -- SAN the agent-runtime server certificate carries. The gateway envoy uses
+  # this as SNI and validates it via auto_sni_san_validation. Must match the
+  # controller chart's tls.agentRuntimeServerSAN.
+  agentRuntimeServerSAN: agentruntime.sandbox.agents.kruise.io
+  # -- Peer mTLS + memberlist gossip encryption for the Manager<->Gateway
+  # control-plane cluster (openkruise/agents#967). This secures the route-sync /
+  # gossip channel BETWEEN control-plane instances; it is independent of the
+  # agent-runtime data path and safe to enable on its own. Requires enableTLS
+  # (it reuses the shared CA and the tls.agentRuntimeServerSAN name).
+  # IMPORTANT: requires manager/gateway images that include #967, which landed
+  # after v0.6.0-alpha3, so older images lack it: an older sandbox-manager
+  # crashes on the unknown --peer-* flags (the gateway merely ignores unknown
+  # PEER_* env). Verify the image before enabling. cert-manager issues the peer
+  # certificates below, but the memberlist key Secret (keySecretName) must be
+  # created out-of-band because cert-manager does not issue raw symmetric keys.
+  peer:
+    enabled: false
+    # -- Peer TLS server certificate, shared by the manager and the gateway. Its
+    # SAN must be the fixed name the peer verifier expects
+    # (tls.agentRuntimeServerSAN) and it carries server auth only.
+    serverCertName: sandbox-peer-server
+    serverCertSecretName: sandbox-peer-server-cert
+    # -- Per-component peer TLS client certificates (client auth only). Each CN is
+    # what an optional allowedClientCNs allow-list matches against.
+    managerClientCertName: sandbox-peer-manager-client
+    managerClientCertSecretName: sandbox-peer-manager-client-cert
+    managerClientCommonName: system:sandbox-manager
+    gatewayClientCertName: sandbox-peer-gateway-client
+    gatewayClientCertSecretName: sandbox-peer-gateway-client-cert
+    gatewayClientCommonName: system:sandbox-gateway
+    # -- Optional memberlist gossip encryption: name of an existing Secret whose
+    # data key "key" holds exactly 32 bytes. Empty disables gossip encryption
+    # (peer TLS still applies). Both manager and gateway must reference the same
+    # Secret. cert-manager cannot create it; provide it out-of-band.
+    keySecretName: ""
+    # -- Optional comma-separated inbound client-identity allow-list matched
+    # against the client certificate CN or its DNS SANs. Empty accepts any client
+    # trusted by the peer server CA. Requires peer TLS.
+    allowedClientCNs: ""
+  # -- OIDC/JWT verification for the gateway. Only applied when
+  # gateway.envoy.pluginConfig.enableJwtAuth is also true. The verifier reads
+  # the CA from a ConfigMap through the API server (it is not mounted), so the
+  # ConfigMap must exist in this namespace. Defaults point at the trust-manager
+  # Bundle ConfigMap created by the controller chart.
+  oidc:
+    # -- Absolute HTTPS discovery URL of the token issuer. Required when JWT
+    # auth is enabled; the verifier fails to initialize while empty.
+    discoveryUrl: ""
+    # -- ConfigMap holding the CA used to verify the issuer's TLS certificate.
+    caConfigMapName: sandbox-ca-bundle
+    caConfigMapKey: ca.crt
+    # -- Optional token clock skew override (e.g. 1m). Empty uses the default.
+    clockSkew: ""
+  # -- Traffic-extension (EPE) credential-provider client certificate.
+  # Mesh workload certificates (egress gateway, traffic-proxy/ztunnel mTLS) are
+  # NOT issued here: agentiod/pilot issues them on demand as SPIFFE SVIDs and
+  # distributes the mesh root CA through the agentio-ca-certs ConfigMap, so
+  # cert-manager has no role in that path. This block only covers the EPE client
+  # certificate used for credential-provider mTLS.
+  epe:
+    # -- Opt-in. Requires agentio.epe.mode=managed and
+    # agentio.epe.credentialProvider.mtls.source=files. The certificate is
+    # written into the same files Secret EPE mounts, with keys remapped to the
+    # client.crt/client.key/ca.crt names EPE reads.
+    # The EPE Certificate is created in the agentio namespace, so the default
+    # namespaced Issuer only works when that namespace also holds the CA Issuer
+    # (agentio.global.namespace and the controller's namespace both default to
+    # sandbox-system, matching the same-namespace, one-Issuer topology). If you
+    # deploy agentio into a different namespace, either set issuerKind:
+    # ClusterIssuer and issuerName to an operator-provided ClusterIssuer, or
+    # replicate the CA Issuer into the agentio namespace. The external
+    # credential provider must trust this CA, and the ca.crt written is this CA —
+    # correct only if the provider's server certificate chains to it.
+    enabled: false
+    # -- Certificate resource name. Empty defaults to <epe-fullname>-mtls-client-cert.
+    certificateName: ""
+    # -- Certificate commonName. Empty defaults to system:<epe-fullname>.
+    commonName: ""
+    issuerName: sandbox-signing-issuer
+    issuerKind: Issuer
+    issuerGroup: cert-manager.io
+    duration: 2160h
+    renewBefore: 360h
+
+# BEGIN GENERATED AGENTIO VALUES - DO NOT EDIT
+agentio:
+  enabled: false
+  global:
+    tag: "0.2.0"
+    imagePullPolicy: IfNotPresent
+    imagePullSecrets: []
+    clusterId: Kubernetes
+    trustDomain: cluster.local
+    clusterDomain: cluster.local
+    caCertConfigMap: agentio-ca-certs
+    namespace: sandbox-system
+    createNamespace: true
+    registry: ""
+  agentiod:
+    nameOverride: agentiod
+    fullnameOverride: ""
+    replicaCount: 1
+    image:
+      digest: ""
+      registry: ""
+      repository: openkruise/agentiod
+      tag: 0.2.0
+    serviceAccount:
+      create: true
+      name: ""
+      annotations: {}
+    service:
+      annotations: {}
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+    autoscaling:
+      enabled: false
+      minReplicas: 2
+      maxReplicas: 5
+      targetCPUUtilizationPercentage: 80
+    podDisruptionBudget:
+      enabled: false
+      minAvailable: 1
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 25%
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    topologySpreadConstraints: []
+    podAnnotations: {}
+    podLabels: {}
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 1337
+      runAsGroup: 1337
+      fsGroup: 1337
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: [ALL]
+      readOnlyRootFilesystem: true
+    tokenAudience: agentio-ca
+    logging:
+      level: info
+      format: text
+    keepalive:
+      # Set to 0s to disable periodic server-side gRPC connection expiry.
+      maxServerConnectionAge: 30m
+    enableDebugOnHTTP: true
+    meshInternalTrafficPolicy: PEER_AWARE
+    enableSNITrafficPolicy: false
+    ca:
+      secretName: agentio-ca-secret
+      configMapName: ""
+      leaseName: agentiod-ca-leader
+      trustBundleConfigMapName: agentio-ca-root-cert
+      trustBundleLeaseName: agentiod-trust-bundle-leader
+    mitm:
+      secretName: agentio-mitm-ca
+      secretNamespace: ""
+      signMode: SELF_SIGN
+    config:
+      name: agentio-config
+      primaryName: agentio-config-primary
+      values: {}
+      sourcesName: agentio-config-sources
+      sources: ""
+    gatewayDeployer:
+      leaseName: agentiod-gateway-deployer-leader
+    networkPolicy:
+      enabled: false
+    env: {}
+  egressGateway:
+    mode: static
+    nameOverride: agentio-egress
+    fullnameOverride: ""
+    image:
+      digest: ""
+      registry: ""
+      repository: openkruise/proxyv2
+      tag: 0.2.0
+    tokenAudience: agentio-ca
+    replicaCount: 2
+    serviceAccount:
+      create: true
+      name: ""
+      annotations: {}
+    rbac:
+      readSecrets: false
+    service:
+      type: ClusterIP
+      annotations: {}
+      ports:
+        status: 15021
+        mesh: 15008
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+    autoscaling:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 5
+      targetCPUUtilizationPercentage: 80
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1
+    terminationGracePeriodSeconds: 30
+    statsFlushInterval: ""
+    statsEvictionInterval: ""
+    sniTrafficPolicy:
+      enabled: false
+    env: {}
+    podAnnotations: {}
+    podLabels: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    topologySpreadConstraints: []
+    networkPolicy:
+      enabled: false
+    gatewayAPI:
+      create: false
+      name: agentio-egress
+      gatewayClassName: agentio-egress
+      infrastructure: {}
+      annotations: {}
+      labels: {}
+      listeners:
+        - name: mesh
+          port: 15008
+          protocol: HBONE
+  epe:
+    mode: managed
+    nameOverride: agentio-epe
+    fullnameOverride: ""
+    image:
+      digest: ""
+      registry: ""
+      repository: openkruise/agentio-epe
+      tag: 0.2.0
+    replicaCount: 1
+    serviceAccount:
+      create: true
+      name: ""
+      annotations: {}
+    service:
+      grpcPort: 9002
+      healthPort: 9003
+      metricsPort: 9090
+    external:
+      address: ""
+      port: 9002
+    messageTimeout: 5s
+    credentialProvider:
+      url: ""
+      mtls:
+        source: files
+        secretName: ""
+        secret:
+          namespace: ""
+          name: ""
+        insecureSkipVerify: false
+    tokenCacheTTL: 15m
+    tokenCacheMaxSize: 10000
+    auditWebhook:
+      insecureSkipVerify: false
+    env: {}
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+    autoscaling:
+      enabled: false
+      minReplicas: 2
+      maxReplicas: 20
+      targetCPUUtilizationPercentage: 80
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1
+    podAnnotations: {}
+    podLabels: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    topologySpreadConstraints: []
+    networkPolicy:
+      enabled: false
+# END GENERATED AGENTIO VALUES
