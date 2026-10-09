@@ -1,4 +1,4 @@
-# Agents Sandbox Controller v0.6.0-rc1
+# Agents Sandbox Controller v0.6.0
 
 ## Installation
 
@@ -35,7 +35,7 @@ The following tables list the configurable parameters of the agents-sandbox-cont
 | `replicaCount` | Number of sandbox-controller replicas | `2` |
 | `image.registry` | Registry prepended to every image in this chart | `docker.io` |
 | `image.repository` | sandbox-controller image repository | `openkruise/agent-sandbox-controller` |
-| `image.tag` | sandbox-controller image tag | `v0.6.0-rc1` |
+| `image.tag` | sandbox-controller image tag | `v0.6.0` |
 | `image.pullPolicy` | Controller image pull policy | `IfNotPresent` |
 | `imagePullSecrets` | Image pull secrets list | `[]` |
 | `namespace.name` | Namespace name for deployment | `sandbox-system` |
@@ -81,7 +81,7 @@ All remaining parameters are optional. Sensible defaults apply and most installs
 | `agentRuntime.image.tag` | Injected agent-runtime sidecar image tag | `v0.3.0` |
 | `agentRuntime.image.pullPolicy` | Injected agent-runtime sidecar image pull policy | `IfNotPresent` |
 | `commitJob.image.repository` | Image repository of the Commit job pods | `openkruise/commit-job` |
-| `commitJob.image.tag` | Image tag of the Commit job pods | `v0.3.0` |
+| `commitJob.image.tag` | Image tag of the Commit job pods | `v0.6.0` |
 | `enableTLS` | Master switch for cert-manager / trust-manager based TLS provisioning; when `false` nothing under `templates/tls/` renders and the controller keeps plaintext runtime behavior | `false` |
 | `tls.createCA` | Create the shared root CA (selfSigned Issuer → CA Certificate → CA Issuer). The controller chart owns the CA; the sandbox-manager chart sets this to `false` and references the Issuer by name | `true` |
 | `tls.selfSignedIssuerName` | Self-signed bootstrap Issuer name | `sandbox-selfsigned-issuer` |
