@@ -5,6 +5,14 @@
 
 ************************************************************
 
+The sandbox-manager has been installed successfully!
+
+1. Check the manager status:
+   kubectl get pods -n {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "sandbox-manager.name" . }},component={{ include "sandbox-manager.name" . }}"
+
+2. View manager logs:
+   kubectl logs -n {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "sandbox-manager.name" . }},component={{ include "sandbox-manager.name" . }}" -f
+
 This version supports the sandbox protocols as follows:
 - E2B
 
