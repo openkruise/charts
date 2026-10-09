@@ -9,3 +9,4 @@ sources:
 annotations:
   artifacthub.io/changes: |
     - "[Changed]: https://github.com/openkruise/kruise-game/blob/master/CHANGELOG.md"
+    - "[Added]: Support for cert-manager with CA injection"
