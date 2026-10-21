@@ -685,7 +685,9 @@ webhooks:
           - networking.k8s.io
         apiVersions:
           - v1
+{{- if semverCompare "<1.22.0-0" .Capabilities.KubeVersion.Version }}
           - v1beta1
+{{- end }}
         operations:
           - DELETE
         resources:
