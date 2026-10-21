@@ -24,5 +24,6 @@ annotations:
     - "[Added]: v1beta1 admission review versions support for webhooks"
     - "[Added]: EphemeralJob validating webhook"
     - "[Changed]: Standardized webhook paths (removed v1alpha1 prefix from paths)"
+    - "[Changed]: Drop v1beta1 Ingress from the vingress validating webhook on Kubernetes >= 1.22, where the v1beta1 Ingress API no longer exists"
     - "[Changed]: https://github.com/openkruise/kruise/blob/master/CHANGELOG.md"
     - "[Security]: Fix potential security issues of dependent packages"
