@@ -121,3 +121,6 @@ helmHooks:
   image:
     repository: openkruise/kruise-helm-hook
     tag: v0.1.0
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}

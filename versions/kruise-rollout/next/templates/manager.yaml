@@ -96,6 +96,10 @@ spec:
                         - {{ .Values.rollout.fullname }}
                 topologyKey: kubernetes.io/hostname
               weight: 100
+        {{- with .Values.nodeAffinity }}
+        nodeAffinity:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
       topologySpreadConstraints:
       - labelSelector:
           matchLabels:
@@ -107,7 +111,11 @@ spec:
         maxSkew: 1
         topologyKey: topology.kubernetes.io/zone
         whenUnsatisfiable:  ScheduleAnyway
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.tolerations }}
       tolerations:
-      {{- toYaml . | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
