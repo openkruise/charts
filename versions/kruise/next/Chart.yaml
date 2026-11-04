@@ -25,5 +25,6 @@ annotations:
     - "[Added]: EphemeralJob validating webhook"
     - "[Changed]: Standardized webhook paths (removed v1alpha1 prefix from paths)"
     - "[Changed]: Drop v1beta1 Ingress from the vingress validating webhook on Kubernetes >= 1.22, where the v1beta1 Ingress API no longer exists"
+    - "[Fixed]: Point the conversion webhook of the DaemonSet, SidecarSet and StatefulSet CRDs at the chart webhook service in the installation namespace instead of controller-gen placeholders"
     - "[Changed]: https://github.com/openkruise/kruise/blob/master/CHANGELOG.md"
     - "[Security]: Fix potential security issues of dependent packages"
