@@ -321,6 +321,40 @@ entries:
   kruise:
   - annotations:
       artifacthub.io/changes: |
+        - "[Changed]: Update kruise-manager image to v1.9.3"
+        - "[Added]: AKS integration for webhooks via webhookConfiguration.aksIntegration to exclude AKS control-plane and managed namespaces"
+        - "[Added]: v1beta1 admission review versions support for webhooks"
+        - "[Added]: EphemeralJob validating webhook"
+        - "[Changed]: Standardized webhook paths (removed v1alpha1 prefix from paths)"
+        - "[Changed]: Drop v1beta1 Ingress from the vingress validating webhook on Kubernetes >= 1.22, where the v1beta1 Ingress API no longer exists"
+        - "[Changed]: https://github.com/openkruise/kruise/blob/master/CHANGELOG.md"
+        - "[Security]: Fix potential security issues of dependent packages"
+    apiVersion: v1
+    appVersion: 1.9.3
+    created: "2026-11-05T09:45:22.154618117Z"
+    description: Helm chart for kruise components
+    digest: 327c7d186d9b9b0eaff26e0638aaceee5ad73d348384e05c479dfc409edd8c42
+    home: https://openkruise.io
+    icon: https://openkruise.io/img/openkruise-logo-bg.jpg
+    keywords:
+    - openkruise
+    - kubernetes
+    - kruise
+    - workload
+    - statefulset
+    - sidecar
+    - job
+    - deployment
+    - cloneset
+    kubeVersion: '>= 1.18.0-0'
+    name: kruise
+    sources:
+    - https://github.com/openkruise/kruise
+    urls:
+    - https://github.com/openkruise/charts/releases/download/kruise-1.9.3/kruise-1.9.3.tgz
+    version: 1.9.3
+  - annotations:
+      artifacthub.io/changes: |
         - "[Changed]: Update kruise-manager image to v1.9.2"
         - "[Fixed]: Exclude the installation namespace by name from webhook namespace selectors, since Helm creates it before the chart's Namespace label is applied"
         - "[Changed]: https://github.com/openkruise/kruise/blob/master/CHANGELOG.md"
@@ -1893,4 +1927,4 @@ entries:
     urls:
     - https://github.com/openkruise/charts/releases/download/kruise-state-metrics-0.1.0/kruise-state-metrics-0.1.0.tgz
     version: 0.1.0
-generated: "2026-10-19T06:49:57.230445753Z"
+generated: "2026-11-05T09:45:22.15498427Z"
