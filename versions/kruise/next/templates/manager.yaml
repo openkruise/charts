@@ -149,6 +149,9 @@ spec:
       tolerations:
 {{ toYaml .Values.manager.tolerations | indent 8 }}
 {{- end }}
+{{- if .Values.manager.priorityClassName }}
+      priorityClassName: {{ .Values.manager.priorityClassName }}
+{{- end }}
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -205,6 +208,9 @@ spec:
 {{- if .Values.daemon.nodeSelector }}
       nodeSelector:
 {{ toYaml .Values.daemon.nodeSelector | indent 8 }}
+{{- end }}
+{{- if .Values.daemon.priorityClassName }}
+      priorityClassName: {{ .Values.daemon.priorityClassName }}
 {{- end }}
       containers:
       - command:
