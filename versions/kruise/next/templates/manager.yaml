@@ -33,14 +33,14 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    control-plane: controller-manager
+    control-plane: kruise-controller-manager
   name: kruise-controller-manager
   namespace: {{ .Values.installation.namespace }}
 spec:
   replicas: {{ .Values.manager.replicas }}
   selector:
     matchLabels:
-      control-plane: controller-manager
+      control-plane: kruise-controller-manager
   minReadySeconds: 3
   strategy:
     type: RollingUpdate
@@ -50,7 +50,7 @@ spec:
   template:
     metadata:
       labels:
-        control-plane: controller-manager
+        control-plane: kruise-controller-manager
     spec:
 {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
