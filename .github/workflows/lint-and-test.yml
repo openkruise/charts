@@ -2,6 +2,10 @@
 ---
 name: Linting and Testing
 on: pull_request
+
+permissions:
+  contents: read
+
 jobs: 
   chart-test:
     runs-on: ubuntu-latest
