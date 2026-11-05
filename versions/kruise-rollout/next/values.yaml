@@ -60,7 +60,11 @@ resources:
   #   cpu: 100m
   #   memory: 128Mi
 
-tolerations:
+nodeAffinity: {}
+
+nodeSelector: {}
+
+tolerations: []
 # Toleration represents the toleration object that can be attached to a pod.
 # The pod this Toleration is attached to tolerates any taint that matches
 # the triple <key,value,effect> using the matching operator <operator>.
