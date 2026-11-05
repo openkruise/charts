@@ -56,7 +56,7 @@ type: {{ $service.spec.type }}
 {{- end }}
 {{ if $service.spec.ipFamily -}}
 ipFamily: {{ $service.spec.ipFamily }}
-{{- end }}
+{{ end }}
 {{- end -}}
 ports:
 - port: 443
