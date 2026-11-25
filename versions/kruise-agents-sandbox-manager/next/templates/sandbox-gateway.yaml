@@ -31,6 +31,9 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "sandbox-manager.serviceAccountName" . }}-gateway
+      # drainTimeSeconds + 60 covers preStop (curl --max-time 5s + drain sleep)
+      # plus SIGTERM, which runs StopProcess for at most 8s; 90s by default.
+      terminationGracePeriodSeconds: {{ add (int .Values.gateway.envoy.drainTimeSeconds) 60 }}
       {{- if .Values.gateway.initContainer.enabled }}
       initContainers:
         - name: init-sysctl
@@ -75,6 +78,10 @@ spec:
             - --drain-time-s
             - "{{ .Values.gateway.envoy.drainTimeSeconds }}"
           env:
+            # SessionService routing and its dedicated watch; the chart opts in
+            # (config/ source defaults to "false"). Restart to apply.
+            - name: ENABLE_SESSION_SERVICE
+              value: "true"
             - name: GOMAXPROCS
               value: "{{ .Values.gateway.resources.cpu }}"
             - name: PEER_NAMESPACE
@@ -131,7 +138,7 @@ spec:
                   - sh
                   - -c
                   - |
-                    curl -s -X POST http://{{ .Values.gateway.envoy.admin.address }}:{{ .Values.gateway.envoy.admin.port }}/drain_listeners?graceful
+                    curl -sS --max-time 5 -X POST http://{{ .Values.gateway.envoy.admin.address }}:{{ .Values.gateway.envoy.admin.port }}/drain_listeners?graceful
                     sleep {{ .Values.gateway.envoy.drainTimeSeconds }}
           {{- with .Values.gateway.resources }}
           resources:

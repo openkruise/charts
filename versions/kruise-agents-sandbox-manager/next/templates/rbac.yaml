@@ -92,6 +92,9 @@ metadata:
     {{- include "sandbox-gateway.labels" . | nindent 4 }}
 rules:
   - apiGroups: ["agents.kruise.io"]
+    resources: ["sessionservices"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["agents.kruise.io"]
     resources: ["sandboxes"]
     verbs: ["get", "list", "watch", "update", "patch"]
   - apiGroups: ["agents.kruise.io"]

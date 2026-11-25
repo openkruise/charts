@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.18.0
+    controller-gen.kubebuilder.io/version: v0.23.0
   name: sandboxes.agents.kruise.io
 spec:
   group: agents.kruise.io
@@ -136,6 +136,80 @@ spec:
                               the floor are raised to it so the fresh PauseTime cannot expire while
                               the sandbox is still resuming.
                             type: string
+                          requestMatches:
+                            description: |-
+                              RequestMatches restricts which inbound requests may wake the paused
+                              sandbox. When empty, every authenticated request addressed to the
+                              sandbox wakes it. When set, a request wakes the sandbox if it
+                              satisfies any entry; a request that satisfies none is rejected the
+                              same way as for a sandbox without wake-on-traffic, and the sandbox
+                              stays paused. Requests to a Running sandbox are never filtered.
+
+                              For example, one entry matching sec-fetch-mode=navigate limits wake
+                              from browsers to page navigations, so script-initiated reconnects from
+                              a page left open in the background do not keep waking the sandbox; a
+                              second entry matching a custom header lets SDK or webhook clients that
+                              send it still wake the sandbox.
+                            items:
+                              description: |-
+                                IngressTrafficRequestMatch describes one kind of request allowed to wake a
+                                paused sandbox. A request satisfies it when every condition matches.
+                              properties:
+                                headers:
+                                  description: Headers lists header conditions that
+                                    must all match.
+                                  items:
+                                    description: IngressTrafficHeaderMatch matches
+                                      a request header against Values using Operator.
+                                    properties:
+                                      name:
+                                        description: |-
+                                          Name is the header name, matched case-insensitively. Pseudo-headers
+                                          are not supported.
+                                        maxLength: 256
+                                        minLength: 1
+                                        pattern: ^[A-Za-z0-9!#$%&'*+\-.^_|~]+$
+                                        type: string
+                                      operator:
+                                        default: In
+                                        description: |-
+                                          Operator selects the matching operation and defaults to In when omitted.
+                                          In requires at least one header value to be in Values; an absent header
+                                          does not match. NotIn requires every header value to be outside Values;
+                                          an absent header matches. Unknown operators do not match.
+                                          This condition applies only to its RequestMatches entry and does not
+                                          veto other OR entries.
+                                        enum:
+                                        - In
+                                        - NotIn
+                                        type: string
+                                      values:
+                                        description: |-
+                                          Values is the set of exact, case-sensitive header values to compare against.
+                                          In and NotIn both require at least one value; all values of a repeated
+                                          header are checked.
+                                        items:
+                                          maxLength: 512
+                                          type: string
+                                        maxItems: 16
+                                        minItems: 1
+                                        type: array
+                                    required:
+                                    - name
+                                    - values
+                                    type: object
+                                  maxItems: 8
+                                  minItems: 1
+                                  type: array
+                                  x-kubernetes-list-map-keys:
+                                  - name
+                                  x-kubernetes-list-type: map
+                              required:
+                              - headers
+                              type: object
+                            maxItems: 8
+                            type: array
+                            x-kubernetes-list-type: atomic
                         type: object
                       whenProbedScheduleTime:
                         description: |-
@@ -177,6 +251,43 @@ spec:
               lifecycle:
                 description: Lifecycle defines lifecycle hooks for sandbox.
                 properties:
+                  postResume:
+                    description: |-
+                      PostResume is a best-effort action executed after runtime, credential, and
+                      storage initialization during resume. Exhausted retries do not block Ready.
+                    properties:
+                      exec:
+                        description: |-
+                          Exec specifies the command to execute inside the sandbox via envd.
+                          The first element is the command, the rest are args.
+                          For shell scripts, use: ["/bin/bash", "-c", "your-script"]
+                        properties:
+                          command:
+                            description: |-
+                              Command is the command line to execute inside the container, the working directory for the
+                              command  is root ('/') in the container's filesystem. The command is simply exec'd, it is
+                              not run inside a shell, so traditional shell instructions ('|', etc) won't work. To use
+                              a shell, you need to explicitly call out to that shell.
+                              Exit status of 0 is treated as live/healthy and non-zero is unhealthy.
+                            items:
+                              type: string
+                            type: array
+                            x-kubernetes-list-type: atomic
+                        type: object
+                      timeoutSeconds:
+                        default: 60
+                        description: TimeoutSeconds is the timeout for the action
+                          execution in seconds.
+                        format: int32
+                        type: integer
+                    type: object
+                    x-kubernetes-validations:
+                    - message: exec.command is required when postResume is specified
+                      rule: has(self.exec) && has(self.exec.command) && self.exec.command.size()
+                        > 0
+                    - message: timeoutSeconds must be between 1 and 60 for postResume
+                      rule: '!has(self.timeoutSeconds) || (self.timeoutSeconds >=
+                        1 && self.timeoutSeconds <= 60)'
                   postUpgrade:
                     description: |-
                       PostUpgrade is the action executed after the upgrade.
@@ -207,6 +318,44 @@ spec:
                         format: int32
                         type: integer
                     type: object
+                  prePause:
+                    description: |-
+                      PrePause is a best-effort action executed while the Sandbox is still
+                      running, before checkpointing or Pod deletion. Exhausted retries do not
+                      block pause completion.
+                    properties:
+                      exec:
+                        description: |-
+                          Exec specifies the command to execute inside the sandbox via envd.
+                          The first element is the command, the rest are args.
+                          For shell scripts, use: ["/bin/bash", "-c", "your-script"]
+                        properties:
+                          command:
+                            description: |-
+                              Command is the command line to execute inside the container, the working directory for the
+                              command  is root ('/') in the container's filesystem. The command is simply exec'd, it is
+                              not run inside a shell, so traditional shell instructions ('|', etc) won't work. To use
+                              a shell, you need to explicitly call out to that shell.
+                              Exit status of 0 is treated as live/healthy and non-zero is unhealthy.
+                            items:
+                              type: string
+                            type: array
+                            x-kubernetes-list-type: atomic
+                        type: object
+                      timeoutSeconds:
+                        default: 60
+                        description: TimeoutSeconds is the timeout for the action
+                          execution in seconds.
+                        format: int32
+                        type: integer
+                    type: object
+                    x-kubernetes-validations:
+                    - message: exec.command is required when prePause is specified
+                      rule: has(self.exec) && has(self.exec.command) && self.exec.command.size()
+                        > 0
+                    - message: timeoutSeconds must be between 1 and 60 for prePause
+                      rule: '!has(self.timeoutSeconds) || (self.timeoutSeconds >=
+                        1 && self.timeoutSeconds <= 60)'
                   preUpgrade:
                     description: |-
                       PreUpgrade is the action executed before the upgrade.
@@ -324,6 +473,13 @@ spec:
                     grpc:
                       description: GRPC specifies a GRPC HealthCheckRequest.
                       properties:
+                        mode:
+                          description: |-
+                            mode specifies the connection mode for the gRPC health probe.
+                            Set to "TLS" to use TLS without certificate verification.
+                            Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                            If not specified, the probe uses a plaintext (insecure) connection.
+                          type: string
                         port:
                           description: Port number of the gRPC service. Number must
                             be in the range 1 to 65535.
@@ -381,6 +537,11 @@ spec:
                             Number must be in the range 1 to 65535.
                             Name must be an IANA_SVC_NAME.
                           x-kubernetes-int-or-string: true
+                        protocol:
+                          description: |-
+                            Protocol selects the wire protocol for the probe connection.
+                            Nil defaults to HTTP/1.1.
+                          type: string
                         scheme:
                           description: |-
                             Scheme to use for connecting to the host.
@@ -478,6 +639,20 @@ spec:
                   ShutdownTime - Absolute time when the sandbox is deleted.
                   If a time in the past is provided, the sandbox will be deleted immediately.
                 format: date-time
+                type: string
+              startupMode:
+                default: Immediate
+                description: |-
+                  StartupMode controls whether the sandbox main container command is
+                  wrapped by run_with_envs.sh. When Deferred, the main process is held
+                  until the claim-time envVars, the optional claim command, and a readiness
+                  signal are in place, then executed with those inputs. When Immediate
+                  (default), the main process starts immediately, exactly as before. It is
+                  copied verbatim from the owning SandboxSet and is read-only for the
+                  sandbox controller.
+                enum:
+                - Immediate
+                - Deferred
                 type: string
               template:
                 description: |-
