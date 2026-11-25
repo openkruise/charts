@@ -59,6 +59,8 @@ manager:
   nodeAffinity: {}
   nodeSelector: {}
   tolerations: []
+  # priorityClassName for kruise-manager pods (e.g. system-cluster-critical); empty = not set
+  priorityClassName: ""
 
 webhookConfiguration:
   timeoutSeconds: 30
@@ -67,6 +69,8 @@ webhookConfiguration:
   aksIntegration: false
 
 daemon:
+  # priorityClassName for kruise-daemon pods (e.g. system-node-critical); empty = not set
+  priorityClassName: ""
   log:
     # log level for kruise-daemon
     level: "4"
