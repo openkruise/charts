@@ -6,6 +6,9 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
+{{- if .Values.externalCerts.annotations }}
+{{ toYaml .Values.externalCerts.annotations | indent 4 }}
+{{- end }}
   name: daemonsets.apps.kruise.io
 spec:
   conversion:
@@ -13,8 +16,8 @@ spec:
     webhook:
       clientConfig:
         service:
-          name: webhook-service
-          namespace: system
+          name: kruise-webhook-service
+          namespace: kruise-system
           path: /convert
       conversionReviewVersions:
       - v1
