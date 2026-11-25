@@ -155,6 +155,7 @@ rules:
       - commits/finalizers
       - sandboxes/finalizers
       - sandboxsets/finalizers
+      - sessionservices/finalizers
     verbs:
       - update
   - apiGroups:
@@ -166,6 +167,8 @@ rules:
       - sandboxes/status
       - sandboxsets/status
       - sandboxupdateops/status
+      - sessionservices/scale
+      - sessionservices/status
     verbs:
       - get
       - patch
@@ -183,8 +186,26 @@ rules:
   - apiGroups:
       - agents.kruise.io
     resources:
+      - sessionservices
+    verbs:
+      - get
+      - list
+      - patch
+      - watch
+  - apiGroups:
+      - agents.kruise.io
+    resources:
       - trafficpolicies
     verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - apps
+    resources:
+      - controllerrevisions
+    verbs:
+      - create
       - get
       - list
       - watch

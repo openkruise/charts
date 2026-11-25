@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.18.0
+    controller-gen.kubebuilder.io/version: v0.23.0
     helm.sh/resource-policy: keep
   name: globalsecurityprofiles.agents.kruise.io
 spec:
@@ -16,11 +16,26 @@ spec:
     singular: globalsecurityprofile
   scope: Cluster
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=="Programmed")].status
+      name: Programmed
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - jsonPath: .status.conditions[?(@.type=="Accepted")].status
+      name: Accepted
+      priority: 1
+      type: string
+    - jsonPath: .status.conditions[?(@.type=="ResolvedRefs")].status
+      name: ResolvedRefs
+      priority: 1
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: |-
-          GlobalSecurityProfile defines cluster-scoped L7 security policy for
+          GlobalSecurityProfile defines cluster-scoped TLS, HTTP, and TCP destination policy for
           selected Pods in all namespaces. Global and namespaced profiles share the
           same priority ordering.
         properties:
@@ -42,13 +57,13 @@ spec:
           metadata:
             type: object
           spec:
-            description: SecurityProfileSpec defines L7 security policy for selected
-              Pods.
+            description: SecurityProfileSpec defines gateway TLS, HTTP, and TCP destination
+              policy for selected Pods.
             properties:
               audit:
                 description: |-
                   Audit defines the audit actions inherited by rules that do not configure
-                  their own Audit list.
+                  their own Audit list. Applies only to HTTP rules, never TLS rules.
                 items:
                   description: |-
                     AuditAction defines an asynchronous audit event. Audit processing does not
@@ -241,14 +256,19 @@ spec:
                 type: integer
               rules:
                 description: |-
-                  Rules is the ordered rule chain. Every matching rule executes until an
-                  action terminates the request. Rules from matching profiles are combined
-                  in profile evaluation order. An empty list forwards all traffic.
+                  Rules is the ordered rule chain. TLS selection uses the first matching
+                  rule; HTTP processing accumulates matching HTTP rules until a terminal
+                  action. Rules from matching profiles are combined in profile evaluation
+                  order. Requests without a terminal decision continue to TCPRules.
                 items:
                   description: |-
                     SecurityRule is one entry in the ordered rule chain.
 
-                    Every matching rule executes in order until an action terminates the
+                    During TLS connection selection, the first matching rule decides: explicit
+                    TLS rules allow only domains and ports in each match entry, and deny or
+                    pass through matched connections. HTTP rules select TLS termination when the matching entry
+                    has no schemes or includes https. HTTP-only conditions are deferred.
+                    During HTTP processing, every matching HTTP rule executes until an action terminates the
                     request. Mutations from earlier rules are preserved by Bypass and discarded
                     by Block. A wildcard match does not prevent later, more specific rules from
                     matching.
@@ -417,7 +437,8 @@ spec:
                         bypass:
                           description: |-
                             Bypass forwards the request and skips all remaining actions and rules
-                            across matching profiles. False is equivalent to omission.
+                            across matching profiles, including TCPRules. Independent platform
+                            authorization still applies. False is equivalent to omission.
                           type: boolean
                         headerManipulation:
                           description: |-
@@ -469,6 +490,205 @@ spec:
                               x-kubernetes-list-map-keys:
                               - name
                               x-kubernetes-list-type: map
+                          type: object
+                        httpCallout:
+                          description: |-
+                            HTTPCallout delegates the request, the upstream response, or both to a
+                            named HTTP callout provider. Non-terminal unless the provider returns an
+                            immediate response or a fail-closed error occurs. For example:
+
+                                httpCallout:
+                                  provider:
+                                    name: content-scanner
+                                  request:
+                                    headers:
+                                      enabled: true
+                                      filter:
+                                        allowList: [content-type, x-request-id]
+                                    body:
+                                      enabled: true
+                                      maxBytes: 1048576
+                                  failStrategy: Block
+                          properties:
+                            failStrategy:
+                              default: Block
+                              description: |-
+                                FailStrategy controls execution failures, including provider lookup,
+                                transport, timeout, body-disclosure, and protocol errors. Defaults to
+                                Block. Allow and Ignore skip the failed callout's mutations and continue.
+                                A valid immediate response from the provider is always honored.
+                              enum:
+                              - Allow
+                              - Block
+                              - Ignore
+                              type: string
+                            provider:
+                              description: |-
+                                Provider identifies the HTTP callout provider. The provider owns the
+                                URL, timeout, TLS, and decision-response size limit. A missing, unavailable,
+                                or wrong-type provider is an execution failure handled by FailStrategy;
+                                no other provider is used as a fallback.
+                              properties:
+                                name:
+                                  description: |-
+                                    Name identifies the provider.
+                                    It is required and has no default.
+                                  maxLength: 253
+                                  minLength: 1
+                                  pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                                  type: string
+                              required:
+                              - name
+                              type: object
+                            request:
+                              description: Request enables a callout before the request
+                                is forwarded upstream.
+                              properties:
+                                body:
+                                  description: Body controls body disclosure. Omission
+                                    disables body disclosure.
+                                  properties:
+                                    enabled:
+                                      default: false
+                                      description: |-
+                                        Enabled buffers and sends the complete body when true. The callout then
+                                        runs after buffering, instead of at the headers phase. Defaults to false.
+                                        An empty body is valid. Bodies must be valid UTF-8 and fit within
+                                        MaxBytes; they are never truncated. In the response phase, only the
+                                        response body is sent.
+                                      type: boolean
+                                    maxBytes:
+                                      default: 1048576
+                                      description: |-
+                                        MaxBytes limits the body disclosed in this phase. Defaults to 1 MiB and
+                                        may not exceed 8 MiB. Oversized content is an execution failure, not
+                                        truncated input. This has no effect when Enabled is false and does not
+                                        configure Envoy's buffering limit or the provider's decision-response
+                                        size limit.
+                                      format: int64
+                                      maximum: 8388608
+                                      minimum: 1
+                                      type: integer
+                                  type: object
+                                headers:
+                                  description: Headers controls header disclosure.
+                                    Omission disables header disclosure.
+                                  properties:
+                                    enabled:
+                                      default: false
+                                      description: |-
+                                        Enabled sends headers when true. Defaults to false. When false, Filter
+                                        has no effect. Request metadata such as authority, path, and content
+                                        type remains part of the invocation regardless of this setting.
+                                      type: boolean
+                                    filter:
+                                      description: |-
+                                        Filter selects the headers sent when Enabled is true. Omission sends
+                                        every header, including credentials and cookies. When present, exactly
+                                        one non-empty list must be set; an empty filter is invalid.
+                                      properties:
+                                        allowList:
+                                          description: AllowList names the only headers
+                                            sent. Header names are case-insensitive.
+                                          items:
+                                            maxLength: 256
+                                            minLength: 1
+                                            pattern: ^[A-Za-z0-9!#$%&'*+\-.^_|~]+$
+                                            type: string
+                                          minItems: 1
+                                          type: array
+                                          x-kubernetes-list-type: set
+                                        denyList:
+                                          description: |-
+                                            DenyList names the headers omitted. Header names are case-insensitive.
+                                            Credentials are sent unless explicitly excluded.
+                                          items:
+                                            maxLength: 256
+                                            minLength: 1
+                                            pattern: ^[A-Za-z0-9!#$%&'*+\-.^_|~]+$
+                                            type: string
+                                          minItems: 1
+                                          type: array
+                                          x-kubernetes-list-type: set
+                                      type: object
+                                  type: object
+                              type: object
+                            response:
+                              description: |-
+                                Response enables a callout on the upstream response. Its invocation
+                                includes request correlation metadata, but no request headers or body.
+                              properties:
+                                body:
+                                  description: Body controls body disclosure. Omission
+                                    disables body disclosure.
+                                  properties:
+                                    enabled:
+                                      default: false
+                                      description: |-
+                                        Enabled buffers and sends the complete body when true. The callout then
+                                        runs after buffering, instead of at the headers phase. Defaults to false.
+                                        An empty body is valid. Bodies must be valid UTF-8 and fit within
+                                        MaxBytes; they are never truncated. In the response phase, only the
+                                        response body is sent.
+                                      type: boolean
+                                    maxBytes:
+                                      default: 1048576
+                                      description: |-
+                                        MaxBytes limits the body disclosed in this phase. Defaults to 1 MiB and
+                                        may not exceed 8 MiB. Oversized content is an execution failure, not
+                                        truncated input. This has no effect when Enabled is false and does not
+                                        configure Envoy's buffering limit or the provider's decision-response
+                                        size limit.
+                                      format: int64
+                                      maximum: 8388608
+                                      minimum: 1
+                                      type: integer
+                                  type: object
+                                headers:
+                                  description: Headers controls header disclosure.
+                                    Omission disables header disclosure.
+                                  properties:
+                                    enabled:
+                                      default: false
+                                      description: |-
+                                        Enabled sends headers when true. Defaults to false. When false, Filter
+                                        has no effect. Request metadata such as authority, path, and content
+                                        type remains part of the invocation regardless of this setting.
+                                      type: boolean
+                                    filter:
+                                      description: |-
+                                        Filter selects the headers sent when Enabled is true. Omission sends
+                                        every header, including credentials and cookies. When present, exactly
+                                        one non-empty list must be set; an empty filter is invalid.
+                                      properties:
+                                        allowList:
+                                          description: AllowList names the only headers
+                                            sent. Header names are case-insensitive.
+                                          items:
+                                            maxLength: 256
+                                            minLength: 1
+                                            pattern: ^[A-Za-z0-9!#$%&'*+\-.^_|~]+$
+                                            type: string
+                                          minItems: 1
+                                          type: array
+                                          x-kubernetes-list-type: set
+                                        denyList:
+                                          description: |-
+                                            DenyList names the headers omitted. Header names are case-insensitive.
+                                            Credentials are sent unless explicitly excluded.
+                                          items:
+                                            maxLength: 256
+                                            minLength: 1
+                                            pattern: ^[A-Za-z0-9!#$%&'*+\-.^_|~]+$
+                                            type: string
+                                          minItems: 1
+                                          type: array
+                                          x-kubernetes-list-type: set
+                                      type: object
+                                  type: object
+                              type: object
+                          required:
+                          - provider
                           type: object
                         mcpToolPolicy:
                           description: |-
@@ -548,6 +768,48 @@ spec:
                           required:
                           - defaultAction
                           - rules
+                          type: object
+                        proxy:
+                          description: |-
+                            Proxy selects an unauthenticated upstream proxy for normal HTTP/HTTPS
+                            requests. The first executed Proxy wins without terminating evaluation;
+                            later denials still prevent forwarding. If none executes, existing
+                            forwarding and security semantics apply. Explicit client proxy requests,
+                            client CONNECT tunnels, and Sandbox inline rules are not supported.
+                          properties:
+                            url:
+                              description: |-
+                                URL is an absolute http, https, or socks5 proxy URL with an explicit
+                                port (1-65535). Hosts may be DNS names, IPv4, or bracketed IPv6.
+                                Userinfo, business paths, queries, and fragments are forbidden; a root
+                                slash is accepted. HTTPS proxies require certificate verification.
+                                The IPv6 alternatives cover eight groups, compressed groups, and an
+                                IPv4 tail (two groups). A pattern avoids per-rule CEL URL parsing costs
+                                in profiles whose existing rule list is unbounded.
+                              maxLength: 2048
+                              minLength: 1
+                              pattern: ^(?i:http|https|socks5)://([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.?|\[(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|::|:(:[0-9a-fA-F]{1,4}){1,7}|([0-9a-fA-F]{1,4}:){1,6}(:[0-9a-fA-F]{1,4}){1}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){5}|([0-9a-fA-F]{1,4}:){1}(:[0-9a-fA-F]{1,4}){6}|(([0-9a-fA-F]{1,4}:){6}|::([0-9a-fA-F]{1,4}:){0,5}|([0-9a-fA-F]{1,4}:){1}:([0-9a-fA-F]{1,4}:){0,4}|([0-9a-fA-F]{1,4}:){2}:([0-9a-fA-F]{1,4}:){0,3}|([0-9a-fA-F]{1,4}:){3}:([0-9a-fA-F]{1,4}:){0,2}|([0-9a-fA-F]{1,4}:){4}:([0-9a-fA-F]{1,4}:){0,1}|([0-9a-fA-F]{1,4}:){5}:([0-9a-fA-F]{1,4}:){0,0})(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3})\]):0*([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])/?$
+                              type: string
+                          required:
+                          - url
+                          type: object
+                        tls:
+                          description: |-
+                            TLS selects a connection action using visible SNI and the original
+                            destination port. This rule does not participate in HTTP processing.
+                          properties:
+                            action:
+                              description: |-
+                                Action is required and has no default. Deny rejects the connection;
+                                it does not promise an HTTP response or a specific TLS alert.
+                                Passthrough forwards without decryption or HTTP rule processing.
+                                Both actions stop further TLS rule selection and skip TCPRules.
+                              enum:
+                              - Deny
+                              - Passthrough
+                              type: string
+                          required:
+                          - action
                           type: object
                         tokenTransformation:
                           description: |-
@@ -797,6 +1059,102 @@ spec:
                               - Block
                               - Ignore
                               type: string
+                            oauth2:
+                              description: |-
+                                OAuth2 declares the endpoint operation and optional response extensions.
+                                It is required for OAuth2 and must be omitted for other transformations.
+                                OAuth2 uses a CredentialProvider reference and the Block failure strategy.
+
+                                Examples:
+
+                                The following example creates a device authorization session or reuses an
+                                existing authorization confirmed by the credential service:
+
+                                    oauth2:
+                                      operation:
+                                        deviceAuthorization: {}
+
+                                The following example processes token grants and adds application response
+                                fields. allowedGrantTypes is optional; omitted or empty adds no policy
+                                restriction beyond protocol and credential-service support. customResponse
+                                is alongside operation, and its success fields apply only to Token:
+
+                                    oauth2:
+                                      operation:
+                                        token:
+                                          allowedGrantTypes:
+                                          - urn:ietf:params:oauth:grant-type:device_code
+                                          - refresh_token
+                                      customResponse:
+                                        success: {code: 0}
+                                        error: {code: 20050}
+                                        authorizationRequired: {code: 20026}
+
+                                The following example injects a Bearer credential into a resource request.
+                                customResponse extends only errors generated by EPE; upstream business
+                                responses pass through unchanged:
+
+                                    oauth2:
+                                      operation:
+                                        resource: {}
+                                      customResponse:
+                                        authorizationRequired: {code: 99991663}
+                              properties:
+                                customResponse:
+                                  description: |-
+                                    CustomResponse adds public application fields to generated OAuth replies.
+                                    It cannot replace standard OAuth fields or change upstream resource replies.
+                                  properties:
+                                    authorizationRequired:
+                                      description: |-
+                                        AuthorizationRequired adds fields when the service confirms a
+                                        non-retryable need for new authorization. Its fields override matching
+                                        application fields in Error, while standard OAuth fields remain protected.
+                                      type: object
+                                      x-kubernetes-preserve-unknown-fields: true
+                                    error:
+                                      description: Error adds fields to an OAuth error
+                                        reply for any operation.
+                                      type: object
+                                      x-kubernetes-preserve-unknown-fields: true
+                                    success:
+                                      description: |-
+                                        Success adds fields to a successful token reply. Only Token supports this;
+                                        device authorization success and upstream resource replies are unchanged.
+                                      type: object
+                                      x-kubernetes-preserve-unknown-fields: true
+                                  type: object
+                                operation:
+                                  description: Operation contains exactly one endpoint
+                                    role and its options.
+                                  properties:
+                                    deviceAuthorization:
+                                      description: DeviceAuthorization creates a device
+                                        authorization session.
+                                      type: object
+                                    resource:
+                                      description: Resource injects a service-issued
+                                        Bearer credential into the request.
+                                      type: object
+                                    token:
+                                      description: Token processes token grants and
+                                        returns placeholder credentials.
+                                      properties:
+                                        allowedGrantTypes:
+                                          description: |-
+                                            AllowedGrantTypes optionally restricts requests to exact grant_type values,
+                                            including extension grant URIs. Omitted or empty adds no policy restriction;
+                                            protocol support and service authorization still apply.
+                                          items:
+                                            minLength: 1
+                                            type: string
+                                          type: array
+                                          x-kubernetes-list-type: set
+                                      type: object
+                                  type: object
+                              required:
+                              - operation
+                              type: object
                             type:
                               default: ApiKey
                               description: Type discriminates the transformation strategy.
@@ -804,11 +1162,19 @@ spec:
                               enum:
                               - ApiKey
                               - AliyunSTS
+                              - OAuth2
                               type: string
                           required:
                           - credentialRef
                           type: object
                       type: object
+                      x-kubernetes-validations:
+                      - message: proxy cannot be combined with tls
+                        rule: '!has(self.proxy) || !has(self.tls)'
+                      - message: proxy cannot be combined with block
+                        rule: '!has(self.proxy) || !has(self.block)'
+                      - message: proxy cannot be combined with enabled bypass
+                        rule: '!has(self.proxy) || !has(self.bypass) || !self.bypass'
                     match:
                       description: Match lists match conditions. Multiple entries
                         are ORed.
@@ -821,8 +1187,9 @@ spec:
                         properties:
                           domains:
                             description: |-
-                              Domains lists target host names. Supports "*" (any domain) and
-                              "*.example.com" wildcard prefixes.
+                              Domains lists target host names. Supports "*" (any non-empty domain) and
+                              "*.example.com" wildcard prefixes. TLS connections match visible SNI;
+                              HTTP requests match Host / authority. Missing SNI never matches.
 
                               CAUTION: wildcard and specific domains can both match the same request
                               under Default Continue semantics, so rule ordering matters.
@@ -913,7 +1280,9 @@ spec:
                             type: array
                           ports:
                             description: |-
-                              Ports lists destination ports. Multiple entries are ORed.
+                              Ports lists destination ports. Multiple entries are ORed. Omitted or
+                              empty ports impose no restriction. TLS connection selection uses the
+                              original destination port, with no default.
 
                               An explicit authority port is used directly. Otherwise, HTTP defaults
                               to 80 and HTTPS defaults to 443. Other schemes have no default port.
@@ -1042,6 +1411,93 @@ spec:
                     type: object
                 type: object
                 x-kubernetes-map-type: atomic
+              tcpRules:
+                description: |-
+                  TCPRules authorizes forwarding destinations at the egress gateway.
+                  Applicable profiles contribute rules in the same priority order as Rules.
+                  Evaluation proceeds as follows:
+
+                  1. Evaluate application Rules when the protocol permits. HTTP Bypass or
+                     Block and explicit TLS Passthrough or Deny are terminal and skip TCPRules.
+                  2. Otherwise, evaluate TCPRules in order. The first matching rule's Allow
+                     or Deny ends TCP evaluation across all applicable profiles.
+                  3. If no TCP rule matches, including when the chain is empty, allow.
+
+                  HTTP uses the resolved forwarding IP and port. Unmatched TLS (including
+                  missing SNI), raw TCP, and sniffing timeouts use the original destination.
+                  TLS termination followed by non-HTTP traffic also uses the original
+                  destination. Non-terminal HTTP actions, such as header or token changes,
+                  do not skip TCPRules. TrafficPolicy remains independently enforced at the
+                  sandbox side, including ingress and UDP; TCPRules does not replace it.
+                  For example, in an IPv4 deployment:
+
+                      tcpRules:
+                      - name: allow-database
+                        match:
+                        - cidrs: ["10.20.0.0/16"]
+                          ports: [5432]
+                        action: Allow
+                      - name: deny-other-ipv4
+                        match:
+                        - cidrs: ["0.0.0.0/0"]
+                        action: Deny
+                items:
+                  description: |-
+                    TCPRule is one entry in the ordered gateway destination rule chain.
+                    The first matching rule across applicable profiles decides; an unmatched
+                    destination is allowed only after the entire chain has been evaluated.
+                  properties:
+                    action:
+                      description: |-
+                        Action is required and has no default. Allow permits the destination;
+                        Deny rejects it. Both stop evaluation of all remaining TCP rules.
+                      enum:
+                      - Allow
+                      - Deny
+                      type: string
+                    match:
+                      description: |-
+                        Match lists alternative conditions. Entries are ORed; fields within
+                        an entry are ANDed. An empty entry matches every destination.
+                      items:
+                        description: TCPMatch matches a forwarding destination IP
+                          address and port.
+                        properties:
+                          cidrs:
+                            description: |-
+                              CIDRs lists IPv4 or IPv6 addresses or networks. A single address matches
+                              only that address (IPv4 /32 or IPv6 /128). Entries are ORed; an omitted
+                              or empty list matches any address. Consumers validate address syntax.
+                            items:
+                              type: string
+                            type: array
+                          ports:
+                            description: |-
+                              Ports lists destination ports. Entries are ORed. An omitted or empty
+                              list matches any port.
+                            items:
+                              format: int32
+                              maximum: 65535
+                              minimum: 1
+                              type: integer
+                            type: array
+                        type: object
+                      minItems: 1
+                      type: array
+                    name:
+                      description: Name uniquely identifies the rule within the profile.
+                      maxLength: 253
+                      minLength: 1
+                      type: string
+                  required:
+                  - action
+                  - match
+                  - name
+                  type: object
+                type: array
+                x-kubernetes-list-map-keys:
+                - name
+                x-kubernetes-list-type: map
             required:
             - selector
             type: object

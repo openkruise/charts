@@ -46,6 +46,27 @@ webhooks:
         resources:
           - sandboxtemplates
     sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: sandbox-controller-manager-webhook-service
+        namespace: {{ include "sandbox-controller.namespace" . }}
+        path: /default-sessionservice
+    failurePolicy: Fail
+    name: md-ssvc.kb.io
+    rules:
+      - apiGroups:
+          - agents.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - sessionservices
+    sideEffects: None
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
@@ -83,7 +104,7 @@ webhooks:
         name: sandbox-controller-manager-webhook-service
         namespace: {{ include "sandbox-controller.namespace" . }}
         path: /validate-sandboxtemplate
-    failurePolicy: Ignore
+    failurePolicy: Fail
     name: v-sbt.kb.io
     rules:
       - apiGroups:
@@ -92,8 +113,31 @@ webhooks:
           - v1alpha1
         operations:
           - CREATE
+          - UPDATE
         resources:
           - sandboxtemplates
+          - sandboxtemplates/status
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: sandbox-controller-manager-webhook-service
+        namespace: {{ include "sandbox-controller.namespace" . }}
+        path: /validate-sessionservice
+    failurePolicy: Fail
+    name: v-ssvc.kb.io
+    rules:
+      - apiGroups:
+          - agents.kruise.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - sessionservices
     sideEffects: None
   - admissionReviewVersions:
       - v1
