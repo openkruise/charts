@@ -66,13 +66,15 @@ spec:
             - --v={{ .Values.manager.log.level }}
             - --feature-gates={{ .Values.featureGates }}
             - --sync-period={{ .Values.manager.resyncPeriod }}
+            - --rest-config-qps={{ .Values.manager.restConfig.qps }}
+            - --rest-config-burst={{ .Values.manager.restConfig.burst }}
             {{- if .Values.manager.loggingFormat }}
             - --logging-format={{ .Values.manager.loggingFormat }}
             {{- end }}
           command:
             - /manager
           image: {{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag }}
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .Values.manager.image.pullPolicy }}
           securityContext:
             capabilities:
               drop:
@@ -226,7 +228,7 @@ spec:
         - --plugin-bin-dir=/credential-provider-plugin
 {{- end }}
         image: {{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag }}
-        imagePullPolicy: Always
+        imagePullPolicy: {{ .Values.manager.image.pullPolicy }}
         securityContext:
           capabilities:
             drop:
